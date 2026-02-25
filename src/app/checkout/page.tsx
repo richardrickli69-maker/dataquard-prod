@@ -53,8 +53,35 @@ export default function CheckoutPage() {
       const success = Math.random() > 0.05;
 
       if (success) {
-        alert(`✅ Payment successful! ${plan.name} plan activated!`);
-        router.push('/dashboard');
+  alert(`✅ Payment successful! ${plan.name} plan activated!`);
+  router.push('/dashboard');
+} else {
+  // User didn't buy - create reminder
+  try {
+    await fetch('/api/reminders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user?.email,
+        domain: 'dataquard.ch',
+        scanId: null,
+      }),
+    });
+  } catch (err) {
+    console.log('Reminder created');
+  }
+}
+```
+
+Speichern Sie: **Ctrl+S** ✅
+
+---
+
+## ✅ SCHRITT 4: Retargeting bei Scanner-Exit integrieren
+
+Öffnen Sie VS Code:
+```
+src/app/scanner/page.tsx
       } else {
         setError('Payment declined (simulated)');
       }

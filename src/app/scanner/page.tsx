@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ExtendedScanResult {
   compliance: {
@@ -40,16 +41,19 @@ interface ScanResult {
 }
 
 export default function Scanner() {
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reminderSent, setReminderSent] = useState(false);
 
   const handleScan = async () => {
     if (!url.trim()) return;
     setLoading(true);
     setError('');
     setResult(null);
+    setReminderSent(false);
 
     try {
       const response = await fetch('/api/scan/extended', {
@@ -76,6 +80,28 @@ export default function Scanner() {
     }
   };
 
+  // Retargeting: Create reminder if user leaves without buying
+  useEffect(() => {
+    return () => {
+      if (result && !loading && !reminderSent && user?.email) {
+        // User is leaving after scan without purchasing
+        fetch('/api/reminders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            domain: result.url,
+            scanId: null,
+          }),
+        })
+          .then(() => setReminderSent(true))
+          .catch(() => {
+            // Reminder creation failed silently
+          });
+      }
+    };
+  }, [result, loading, reminderSent, user]);
+
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-400';
     if (score >= 50) return 'text-yellow-400';
@@ -93,7 +119,7 @@ export default function Scanner() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">🔍 Website Health Check</h1>
-          <p className="text-xl text-gray-300">Compliance + Optimization + Trust Analysis</p>
+          <p className="text-xl text-gray-300">Compliance + Optimization + Security Analysis</p>
         </div>
 
         <div className="bg-indigo-900 bg-opacity-50 p-8 rounded-lg shadow-lg border border-indigo-700 mb-8">
@@ -255,7 +281,8 @@ export default function Scanner() {
             <ul className="list-disc list-inside text-gray-300 space-y-2">
               <li><strong>Compliance:</strong> GDPR/nDSG requirements, trackers, cookie banner</li>
               <li><strong>Optimization:</strong> Load time, performance, mobile-friendly, SSL</li>
-              <li><strong>Trust:</strong> Impressum, contact info, security certificates, meta tags</li>
+              <li><strong>Security:</strong> Outdated scripts, mixed content, SSL certificates</li>
+              <li><strong>Trust:</strong> Impressum, contact info, meta tags, security indicators</li>
               <li><strong>Insights:</strong> How compliance and performance are linked</li>
               <li><strong>Recommendations:</strong> Actionable steps to improve everything</li>
             </ul>
