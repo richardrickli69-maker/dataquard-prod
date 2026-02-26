@@ -1,21 +1,7 @@
-/**
- * Analytics API Route
- * GET /api/analytics - Fetch analytics data
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-
     // Simulate analytics data
     const analytics = {
       totalScans: 1247,
@@ -67,9 +53,12 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Analytics fetch error:', error);
+    console.error('Analytics error:', error);
     return NextResponse.json(
-      { success: false, error: 'Server error' },
+      {
+        success: false,
+        error: 'Failed to fetch analytics',
+      },
       { status: 500 }
     );
   }

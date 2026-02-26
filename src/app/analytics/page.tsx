@@ -26,9 +26,10 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
   const router = useRouter();
-  const { user, loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -39,13 +40,21 @@ export default function AnalyticsPage() {
     if (!loading && isAuthenticated) {
       const fetchAnalytics = async () => {
         try {
+          setLoadingData(true);
           const response = await fetch('/api/analytics');
           const result = await response.json();
-          if (result.success) {
+          
+          if (result.success && result.data) {
             setData(result.data);
+            setError(null);
+          } else {
+            setError('Failed to load analytics data');
+            setData(null);
           }
         } catch (err) {
           console.error('Error fetching analytics:', err);
+          setError('Error loading analytics');
+          setData(null);
         } finally {
           setLoadingData(false);
         }
@@ -55,7 +64,19 @@ export default function AnalyticsPage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  if (loading || loadingData) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center">
+        <p className="text-gray-300">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (loadingData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center">
         <p className="text-gray-300">Loading analytics...</p>
@@ -63,10 +84,15 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (!data) {
+  if (error || !data) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center">
-        <p className="text-gray-300">No data available</p>
+        <div className="text-center">
+          <p className="text-gray-300 mb-4">{error || 'No data available'}</p>
+          <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300">
+            ← Back to Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
