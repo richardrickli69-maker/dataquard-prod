@@ -1,7 +1,7 @@
 /**
  * Extended Scanner API Route
  * POST /api/scan/extended
- * Comprehensive Website Analysis
+ * Comprehensive Website Analysis with Security Validation
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,32 +10,55 @@ import { isValidUrl } from '@/lib/scanner';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { url } = body;
-
-    if (!url) {
+    // Parse JSON with error handling
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
       return NextResponse.json(
-        { success: false, error: 'URL is required' },
+        { success: false, error: 'Invalid JSON payload' },
         { status: 400 }
       );
     }
 
-    if (!isValidUrl(url)) {
+    const { url } = body;
+
+    // Type validation
+    if (!url || typeof url !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'URL must be a non-empty string' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize
+    const trimmedUrl = url.trim();
+
+    // Length validation
+    if (trimmedUrl.length === 0 || trimmedUrl.length > 2048) {
+      return NextResponse.json(
+        { success: false, error: 'URL length invalid (1-2048 chars)' },
+        { status: 400 }
+      );
+    }
+
+    // Format validation
+    if (!isValidUrl(trimmedUrl)) {
       return NextResponse.json(
         { success: false, error: 'Invalid URL format' },
         { status: 400 }
       );
     }
 
-    // Perform extended scan
-    const scanResult = await performExtendedScan(url);
+    // Perform extended scan with validated URL
+    const scanResult = await performExtendedScan(trimmedUrl);
 
     // Return success response
     return NextResponse.json(
       {
         success: true,
         data: {
-          url,
+          url: trimmedUrl,
           scan: scanResult,
           timestamp: new Date().toISOString(),
         },
