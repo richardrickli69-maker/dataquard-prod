@@ -84,7 +84,6 @@ export default function Scanner() {
   useEffect(() => {
     return () => {
       if (result && !loading && !reminderSent && user?.email) {
-        // User is leaving after scan without purchasing
         fetch('/api/reminders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -170,9 +169,11 @@ export default function Scanner() {
 
         {result && (
           <div className="space-y-6">
+
+            {/* Drei Säulen Scores */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.compliance.score)}`}>
-                <h3 className="font-bold text-white mb-2">Compliance</h3>
+                <h3 className="font-bold text-white mb-2">⚖️ Compliance</h3>
                 <div className={`text-5xl font-bold ${getScoreColor(result.scan.compliance.score)} mb-2`}>
                   {result.scan.compliance.score}%
                 </div>
@@ -182,63 +183,87 @@ export default function Scanner() {
               </div>
 
               <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.optimization.score)}`}>
-                <h3 className="font-bold text-white mb-2">Optimization</h3>
+                <h3 className="font-bold text-white mb-2">⚡ Optimization</h3>
                 <div className={`text-5xl font-bold ${getScoreColor(result.scan.optimization.score)} mb-2`}>
                   {result.scan.optimization.score}%
                 </div>
                 <p className="text-sm text-gray-300">
-                  ⏱️ {result.scan.optimization.loadTime.toFixed(1)}s load time
+                  ⏱️ {result.scan.optimization.loadTime.toFixed(1)}s Ladezeit
                 </p>
               </div>
 
               <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.trust.score)}`}>
-                <h3 className="font-bold text-white mb-2">Trust</h3>
+                <h3 className="font-bold text-white mb-2">🔒 Trust</h3>
                 <div className={`text-5xl font-bold ${getScoreColor(result.scan.trust.score)} mb-2`}>
                   {result.scan.trust.score}%
                 </div>
                 <p className="text-sm text-gray-300">
-                  {result.scan.trust.hasSSL ? '🔒 SSL Active' : '🔓 No SSL'}
+                  {result.scan.trust.hasSSL ? '🔒 SSL Aktiv' : '🔓 Kein SSL'}
                 </p>
               </div>
             </div>
 
+            {/* Key Findings */}
             <div className="bg-indigo-900 bg-opacity-50 p-6 rounded-lg shadow-lg border border-indigo-700">
-              <h2 className="text-2xl font-bold text-white mb-4">📊 Key Findings</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">📊 Befunde</h2>
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-indigo-400 mr-3">•</span>
                   <span className="text-gray-200">
-                    <strong>Compliance:</strong> {result.scan.compliance.hasPrivacyPolicy ? '✅ Privacy Policy found' : '❌ Missing Privacy Policy'}
+                    <strong>Datenschutzerklärung:</strong>{' '}
+                    {result.scan.compliance.hasPrivacyPolicy
+                      ? '✅ Vorhanden'
+                      : '❌ Fehlt – Pflicht nach nDSG/DSGVO!'}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-indigo-400 mr-3">•</span>
                   <span className="text-gray-200">
-                    <strong>Trackers:</strong> {result.scan.optimization.trackerCount} found
-                    {result.scan.optimization.trackerCount > 5 ? ' (Too many!)' : ' (Good)'}
+                    <strong>Cookie Banner:</strong>{' '}
+                    {result.scan.compliance.hasCookieBanner
+                      ? '✅ Vorhanden'
+                      : '❌ Fehlt'}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-indigo-400 mr-3">•</span>
                   <span className="text-gray-200">
-                    <strong>SSL:</strong> {result.scan.trust.hasSSL ? '✅ Secure' : '❌ Not secure'}
+                    <strong>Tracker gefunden:</strong>{' '}
+                    {result.scan.optimization.trackerCount} Stück
+                    {result.scan.optimization.trackerCount > 5
+                      ? ' ⚠️ Zu viele – verlangsamt Ihre Website!'
+                      : ' ✅ OK'}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-indigo-400 mr-3">•</span>
                   <span className="text-gray-200">
-                    <strong>Mobile:</strong> {result.scan.optimization.isMobileFriendly ? '✅ Mobile friendly' : '❌ Not mobile friendly'}
+                    <strong>SSL / HTTPS:</strong>{' '}
+                    {result.scan.trust.hasSSL ? '✅ Sicher' : '❌ Nicht sicher'}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-indigo-400 mr-3">•</span>
                   <span className="text-gray-200">
-                    <strong>Impressum:</strong> {result.scan.trust.hasImpressum ? '✅ Found' : '❌ Missing'}
+                    <strong>Mobile:</strong>{' '}
+                    {result.scan.optimization.isMobileFriendly
+                      ? '✅ Mobile-freundlich'
+                      : '❌ Nicht mobile-freundlich'}
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-indigo-400 mr-3">•</span>
+                  <span className="text-gray-200">
+                    <strong>Impressum:</strong>{' '}
+                    {result.scan.trust.hasImpressum
+                      ? '✅ Vorhanden'
+                      : '❌ Fehlt – jetzt generieren!'}
                   </span>
                 </li>
               </ul>
             </div>
 
+            {/* Insights */}
             {result.scan.insights.length > 0 && (
               <div className="bg-blue-900 bg-opacity-50 border-l-4 border-blue-600 p-6 rounded">
                 <h3 className="font-bold text-white mb-4">💡 Insights</h3>
@@ -250,9 +275,10 @@ export default function Scanner() {
               </div>
             )}
 
+            {/* Recommendations */}
             {result.scan.recommendations.length > 0 && (
               <div className="bg-yellow-900 bg-opacity-50 border-l-4 border-yellow-600 p-6 rounded">
-                <h3 className="font-bold text-white mb-4">🎯 Recommendations</h3>
+                <h3 className="font-bold text-white mb-4">🎯 Empfehlungen</h3>
                 <ul className="space-y-2">
                   {result.scan.recommendations.map((rec, i) => (
                     <li key={i} className="text-gray-300">{rec}</li>
@@ -261,30 +287,43 @@ export default function Scanner() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setResult(null)}
-                className="bg-gray-700 text-white py-3 rounded font-semibold hover:bg-gray-600"
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setResult(null)}
+                  className="bg-gray-700 text-white py-3 rounded font-semibold hover:bg-gray-600 transition"
+                >
+                  ← Neuer Scan
+                </button>
+                <a
+                  href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${encodeURIComponent(result.scan.compliance.jurisdiction)}`}
+                  className="bg-indigo-600 text-white py-3 rounded font-semibold hover:bg-indigo-500 text-center transition"
+                >
+                  📄 Impressum generieren
+                </a>
+              </div>
+              <a
+                href="/checkout"
+                className="bg-green-600 text-white py-4 rounded font-semibold hover:bg-green-500 text-center transition text-lg"
               >
-                ← New Scan
-              </button>
-              <a href="/checkout" className="bg-green-600 text-white py-3 rounded font-semibold hover:bg-green-500 text-center">
-                Get Privacy Policy 💰
+                🔒 Datenschutzerklärung – CHF 79/Jahr
               </a>
             </div>
+
           </div>
         )}
 
         {!result && (
           <div className="bg-indigo-900 bg-opacity-50 border-l-4 border-indigo-600 p-6 rounded">
-            <h3 className="font-bold text-white mb-3">ℹ️ What we check:</h3>
+            <h3 className="font-bold text-white mb-3">ℹ️ Was wir prüfen:</h3>
             <ul className="list-disc list-inside text-gray-300 space-y-2">
-              <li><strong>Compliance:</strong> GDPR/nDSG requirements, trackers, cookie banner</li>
-              <li><strong>Optimization:</strong> Load time, performance, mobile-friendly, SSL</li>
-              <li><strong>Security:</strong> Outdated scripts, mixed content, SSL certificates</li>
-              <li><strong>Trust:</strong> Impressum, contact info, meta tags, security indicators</li>
-              <li><strong>Insights:</strong> How compliance and performance are linked</li>
-              <li><strong>Recommendations:</strong> Actionable steps to improve everything</li>
+              <li><strong>Compliance:</strong> DSGVO/nDSG-Anforderungen, Tracker, Cookie Banner</li>
+              <li><strong>Optimization:</strong> Ladezeit, Performance, Mobile-Freundlichkeit, SSL</li>
+              <li><strong>Security:</strong> Veraltete Scripts, Mixed Content, SSL-Zertifikate</li>
+              <li><strong>Trust:</strong> Impressum, Kontaktinfos, Meta Tags, Sicherheitsindikatoren</li>
+              <li><strong>Insights:</strong> Zusammenhang zwischen Compliance und Performance</li>
+              <li><strong>Empfehlungen:</strong> Konkrete Schritte zur Verbesserung</li>
             </ul>
           </div>
         )}
