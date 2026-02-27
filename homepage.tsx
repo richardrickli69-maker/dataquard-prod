@@ -64,10 +64,10 @@ export default function HomePage() {
 
       {/* NAV */}
       <nav className="relative z-50 flex items-center justify-between px-8 py-5 border-b border-white/5">
-        <div className="flex items-center">
-          <div className="bg-white rounded-lg px-2 py-1">
-            <img src="/logo.png" alt="Dataquard" className="h-7 w-auto object-contain" style={{ maxWidth: '120px' }} />
-          </div>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-sm font-bold">D</div>
+          <span className="font-bold text-white text-lg tracking-tight">Dataquard</span>
+          <span className="text-xs text-indigo-400 border border-indigo-800 bg-indigo-950 px-2 py-0.5 rounded-full ml-1">CH</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
           <Link href="/scanner" className="hover:text-white transition-colors">Scanner</Link>
@@ -106,7 +106,7 @@ export default function HomePage() {
         </h1>
 
         <p className={`text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed transition-all duration-700 delay-200 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          Der einzige Schweizer Website-Check der Compliance, Performance und Security
+          Der einzige Schweizer Website-Check der Compliance, Performance und Security 
           gleichzeitig prüft – und direkt behebt.
         </p>
 
@@ -152,6 +152,7 @@ export default function HomePage() {
           {[
             {
               icon: '⚖️',
+              color: 'indigo',
               title: 'Compliance',
               sub: 'nDSG / DSGVO',
               desc: 'Datenschutzerklärung, Cookie Banner, Tracker-Erkennung, Impressum-Pflicht – alles was das Gesetz verlangt.',
@@ -159,6 +160,7 @@ export default function HomePage() {
             },
             {
               icon: '⚡',
+              color: 'yellow',
               title: 'Performance',
               sub: 'Speed & Mobile',
               desc: 'Ladezeit, Mobile-Optimierung, SSL-Zertifikat, veraltete Scripts – alles was Ihre Besucher und Google bewertet.',
@@ -166,6 +168,7 @@ export default function HomePage() {
             },
             {
               icon: '🔒',
+              color: 'green',
               title: 'Trust',
               sub: 'Vertrauen & Sicherheit',
               desc: 'Meta-Tags, Kontaktinfos, SSL-Gültigkeit, Sicherheitsindikatoren – was Besucher und Suchmaschinen vertrauen lässt.',
@@ -226,6 +229,7 @@ export default function HomePage() {
               desc: 'URL eingeben – in 10 Sekunden erhalten Sie einen vollständigen Bericht mit Compliance-, Performance- und Trust-Score.',
               cta: 'Jetzt scannen',
               href: '/scanner',
+              color: 'indigo',
             },
             {
               step: '02',
@@ -233,6 +237,7 @@ export default function HomePage() {
               desc: 'Datenschutzerklärung und Impressum werden automatisch auf Basis Ihres Scans ausgefüllt – individuell, rechtssicher, sofort.',
               cta: 'Datenschutz erstellen',
               href: '/datenschutz-generator',
+              color: 'purple',
             },
             {
               step: '03',
@@ -240,6 +245,7 @@ export default function HomePage() {
               desc: 'HTML-Snippet kopieren, auf Ihrer Website einfügen. Dataquard informiert Sie bei Gesetzesänderungen automatisch.',
               cta: 'Starter kaufen',
               href: '/checkout',
+              color: 'green',
             },
           ].map((item, i) => (
             <div key={i} className="flex gap-6 bg-white/3 border border-white/8 rounded-2xl p-6 hover:border-indigo-800 transition-all group">
@@ -368,7 +374,7 @@ export default function HomePage() {
                   <th className="text-center text-gray-500 pb-3 font-medium">iubenda</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="space-y-2">
                 {[
                   ['Compliance-Check', '✅', '✅', '✅'],
                   ['Performance-Check', '✅', '❌', '❌'],
@@ -422,10 +428,8 @@ export default function HomePage() {
       <footer className="border-t border-white/5 px-6 py-10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="bg-white rounded px-1.5 py-0.5">
-              <img src="/logo.png" alt="Dataquard" className="h-5 w-auto object-contain" style={{ maxWidth: '80px' }} />
-            </div>
-            <span className="text-gray-500 text-sm">© 2026 · Basel, Schweiz</span>
+            <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">D</div>
+            <span className="text-gray-500 text-sm">Dataquard © 2026 · Basel, Schweiz</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-600">
             <Link href="/scanner" className="hover:text-gray-400 transition-colors">Scanner</Link>

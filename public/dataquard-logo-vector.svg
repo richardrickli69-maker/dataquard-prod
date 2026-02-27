@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Shield -->
+  <path d="M120 40 L200 40 L240 80 L240 160 Q180 220 120 250 Q60 220 0 160 L0 80 Z"
+        fill="#E30613"/>
+
+  <!-- Swiss Cross -->
+  <rect x="90" y="75" width="40" height="100" fill="white"/>
+  <rect x="50" y="115" width="120" height="40" fill="white"/>
+
+  <!-- Lock -->
+  <rect x="300" y="110" width="90" height="80" rx="12" fill="#28A745"/>
+  <path d="M320 110 Q345 60 370 110" stroke="#28A745" stroke-width="18" fill="none"/>
+  <polyline points="330,150 350,170 380,135" 
+            fill="none" stroke="white" stroke-width="8"/>
+
+  <!-- Stars -->
+  <circle cx="80" cy="20" r="6" fill="#FFD700"/>
+  <circle cx="120" cy="10" r="6" fill="#FFD700"/>
+  <circle cx="160" cy="20" r="6" fill="#FFD700"/>
+
+  <!-- Text -->
+  <text x="420" y="150" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="bold">
+    <tspan fill="#0056B3">Data</tspan><tspan fill="#E30613">quard</tspan>
+  </text>
+
+</svg>
