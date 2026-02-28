@@ -44,11 +44,3 @@ export async function GET(
     );
   }
 }
-```
-
-**Ctrl+S** speichern, dann im Terminal:
-```
-git add .
-git commit -m "Fix Next.js 16 params type error"
-git push
-vercel --prod
