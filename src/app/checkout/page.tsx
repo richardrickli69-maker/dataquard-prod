@@ -1,147 +1,166 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-function SuccessInner() {
-  const searchParams = useSearchParams();
-  const product = searchParams.get('product') || 'starter';
-  const sessionId = searchParams.get('session_id');
-  const [countdown, setCountdown] = useState(10);
+const plans = [
+  {
+    id: 'impressum',
+    name: 'Impressum Only',
+    price: 'CHF 19',
+    description: 'Einmaliger Kauf',
+    features: [
+      'Impressum Generator',
+      'CH + DE konform',
+      'HTML-Export',
+    ],
+    highlight: false,
+    priceId: 'price_impressum',
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 'CHF 79',
+    description: 'Pro Jahr',
+    features: [
+      'Website Scanner',
+      'Datenschutzerklärung',
+      'Impressum Generator',
+      'Cookie-Analyse',
+      'Automatische Updates',
+      '1 Domain',
+    ],
+    highlight: true,
+    priceId: 'price_starter',
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    price: 'CHF 199',
+    description: 'Pro Jahr',
+    features: [
+      'Alles aus Starter',
+      'Bis zu 5 Domains',
+      'Monatliche Re-Scans',
+      'AGB-Vorlage',
+      'Priority Support',
+      'Rechtliche Alerts',
+    ],
+    highlight: false,
+    priceId: 'price_professional',
+  },
+];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          window.location.href = '/dashboard';
-          return 0;
-        }
-        return prev - 1;
+export default function CheckoutPage() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleCheckout = async (planId: string) => {
+    setLoading(planId);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product: planId }),
       });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
-  const productNames: Record<string, string> = {
-    impressum: 'Impressum',
-    starter: 'Starter',
-    professional: 'Professional',
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        setError(data.error);
+      } else {
+        setError('Fehler beim Starten des Checkouts.');
+      }
+    } catch {
+      setError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center px-4">
-      <div className="max-w-lg w-full text-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white px-4 py-16">
+      <div className="max-w-5xl mx-auto">
 
-        {/* Success Animation */}
-        <div className="text-8xl mb-6 animate-bounce">🎉</div>
-
-        <h1 className="text-4xl font-bold text-white mb-4">
-          Zahlung erfolgreich!
-        </h1>
-
-        <p className="text-xl text-gray-300 mb-2">
-          Willkommen bei Dataquard {productNames[product] || product}!
-        </p>
-
-        <p className="text-gray-400 mb-8">
-          Eine Bestätigung wurde an Ihre E-Mail-Adresse gesendet.
-        </p>
-
-        {/* What's next */}
-        <div className="bg-indigo-900 bg-opacity-50 border border-indigo-700 rounded-xl p-6 mb-8 text-left">
-          <h2 className="text-white font-bold text-lg mb-4">✅ Was jetzt?</h2>
-          <ul className="space-y-3">
-            {product === 'impressum' ? (
-              <>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">1.</span>
-                  <span>Ihr Impressum ist freigeschaltet – jetzt herunterladen</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">2.</span>
-                  <span>HTML-Snippet in Ihre Website einbinden</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">3.</span>
-                  <span>Fertig – rechtlich abgesichert! 🔒</span>
-                </li>
-              </>
-            ) : (
-              <>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">1.</span>
-                  <span>Website scannen und Ampel-Score anzeigen</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">2.</span>
-                  <span>Datenschutzerklärung generieren & herunterladen</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">3.</span>
-                  <span>Impressum erstellen und einbinden</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <span className="text-green-400 mt-0.5">4.</span>
-                  <span>Automatische Updates bei Gesetzesänderungen</span>
-                </li>
-              </>
-            )}
-          </ul>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Plan wählen
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Alle Preise in CHF inkl. MwSt. · Keine versteckten Kosten
+          </p>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {product === 'impressum' ? (
-            <>
-              <a
-                href="/impressum-generator"
-                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-all"
+        {/* Error */}
+        {error && (
+          <div className="bg-red-900 border border-red-600 text-red-200 rounded-xl p-4 mb-8 text-center">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* Plans */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`rounded-2xl p-6 border ${
+                plan.highlight
+                  ? 'border-indigo-500 bg-indigo-900 bg-opacity-60'
+                  : 'border-gray-700 bg-gray-900 bg-opacity-40'
+              }`}
+            >
+              {plan.highlight && (
+                <div className="text-center mb-4">
+                  <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                    ⭐ EMPFOHLEN
+                  </span>
+                </div>
+              )}
+
+              <h2 className="text-xl font-bold text-white mb-1">{plan.name}</h2>
+              <div className="mb-1">
+                <span className="text-3xl font-bold text-white">{plan.price}</span>
+              </div>
+              <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
+
+              <ul className="space-y-2 mb-8">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2 text-gray-300 text-sm">
+                    <span className="text-green-400">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => handleCheckout(plan.id)}
+                disabled={loading !== null}
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  plan.highlight
+                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-white'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                📄 Impressum herunterladen
-              </a>
-              <a
-                href="/scanner"
-                className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl transition-all"
-              >
-                🔍 Website scannen
-              </a>
-            </>
-          ) : (
-            <>
-              <a
-                href="/scanner"
-                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-all"
-              >
-                🔍 Scanner starten
-              </a>
-              <a
-                href="/dashboard"
-                className="bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl transition-all"
-              >
-                📊 Dashboard
-              </a>
-            </>
-          )}
+                {loading === plan.id ? '⏳ Wird geladen...' : `${plan.name} wählen →`}
+              </button>
+            </div>
+          ))}
         </div>
 
-        <p className="text-gray-500 text-sm">
-          Sie werden in {countdown} Sekunden weitergeleitet...
-        </p>
+        {/* Back */}
+        <div className="text-center">
+          <a href="/scanner" className="text-gray-400 hover:text-white transition-all text-sm">
+            ← Zurück zum Scanner
+          </a>
+        </div>
 
       </div>
     </div>
-  );
-}
-
-export default function CheckoutSuccess() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center">
-        <div className="text-4xl">⏳</div>
-      </div>
-    }>
-      <SuccessInner />
-    </Suspense>
   );
 }

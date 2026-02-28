@@ -281,8 +281,10 @@ export default function Scanner() {
                 <h3 className="font-bold text-white mb-4">🎯 Empfehlungen</h3>
                 <ul className="space-y-2">
                   {result.scan.recommendations.map((rec, i) => (
-                    <li key={i} className="text-gray-300">{rec}</li>
-                  ))}
+  <li key={i} className="text-gray-300">
+    {i + 1}. {rec.replace(/^\d+\.\s*/, '')}
+  </li>
+))}
                 </ul>
               </div>
             )}
