@@ -95,8 +95,6 @@ export async function submitBatchJobs() {
     return null;
   }
 
-  console.log(`Submitting ${pendingJobs.length} batch jobs...`);
-
   const requests: BatchRequest[] = pendingJobs.map((job) => ({
     custom_id: job.custom_id,
     params: {
@@ -112,11 +110,8 @@ export async function submitBatchJobs() {
   }));
 
   const batch = await anthropic.beta.messages.batches.create({
-    model: "claude-sonnet-4-20250929",
     requests: requests,
   });
-
-  console.log(`Batch created: ${batch.id}`);
 
   await supabase
     .from("batch_jobs")
@@ -135,8 +130,6 @@ export async function submitBatchJobs() {
 
 export async function processBatchResults(batchId: string) {
   const batch = await anthropic.beta.messages.batches.retrieve(batchId);
-
-  console.log(`Batch ${batchId} status: ${batch.processing_status}`);
 
   if (batch.processing_status !== "ended") {
     return {
@@ -158,13 +151,12 @@ export async function processBatchResults(batchId: string) {
       .single();
 
     if (jobError) {
-      console.error(`Job not found: ${result.custom_id}`);
       errorCount++;
       continue;
     }
 
-    if ("result" in result && result.result) {
-      const message = result.result.message;
+    if ("result" in result && result.result && "message" in result.result) {
+      const message = (result.result as { message: { content: Array<{type: string; text?: string}>; usage: { input_tokens: number; output_tokens: number } } }).message;
       const content = message.content[0];
 
       if (content && "text" in content) {
@@ -200,10 +192,6 @@ export async function processBatchResults(batchId: string) {
       errorCount++;
     }
   }
-
-  console.log(
-    `Batch ${batchId} completed: ${successCount} success, ${errorCount} errors`
-  );
 
   return {
     batchId,

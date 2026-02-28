@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     console.log("Phase 2: Checking processing batches...");
     const { data: processingBatches, error } = await supabase
       .from("batch_jobs")
-      .select("DISTINCT batch_id")
+      .select("batch_id")
       .eq("status", "processing")
       .not("batch_id", "is", null);
 

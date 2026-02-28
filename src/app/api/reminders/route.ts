@@ -150,14 +150,3 @@ export async function GET(request: NextRequest) {
 export async function OPTIONS() {
   return NextResponse.json({});
 }
-```
-
-Speichern Sie: **Ctrl+S** ✅
-
----
-
-## 📊 ANALYTICS ROUTE - KOMPLETTER CODE:
-
-Öffnen Sie VS Code:
-```
-src/app/api/analytics/route.ts
