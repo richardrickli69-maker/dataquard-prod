@@ -10,9 +10,11 @@ const supabase = createClient(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
+    const { jobId } = await params;
+
     const {
       data: { session },
       error: sessionError,
@@ -25,7 +27,7 @@ export async function GET(
       );
     }
 
-    const jobStatus = await getJobStatus(params.jobId, session.user.id);
+    const jobStatus = await getJobStatus(jobId, session.user.id);
 
     return NextResponse.json({
       success: true,
@@ -42,3 +44,11 @@ export async function GET(
     );
   }
 }
+```
+
+**Ctrl+S** speichern, dann im Terminal:
+```
+git add .
+git commit -m "Fix Next.js 16 params type error"
+git push
+vercel --prod
