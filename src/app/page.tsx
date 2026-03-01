@@ -2,7 +2,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState } from 'react';
 
 export default function HomePage() {
@@ -25,13 +24,15 @@ export default function HomePage() {
       <nav className="border-b border-indigo-700 bg-black bg-opacity-50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Dataquard Logo" className="h-12 w-auto" />
+            <img src="/logo.png" alt="Dataquard Logo" className="h-10 w-auto" />
             <span className="text-2xl font-bold"><span className="text-blue-400">Data</span><span className="text-red-500">quard</span></span>
           </div>
-          <div className="hidden md:flex gap-6 text-sm">
+          <div className="hidden md:flex gap-6 text-sm items-center">
             <Link href="/scanner" className="text-gray-300 hover:text-white">Scanner</Link>
             <Link href="/datenschutz-generator" className="text-gray-300 hover:text-white">Datenschutz</Link>
-            <Link href="/impressum-generator" className="text-gray-300 hover:text-white">Impressum</Link>
+            <Link href="/impressum-generator" className="text-gray-300 hover:text-white flex items-center gap-1">
+              Impressum <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">CHF 19</span>
+            </Link>
             <Link href="#preise" className="text-gray-300 hover:text-white">Preise</Link>
           </div>
           <div className="flex gap-3">
@@ -53,8 +54,9 @@ export default function HomePage() {
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
           Der einzige Schweizer Website-Check der Compliance, Performance und Security gleichzeitig prüft – und direkt behebt.
         </p>
-        <div className="flex gap-4 justify-center mb-8">
+        <div className="flex flex-wrap gap-4 justify-center mb-8">
           <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
+          <Link href="/impressum-generator" className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">📄 Impressum – CHF 19</Link>
           <Link href="#preise" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Preise ansehen</Link>
         </div>
         <p className="text-sm text-gray-400 mb-12">Kostenlos · Keine Anmeldung · Ergebnis in 10 Sekunden</p>
@@ -83,6 +85,31 @@ export default function HomePage() {
               </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Impressum CTA Block */}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <div className="bg-gradient-to-r from-red-900 to-red-800 border border-red-600 rounded-xl p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">📄</span>
+              <h3 className="text-2xl font-bold">Impressum fehlt auf Ihrer Website?</h3>
+            </div>
+            <p className="text-red-200">Ein fehlendes Impressum ist eine Ordnungswidrigkeit – bis CHF 50'000 Bußgeld möglich.</p>
+            <div className="flex gap-4 mt-3 text-sm text-red-200">
+              <span>✓ Schweiz (nDSG)</span>
+              <span>✓ Deutschland (DSGVO)</span>
+              <span>✓ Sofort einsatzbereit</span>
+            </div>
+          </div>
+          <div className="text-center flex-shrink-0">
+            <div className="text-3xl font-bold text-white mb-1">CHF 19</div>
+            <div className="text-red-300 text-sm mb-3">Einmalkauf · kein Abo</div>
+            <Link href="/impressum-generator" className="block px-8 py-3 bg-white text-red-700 font-bold rounded-lg hover:bg-red-50 transition">
+              Jetzt Impressum erstellen →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -196,9 +223,10 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto px-4 py-16 text-center border-t border-indigo-700">
         <h2 className="text-3xl font-bold mb-6">Ist Ihre Website wirklich rechtssicher?</h2>
         <p className="text-xl text-gray-300 mb-8">Finden Sie es in 10 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-wrap gap-4 justify-center">
           <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
           <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79/Jahr</Link>
+          <Link href="/impressum-generator" className="px-8 py-4 border-2 border-red-500 text-red-300 font-bold rounded-lg hover:border-red-300 transition text-lg">Impressum – CHF 19</Link>
         </div>
       </section>
 
@@ -206,7 +234,7 @@ export default function HomePage() {
       <footer className="border-t border-indigo-700 bg-black bg-opacity-50 py-8">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <Image src="/logo.png" alt="Dataquard" width={24} height={24} />
+            <img src="/logo.png" alt="Dataquard" className="h-6 w-auto" />
             <span>© 2026 · Basel, Schweiz</span>
           </div>
           <div className="flex gap-6">
