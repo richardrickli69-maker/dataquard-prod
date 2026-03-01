@@ -25,7 +25,7 @@ export default function HomePage() {
       <nav className="border-b border-indigo-700 bg-black bg-opacity-50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Dataquard Logo" width={56} height={56} />
+            <Image src="/logo.png" alt="Dataquard Logo" width={80} height={80} />
             <span className="text-2xl font-bold"><span className="text-blue-400">Data</span><span className="text-red-500">guard</span></span>
           </div>
           <div className="hidden md:flex gap-6 text-sm">
@@ -115,25 +115,26 @@ export default function HomePage() {
       </section>
 
       {/* Preise */}
-      <section className="max-w-6xl mx-auto px-4 py-16 border-t border-indigo-700" id="preise">
+      <section className="max-w-7xl mx-auto px-4 py-16 border-t border-indigo-700" id="preise">
         <h2 className="text-3xl font-bold mb-4 text-center">Transparent. Fair. Schweizer Qualität.</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-12">
           {[
+            { name: 'Impressum', price: 'CHF 19', sub: 'Einmalkauf', desc: 'Nur das Impressum', features: ['Impressum Generator', 'Schweiz + Deutschland', 'Sofort downloadbar'], missing: [], cta: 'Impressum erstellen', link: '/impressum-generator', highlight: false },
             { name: 'Free', price: 'CHF 0', sub: 'immer kostenlos', desc: 'Für den ersten Überblick', features: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], missing: ['Datenschutzerklärung', 'Impressum', 'Updates'], cta: 'Kostenlos scannen', link: '/scanner', highlight: false },
             { name: 'Starter', price: 'CHF 79', sub: 'pro Jahr', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', 'Automatische Updates', '1 Domain'], missing: [], cta: 'Jetzt starten', link: '/checkout', highlight: true },
             { name: 'Professional', price: 'CHF 199', sub: 'pro Jahr', desc: 'Für wachsende Teams', features: ['Alles aus Starter', 'Bis zu 5 Domains', 'Monatliche Re-Scans', 'AGB-Vorlage', 'Priority Support', 'Rechtliche Alerts'], missing: [], cta: 'Professional wählen', link: '/checkout', highlight: false },
             { name: 'Enterprise', price: 'Individuell', sub: '', desc: 'Für Grosskunden', features: ['Alles aus Professional', 'API-Zugang', 'White-Label', 'SLA', 'Custom Integrations'], missing: [], cta: 'Kontakt aufnehmen', link: 'mailto:support@dataquard.ch', highlight: false },
           ].map((plan) => (
-            <div key={plan.name} className={`p-6 rounded-lg border-2 ${plan.highlight ? 'border-indigo-500 bg-indigo-900 bg-opacity-50' : 'border-indigo-700 bg-indigo-900 bg-opacity-20'}`}>
+            <div key={plan.name} className={`p-5 rounded-lg border-2 ${plan.highlight ? 'border-indigo-500 bg-indigo-900 bg-opacity-50' : 'border-indigo-700 bg-indigo-900 bg-opacity-20'}`}>
               {plan.highlight && <div className="text-xs text-indigo-300 font-bold mb-2">EMPFOHLEN</div>}
-              <h3 className="text-xl font-bold">{plan.name}</h3>
-              <div className="text-2xl font-bold text-indigo-300 mt-2">{plan.price}<span className="text-sm text-gray-400">/{plan.sub}</span></div>
-              <p className="text-gray-400 text-sm mt-1 mb-4">{plan.desc}</p>
+              <h3 className="text-lg font-bold">{plan.name}</h3>
+              <div className="text-xl font-bold text-indigo-300 mt-2">{plan.price}<span className="text-xs text-gray-400">/{plan.sub}</span></div>
+              <p className="text-gray-400 text-xs mt-1 mb-4">{plan.desc}</p>
               <ul className="space-y-2 mb-6">
-                {plan.features.map((f) => <li key={f} className="text-gray-300 text-sm flex gap-2"><span className="text-green-400">✓</span>{f}</li>)}
-                {plan.missing.map((f) => <li key={f} className="text-gray-500 text-sm flex gap-2"><span>✗</span>{f}</li>)}
+                {plan.features.map((f) => <li key={f} className="text-gray-300 text-xs flex gap-2"><span className="text-green-400">✓</span>{f}</li>)}
+                {plan.missing.map((f) => <li key={f} className="text-gray-500 text-xs flex gap-2"><span>✗</span>{f}</li>)}
               </ul>
-              <Link href={plan.link} className={`block text-center px-4 py-2 rounded-lg font-bold text-sm ${plan.highlight ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 'border border-indigo-500 text-indigo-300 hover:bg-indigo-900'}`}>{plan.cta}</Link>
+              <Link href={plan.link} className={`block text-center px-3 py-2 rounded-lg font-bold text-xs ${plan.highlight ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 'border border-indigo-500 text-indigo-300 hover:bg-indigo-900'}`}>{plan.cta}</Link>
             </div>
           ))}
         </div>
