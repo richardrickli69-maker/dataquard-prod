@@ -25,8 +25,8 @@ export default function HomePage() {
       <nav className="border-b border-indigo-700 bg-black bg-opacity-50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Dataquard Logo" width={80} height={80} />
-            <span className="text-2xl font-bold"><span className="text-blue-400">Data</span><span className="text-red-500">guard</span></span>
+            <img src="/logo.png" alt="Dataquard Logo" style={{height: '56px', width: 'auto'}} />
+            <span className="text-2xl font-bold"><span className="text-blue-400">Data</span><span className="text-red-500">quard</span></span>
           </div>
           <div className="hidden md:flex gap-6 text-sm">
             <Link href="/scanner" className="text-gray-300 hover:text-white">Scanner</Link>
