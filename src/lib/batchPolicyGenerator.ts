@@ -11,242 +11,131 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-interface BatchRequest {
-  custom_id: string;
-  params: {
-    model: string;
-    max_tokens: number;
-    messages: Array<{
-      role: "user" | "assistant";
-      content: string;
-    }>;
-  };
-}
-
-function buildPolicyPrompt(
-  domain: string,
-  jurisdiction: "GDPR" | "nDSG" | "BOTH",
-  companyName?: string
-): string {
-  const jurisdictionText =
-    jurisdiction === "BOTH"
-      ? "both GDPR (EU) and nDSG (Switzerland)"
-      : jurisdiction === "GDPR"
-        ? "GDPR (EU)"
-        : "nDSG (Switzerland)";
-
-  return `You are an expert data protection lawyer. Generate a comprehensive privacy policy for the following website:
-
-Domain: ${domain}
-Company Name: ${companyName || "Not specified"}
-Applicable Regulations: ${jurisdictionText}
-
-Requirements:
-1. Professional, legal-ready format
-2. Address specific ${jurisdictionText} requirements
-3. Include sections: Data Collection, Use of Data, Cookies, Rights, Contact Info
-4. Use clear, accessible language
-5. Format as Markdown
-
-Generate a complete, production-ready privacy policy:`;
-}
-
 export async function queuePolicyGeneration(
   userId: string,
   domain: string,
-  jurisdiction: "GDPR" | "nDSG" | "BOTH",
+  jurisdiction: string,
   companyName?: string
 ) {
-  const customId = `policy-${userId}-${domain}-${Date.now()}`;
+  const customId = `policy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const prompt = buildPolicyPrompt(domain, jurisdiction, companyName);
 
   const { data, error } = await supabase
     .from("batch_jobs")
-    .insert({
-      user_id: userId,
-      status: "pending",
-      custom_id: customId,
-      domain,
-      jurisdiction,
-      prompt,
-    })
+    .insert({ user_id: userId, domain, jurisdiction, custom_id: customId, prompt, status: "pending" })
     .select()
     .single();
 
-  if (error) throw error;
-
-  return {
-    jobId: data.id,
-    customId: customId,
-    status: "queued",
-  };
+  if (error) throw new Error(`Failed to queue job: ${error.message}`);
+  return { jobId: data.id, customId };
 }
 
 export async function submitBatchJobs() {
-  const { data: pendingJobs, error } = await supabase
-    .from("batch_jobs")
-    .select("*")
-    .eq("status", "pending")
-    .limit(100000);
+  const { data: pendingJobs, error: fetchError } = await supabase
+    .from("batch_jobs").select("*").eq("status", "pending").limit(100);
 
-  if (error) throw error;
-  if (!pendingJobs || pendingJobs.length === 0) {
-    console.log("No pending batch jobs");
-    return null;
-  }
+  if (fetchError) throw fetchError;
+  if (!pendingJobs || pendingJobs.length === 0) return { jobCount: 0, batchId: null };
 
-  const requests: BatchRequest[] = pendingJobs.map((job) => ({
+  const requests = pendingJobs.map((job) => ({
     custom_id: job.custom_id,
     params: {
-      model: "claude-sonnet-4-20250929",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 2000,
-      messages: [
-        {
-          role: "user" as const,
-          content: job.prompt,
-        },
-      ],
+      system: "You are a professional privacy lawyer specializing in GDPR and Swiss nDSG compliance.",
+      messages: [{ role: "user" as const, content: job.prompt }],
     },
   }));
 
-  const batch = await anthropic.beta.messages.batches.create({
-    requests: requests,
-  });
+  const batch = await anthropic.beta.messages.batches.create({ requests });
 
-  await supabase
-    .from("batch_jobs")
-    .update({ batch_id: batch.id, status: "processing" })
-    .in(
-      "custom_id",
-      pendingJobs.map((j) => j.custom_id)
-    );
+  await supabase.from("batch_jobs")
+    .update({ batch_id: batch.id, status: "processing", updated_at: new Date().toISOString() })
+    .in("custom_id", pendingJobs.map((j) => j.custom_id));
 
-  return {
-    batchId: batch.id,
-    jobCount: pendingJobs.length,
-    processingStatus: batch.processing_status,
-  };
+  return { jobCount: pendingJobs.length, batchId: batch.id };
 }
 
-export async function processBatchResults(batchId: string) {
-  const batch = await anthropic.beta.messages.batches.retrieve(batchId);
+export async function processBatchResults() {
+  const { data: processingJobs, error: fetchError } = await supabase
+    .from("batch_jobs").select("*").eq("status", "processing").not("batch_id", "is", null).limit(100);
 
-  if (batch.processing_status !== "ended") {
-    return {
-      batchId,
-      status: batch.processing_status,
-      processed: false,
-    };
-  }
+  if (fetchError) throw fetchError;
+  if (!processingJobs || processingJobs.length === 0) return;
 
-  const results = await anthropic.beta.messages.batches.results(batchId);
-  let successCount = 0;
-  let errorCount = 0;
+  for (const job of processingJobs) {
+    try {
+      const batch = await anthropic.beta.messages.batches.retrieve(job.batch_id);
 
-  for await (const result of results) {
-    const { data: job, error: jobError } = await supabase
-      .from("batch_jobs")
-      .select("*")
-      .eq("custom_id", result.custom_id)
-      .single();
+      if (batch.processing_status === "ended") {
+        const results = await anthropic.beta.messages.batches.results(job.batch_id);
+        let policyContent = null;
+        let inputTokens = 0;
+        let outputTokens = 0;
 
-    if (jobError) {
-      errorCount++;
-      continue;
-    }
+        for await (const result of results) {
+          if (result.custom_id === job.custom_id) {
+            if (
+              result.result.type === "succeeded" &&
+              result.result.message.content[0].type === "text"
+            ) {
+              policyContent = result.result.message.content[0].text;
+              inputTokens = result.result.message.usage.input_tokens;
+              outputTokens = result.result.message.usage.output_tokens;
+            }
+            break;
+          }
+        }
 
-    if ("result" in result && result.result && "message" in result.result) {
-      const message = (result.result as { message: { content: Array<{type: string; text?: string}>; usage: { input_tokens: number; output_tokens: number } } }).message;
-      const content = message.content[0];
+        if (policyContent) {
+          const costCents = Math.round(((inputTokens * 1.5 + outputTokens * 7.5) / 1000000) * 100);
 
-      if (content && "text" in content) {
-        const inputTokens = message.usage.input_tokens;
-        const outputTokens = message.usage.output_tokens;
-        const costCents = Math.round(
-          (inputTokens * 1.5 + outputTokens * 7.5) / 1000000 * 100
-        );
+          const { data: updatedJob } = await supabase.from("batch_jobs")
+            .update({ status: "completed", policy_content: policyContent, input_tokens: inputTokens, output_tokens: outputTokens, cost_cents: costCents, completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+            .eq("id", job.id).select("*, users:user_id(email)").single();
 
-        await supabase
-          .from("batch_jobs")
-          .update({
-            status: "completed",
-            policy_content: content.text,
-            input_tokens: inputTokens,
-            output_tokens: outputTokens,
-            cost_cents: costCents,
-            completed_at: new Date(),
-          })
-          .eq("id", job.id);
-
-        successCount++;
+          if (updatedJob?.users) {
+            try {
+              await fetch("https://dataquard.ch/api/email/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "policy-ready", email: (updatedJob.users as { email: string }).email, domain: job.domain, policyContent: policyContent.substring(0, 200), jobId: job.id }),
+              });
+            } catch (emailError) {
+              console.error("Failed to send email:", emailError);
+            }
+          }
+        } else {
+          await supabase.from("batch_jobs").update({ status: "failed", error_message: "No policy content generated", updated_at: new Date().toISOString() }).eq("id", job.id);
+        }
       }
-    } else if ("error" in result && result.error) {
-      await supabase
-        .from("batch_jobs")
-        .update({
-          status: "failed",
-          error_message: JSON.stringify(result.error),
-        })
-        .eq("id", job.id);
-
-      errorCount++;
+    } catch (jobError) {
+      console.error(`Error processing job ${job.id}:`, jobError);
     }
   }
-
-  return {
-    batchId,
-    status: "completed",
-    processed: true,
-    successCount,
-    errorCount,
-  };
 }
 
 export async function getJobStatus(jobId: string, userId: string) {
-  const { data, error } = await supabase
-    .from("batch_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", userId)
-    .single();
+  const { data, error } = await supabase.from("batch_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
+  if (error) throw new Error("Job not found");
+  return { status: data.status, domain: data.domain, jurisdiction: data.jurisdiction, policyContent: data.policy_content, completedAt: data.completed_at, costCents: data.cost_cents, errorMessage: data.error_message };
+}
 
+export async function getUserBatchJobs(userId: string) {
+  const { data, error } = await supabase.from("batch_jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(10);
   if (error) throw error;
-
-  return {
-    id: data.id,
-    status: data.status,
-    domain: data.domain,
-    jurisdiction: data.jurisdiction,
-    policyContent: data.policy_content,
-    completedAt: data.completed_at,
-    costCents: data.cost_cents,
-  };
+  return data;
 }
 
-export async function getUserBatchJobs(
-  userId: string,
-  limit: number = 20,
-  offset: number = 0
-) {
-  const { data, error, count } = await supabase
-    .from("batch_jobs")
-    .select("*", { count: "exact" })
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  if (error) throw error;
-
-  return {
-    jobs: data,
-    total: count,
-  };
+function buildPolicyPrompt(domain: string, jurisdiction: string, companyName?: string): string {
+  const company = companyName || "Your Company";
+  if (jurisdiction === "GDPR") {
+    return `Generate a comprehensive GDPR-compliant Privacy Policy for ${company} at domain ${domain}. Include: Introduction, Data Controller, Legal Basis, Data Types, Cookies, Retention, User Rights, Contact. Format as Markdown.`;
+  } else if (jurisdiction === "nDSG") {
+    return `Generate a comprehensive nDSG (Swiss) compliant Privacy Policy for ${company} at domain ${domain}. Include: Introduction, Responsible Person, Legal Basis, Data Categories, Cookies, Security, Retention, Rights, Contact. Format as Markdown.`;
+  } else {
+    return `Generate a Privacy Policy for ${company} at domain ${domain} compliant with both GDPR and nDSG. Include all required sections for both jurisdictions. Format as Markdown.`;
+  }
 }
 
-export default {
-  queuePolicyGeneration,
-  submitBatchJobs,
-  processBatchResults,
-  getJobStatus,
-  getUserBatchJobs,
-}
+export default { queuePolicyGeneration, submitBatchJobs, processBatchResults, getJobStatus, getUserBatchJobs };
