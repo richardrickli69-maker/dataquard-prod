@@ -1,7 +1,7 @@
 // src/lib/emailService.ts
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 export interface PolicyReadyEmailParams {
   email: string;
@@ -17,7 +17,7 @@ export interface WelcomeEmailParams {
 
 export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId }: PolicyReadyEmailParams) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: 'noreply@dataquard.ch',
       to: email,
       subject: '🎉 Ihre Datenschutzerklärung ist bereit!',
@@ -44,7 +44,7 @@ export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId
 
 export async function sendWelcomeEmail({ email, name = 'Benutzer' }: WelcomeEmailParams) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: 'noreply@dataquard.ch',
       to: email,
       subject: '👋 Willkommen bei Dataquard!',
@@ -70,7 +70,7 @@ export async function sendWelcomeEmail({ email, name = 'Benutzer' }: WelcomeEmai
 
 export async function sendReminderEmail(email: string) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: 'noreply@dataquard.ch',
       to: email,
       subject: '⚠️ Sie haben eine Compliance-Lücke?',
