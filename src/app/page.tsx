@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function HomePage() {
@@ -22,8 +23,8 @@ export default function HomePage() {
 
       {/* Navbar – Logo zentriert, weisser Hintergrund */}
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-center items-center">
-          <img src="/logo.png" alt="Dataquard" className="h-10 w-auto" />
+        <div className="max-w-6xl mx-auto px-4 py-16 flex justify-center items-center">
+          <Image src="/logo.png" alt="Dataquard" width={256} height={256} className="h-64 w-auto" />
         </div>
       </nav>
 
