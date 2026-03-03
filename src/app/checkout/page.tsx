@@ -13,8 +13,8 @@ const supabase = createClient(
 
 const plans = [
   { name: 'IMPRESSUM ONLY', price: 19, interval: 'Einmalkauf', desc: 'Nur das Impressum', features: ['Impressum Generator', 'Schweiz + Deutschland', 'Sofort downloadbar'], highlight: false },
-  { name: 'STARTER', price: 79, interval: 'pro Jahr', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', 'Updates', '1 Domain'], highlight: false },
-  { name: 'PROFESSIONAL', price: 199, interval: 'pro Jahr', desc: 'Für wachsende Teams', features: ['Alles aus Starter', 'Bis zu 5 Domains', 'AGB-Vorlage', 'Priority Support', 'Rechtliche Alerts'], highlight: true },
+  { name: 'STARTER', price: 79, interval: 'Einmalkauf', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', '1 Domain'], highlight: false },
+  { name: 'PROFESSIONAL', price: 149, interval: 'Einmalkauf', desc: 'Für wachsende Teams', features: ['Alles aus Starter', 'Bis zu 5 Domains', 'AGB-Vorlage', 'Priority Support', 'Rechtliche Alerts'], highlight: true },
 ];
 
 export default function CheckoutPage() {
