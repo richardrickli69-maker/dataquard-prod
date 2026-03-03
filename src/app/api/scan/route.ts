@@ -26,8 +26,6 @@ export async function POST(request: NextRequest) {
       domain: scanResult.domain,
       language: scanResult.language,
       country: guessCountryFromDomain(scanResult.domain),
-      content: scanResult.description,
-      impressum: scanResult.impressumText,
     });
 
     return NextResponse.json(

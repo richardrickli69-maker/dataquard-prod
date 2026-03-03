@@ -10,7 +10,10 @@ export default function HomePage() {
 
   const faqs = [
     { question: 'Wie lange dauert die Policy-Generierung?', answer: 'Die Website-Analyse dauert wenige Sekunden. Die Policy ist typischerweise innerhalb von 30-60 Sekunden verfügbar.' },
-    { question: 'Ist die generierte Policy wirklich nDSG/DSGVO-konform?', answer: 'Ja! Unsere Policies werden von einer KI generiert, die speziell auf DSGVO- und nDSG-Compliance trainiert wurde.' },
+    {
+  question: 'Ist die generierte Policy wirklich nDSG/DSGVO-konform?',
+  answer: 'Ja. Unsere Datenschutzerklärungen basieren auf über 40 juristisch validierten Textbausteinen (Module P1–P7, W1–W8, D1–D12, C1–C5, Z1–Z3, HR1–HR5, T1–T2), die speziell für das Schweizer Datenschutzgesetz (nDSG) und die DSGVO entwickelt wurden. Der entscheidende Unterschied: Wir generieren keine generischen KI-Texte. Unser Scanner erkennt Ihre konkrete Website-Situation und setzt nur die Textbausteine ein, die für Ihr Unternehmen tatsächlich relevant sind – präzise, vollständig und rechtssicher.',
+},
     { question: 'Brauche ich technische Fähigkeiten?', answer: 'Nein! Sie brauchen nur Ihre Domain-Adresse. Der Rest ist vollautomatisch.' },
     { question: 'Welche Daten sammelt Dataquard?', answer: 'Wir sammeln nur die Informationen, die Sie uns geben (Domain, Unternehmensname). Ihre Daten sind in der Schweiz sicher.' },
     { question: 'Wie viel Bußgeld droht bei DSGVO/nDSG-Verstößen?', answer: 'Bis zu CHF 50\'000 bei nDSG-Verstößen und bis zu € 20 Millionen bei DSGVO-Verstößen. Mit Dataquard sind Sie in Minuten konform.' },
