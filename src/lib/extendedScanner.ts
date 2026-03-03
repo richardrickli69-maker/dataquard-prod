@@ -2,6 +2,7 @@
  * Extended Scanner v2.0
  * Compliance + Optimization + Security Analysis
  */
+import { isValidUrl } from '@/lib/scanner';
 
 export interface ExtendedScanResult {
   compliance: {
