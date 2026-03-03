@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
       const { data, error } = await supabaseAdmin.from('scans').insert([{
         url:          trimmedUrl,
         domain:       domain,
-        jurisdiction: scanResult.jurisdiction ?? 'nDSG',
-        ampel:        scanResult.riskLevel    ?? 'gelb',
-        confidence:   scanResult.confidence   ?? 0.8,
-        reasons:      scanResult.reasons      ?? [],
+        jurisdiction: scanResult.compliance.jurisdiction ?? 'nDSG',
+        ampel:        scanResult.compliance.ampel       ?? 'gelb',
+        confidence:   0.8,
+        reasons:      [],
       }]).select();
 
       if (error) {
