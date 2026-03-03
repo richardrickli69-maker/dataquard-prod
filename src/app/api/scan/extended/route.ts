@@ -48,9 +48,10 @@ export async function POST(request: NextRequest) {
     // Scan in Supabase speichern
     try {
       const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+      const domain = trimmedUrl.replace('https://', '').replace('http://', '').split('/')[0];
       const { data, error } = await supabaseAdmin.from('scans').insert([{
         url:          trimmedUrl,
-        domain:       scanResult.domain ?? trimmedUrl.replace('https://', '').replace('http://', '').split('/')[0],
+        domain:       domain,
         jurisdiction: scanResult.jurisdiction ?? 'nDSG',
         ampel:        scanResult.riskLevel    ?? 'gelb',
         confidence:   scanResult.confidence   ?? 0.8,
