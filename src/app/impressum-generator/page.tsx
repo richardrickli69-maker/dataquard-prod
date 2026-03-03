@@ -155,11 +155,16 @@ function ImpressumGeneratorInner() {
   const [isPaid, setIsPaid] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Auto-fill from scanner results via URL params
+  // Auto-fill from scanner results via URL params + unlock after payment
   useEffect(() => {
     const domain = searchParams.get('domain');
-    const hasImpressum = searchParams.get('hasImpressum');
     const jurisdiction = searchParams.get('jurisdiction');
+    const paid = searchParams.get('paid');
+
+    if (paid === 'true') {
+      setIsPaid(true);
+      setStep(3);
+    }
 
     if (domain) {
       const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
