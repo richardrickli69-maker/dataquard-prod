@@ -55,7 +55,7 @@ export default function AuthPage() {
         // Router.push will be called by useEffect
       }
     } catch (err) {
-      setError('An error occurred during sign in');
+      setError('Ein Fehler ist beim Anmelden aufgetreten');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -81,7 +81,7 @@ export default function AuthPage() {
         // Router.push will be called by useEffect
       }
     } catch (err) {
-      setError('An error occurred during sign up');
+      setError('Ein Fehler ist bei der Registrierung aufgetreten');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -98,12 +98,12 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">🔐 Dataquard</h1>
-          <p className="text-gray-300">Secure Privacy Compliance</p>
+          <p className="text-gray-300">Datenschutz-Compliance für Schweizer KMUs</p>
         </div>
 
         <div className="bg-indigo-900 bg-opacity-50 border border-indigo-700 p-8 rounded-lg">
           <h2 className="text-2xl font-bold mb-6">
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            {isSignUp ? 'Konto erstellen' : 'Anmelden'}
           </h2>
 
           {error && (
@@ -114,7 +114,7 @@ export default function AuthPage() {
 
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">E-Mail</label>
               <input
                 type="email"
                 value={email}
@@ -126,7 +126,7 @@ export default function AuthPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">Passwort</label>
               <input
                 type="password"
                 value={password}
@@ -142,7 +142,7 @@ export default function AuthPage() {
               disabled={isLoading}
               className="w-full px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition disabled:opacity-50"
             >
-              {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              {isLoading ? 'Lädt...' : isSignUp ? 'Registrieren' : 'Anmelden'}
             </button>
           </form>
 
@@ -157,30 +157,17 @@ export default function AuthPage() {
               className="text-indigo-300 hover:text-indigo-200"
             >
               {isSignUp
-                ? 'Already have an account? Sign In'
-                : "Don't have an account? Sign Up"}
+                ? 'Bereits ein Konto? Anmelden'
+                : 'Noch kein Konto? Registrieren'}
             </button>
           </div>
 
-          {/* Test Account Info */}
-          {!isSignUp && (
-            <div className="mt-8 pt-6 border-t border-gray-600">
-              <p className="text-sm text-gray-300 mb-3">🧪 Test Account:</p>
-              <p className="text-xs text-gray-400 mb-1">
-                Email: <code className="bg-gray-800 px-2 py-1 rounded">test@dataquard.ch</code>
-              </p>
-              <p className="text-xs text-gray-400">
-                Password: <code className="bg-gray-800 px-2 py-1 rounded">test123456</code>
-              </p>
-            </div>
-          )}
         </div>
 
         <div className="text-center mt-6 text-gray-400 text-sm">
           <p>
-            Back to{' '}
             <Link href="/" className="text-indigo-400 hover:text-indigo-300">
-              Home
+              ← Zurück zur Startseite
             </Link>
           </p>
         </div>

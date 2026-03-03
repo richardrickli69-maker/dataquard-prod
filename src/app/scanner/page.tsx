@@ -148,23 +148,6 @@ export default function Scanner() {
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-indigo-700">
-            <p className="text-sm font-semibold text-gray-300 mb-3">Test-Links:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setUrl('example.ch')}
-                className="text-left text-sm bg-indigo-800 hover:bg-indigo-700 p-3 rounded border border-indigo-700"
-              >
-                ✅ example.ch
-              </button>
-              <button
-                onClick={() => setUrl('example-tracker.de')}
-                className="text-left text-sm bg-indigo-800 hover:bg-indigo-700 p-3 rounded border border-indigo-700"
-              >
-                ⚠️ example-tracker.de
-              </button>
-            </div>
-          </div>
         </div>
 
         {result && (
@@ -309,7 +292,7 @@ export default function Scanner() {
                 href="/checkout"
                 className="bg-green-600 text-white py-4 rounded font-semibold hover:bg-green-500 text-center transition text-lg"
               >
-                🔒 Datenschutzerklärung – CHF 79/Jahr
+                🔒 Datenschutzerklärung – CHF 79
               </a>
             </div>
 

@@ -42,7 +42,7 @@ export default function HomePage() {
         </p>
         <div className="flex flex-wrap gap-4 justify-center mb-8">
           <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
-          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79/Jahr</Link>
+          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79</Link>
           <Link href="/impressum-generator" className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">📄 Impressum – CHF 19</Link>
         </div>
         <p className="text-sm text-gray-400 mb-12">Kostenlos · Keine Anmeldung · Ergebnis in 10 Sekunden</p>
@@ -135,7 +135,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 text-left">
             {[
               { icon: '🔒', title: 'Datenschutz', desc: 'Ihre Daten werden ausschliesslich auf Schweizer Servern gespeichert und nie an Dritte weitergegeben.' },
-              { icon: '💳', title: 'Zahlung', desc: 'Jahresabo, automatische Verlängerung. Kündigung jederzeit möglich. Keine versteckten Kosten.' },
+              { icon: '💳', title: 'Zahlung', desc: 'Einmalkauf. Keine Verlängerung. Keine versteckten Kosten.' },
               { icon: '↩️', title: '30 Tage Garantie', desc: 'Geld-zurück-Garantie ohne Angabe von Gründen innerhalb von 30 Tagen.' },
               { icon: '⚖️', title: 'Haftung', desc: 'Dataquard ersetzt keine Rechtsberatung. Für rechtsverbindliche Prüfung empfehlen wir einen Anwalt.' },
             ].map((item) => (
@@ -156,9 +156,9 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-12">
           {[
             { name: 'Impressum', price: 'CHF 19', sub: 'Einmalkauf', desc: 'Nur das Impressum', features: ['Impressum Generator', 'Schweiz + Deutschland', 'Sofort downloadbar'], missing: [], cta: 'Impressum erstellen', link: '/impressum-generator', highlight: false },
-            { name: 'Free', price: 'CHF 0', sub: 'immer kostenlos', desc: 'Für den ersten Überblick', features: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], missing: ['Datenschutzerklärung', 'Impressum', 'Updates'], cta: 'Kostenlos scannen', link: '/scanner', highlight: false },
-            { name: 'Starter', price: 'CHF 79', sub: 'pro Jahr', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', 'Automatische Updates', '1 Domain'], missing: [], cta: 'Jetzt starten', link: '/checkout', highlight: true },
-            { name: 'Professional', price: 'CHF 149', sub: 'pro Jahr', desc: 'Für wachsende Teams', features: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', 'Auto-Updates', 'Bis zu 5 Domains', 'Monatliche Re-Scans', 'Priority Support'], missing: [], cta: 'Professional wählen', link: '/checkout', highlight: false },
+            { name: 'Free', price: 'CHF 0', sub: 'immer kostenlos', desc: 'Für den ersten Überblick', features: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], missing: ['Datenschutzerklärung', 'Impressum'], cta: 'Kostenlos scannen', link: '/scanner', highlight: false },
+            { name: 'Starter', price: 'CHF 79', sub: 'Einmalkauf', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', '1 Domain'], missing: [], cta: 'Jetzt starten', link: '/checkout', highlight: true },
+            { name: 'Professional', price: 'CHF 149', sub: 'Einmalkauf', desc: 'Für wachsende Teams', features: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', 'Bis zu 5 Domains', 'Priority Support'], missing: [], cta: 'Professional wählen', link: '/checkout', highlight: false },
           ].map((plan) => (
             <div key={plan.name} className={`p-5 rounded-lg border-2 ${plan.highlight ? 'border-indigo-500 bg-indigo-900 bg-opacity-50' : 'border-indigo-700 bg-indigo-900 bg-opacity-20'}`}>
               {plan.highlight && <div className="text-xs text-indigo-300 font-bold mb-2">EMPFOHLEN</div>}
@@ -173,7 +173,7 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-        <p className="text-center text-gray-400 text-sm mt-6">Alle Preise in CHF inkl. MwSt. · Jährliche Abrechnung · Keine versteckten Kosten</p>
+        <p className="text-center text-gray-400 text-sm mt-6">Alle Preise in CHF inkl. MwSt. · Einmalkauf · Keine versteckten Kosten</p>
       </section>
 
       {/* Konkurrenz-Vergleich */}
@@ -196,7 +196,7 @@ export default function HomePage() {
                 ['Security-Check', '✅', '❌', '❌'],
                 ['Schweizer nDSG', '✅', '✅', '⚠️'],
                 ['Auto-Scan & Pre-fill', '✅', '✅', '❌'],
-                ['Preis/Jahr', 'CHF 79', 'CHF 55', '€ 144+'],
+                ['Preis', 'CHF 79', 'CHF 55', '€ 144+'],
                 ['Daten in Schweiz', '✅', '⚠️', '❌'],
               ].map(([feature, dq, pb, iu]) => (
                 <tr key={feature} className="border-b border-indigo-900 hover:bg-indigo-900 hover:bg-opacity-20">
@@ -233,7 +233,7 @@ export default function HomePage() {
         <p className="text-xl text-gray-300 mb-8">Finden Sie es in 10 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
-          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79/Jahr</Link>
+          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79</Link>
           <Link href="/impressum-generator" className="px-8 py-4 border-2 border-red-500 text-red-300 font-bold rounded-lg hover:border-red-300 transition text-lg">Impressum – CHF 19</Link>
         </div>
       </section>
