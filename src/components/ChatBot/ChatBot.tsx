@@ -45,35 +45,41 @@ export default function ChatBot() {
       content: input
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput('');
     setLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      let response = '';
-      
-      if (input.includes('nDSG') || input.includes('Schweiz')) {
-        response = '✅ nDSG (Schweizer Datenschutzgesetz) ist das Datenschutzgesetz für die Schweiz. Es schützt personenbezogene Daten. Dataquard hilft Ihnen, eine konforme Privacy Policy zu generieren!';
-      } else if (input.includes('DSGVO') || input.includes('EU')) {
-        response = '🇪🇺 DSGVO (Datenschutz-Grundverordnung) ist das Datenschutzgesetz der EU. Es ist strenger als nDSG. Mit Dataquard können Sie schnell eine DSGVO-konforme Policy erstellen!';
-      } else if (input.includes('Preis') || input.includes('Kosten') || input.includes('kostet')) {
-        response = '💰 ESSENTIAL: CHF 59/Jahr (5 Scans)\nPROFESSIONAL: CHF 149 (Unlimited Scans)\n\nBeiden beinhalten PDF-Download und Email-Support!';
-      } else if (input.includes('Scanner') || input.includes('funktioniert')) {
-        response = '🚀 Der Scanner analysiert Ihre Website und zeigt mit einer Ampel an:\n🟢 nDSG (Schweiz)\n🟡 DSGVO (EU)\n🔴 BEIDE\n\nDann können Sie sofort die richtige Privacy Policy downloaden!';
-      } else {
-        response = 'Gute Frage! 🤔 Für spezifische Rechtsberatung empfehle ich, einen Datenschutzanwalt zu konsultieren. Ich kann aber gerne allgemeine Fragen beantworten!';
-      }
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages
+            .filter((m) => m.role === 'user' || m.role === 'assistant')
+            .map((m) => ({ role: m.role, content: m.content })),
+        }),
+      });
 
+      const data = await res.json();
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response
+        content: data.content || 'Entschuldigung, ich konnte keine Antwort generieren.',
       };
-
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Verbindungsfehler. Bitte versuche es erneut.',
+        },
+      ]);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
