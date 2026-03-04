@@ -131,6 +131,12 @@ export default function DashboardPage() {
             <Link href="/scanner" className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-sm font-bold">🔍 Scannen</Link>
             <Link href="/analytics" className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-bold">📊 Analytics</Link>
             <Link href="/checkout" className="px-4 py-2 border border-indigo-500 text-indigo-300 rounded-lg hover:bg-indigo-900 text-sm">📈 Upgrade</Link>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); router.push('/auth'); }}
+              className="px-4 py-2 border border-red-700 text-red-400 rounded-lg hover:bg-red-900 hover:bg-opacity-30 text-sm"
+            >
+              Abmelden
+            </button>
           </div>
         </div>
 
@@ -323,7 +329,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-gray-400 mb-4">Kein aktives Abo – Sie nutzen den Free-Plan.</p>
+                  <p className="text-gray-400 mb-4">Kein aktiver Zugang – Sie nutzen den Free-Plan.</p>
                   <Link href="/checkout" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">Jetzt upgraden →</Link>
                 </div>
               )}
@@ -340,12 +346,6 @@ export default function DashboardPage() {
                 <div className="bg-indigo-800 bg-opacity-50 p-4 rounded-lg text-center">
                   <div className="text-gray-400 text-sm mb-1">Policy Jobs</div>
                   <div className="text-2xl font-bold text-indigo-300">{batchJobs.length}</div>
-                </div>
-                <div className="bg-indigo-800 bg-opacity-50 p-4 rounded-lg text-center">
-                  <div className="text-gray-400 text-sm mb-1">Ø Kosten/Job</div>
-                  <div className="text-2xl font-bold text-green-300">
-                    CHF {batchJobs.length > 0 ? (totalCostCents / batchJobs.length / 100).toFixed(4) : '0.00'}
-                  </div>
                 </div>
               </div>
             </div>

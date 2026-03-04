@@ -6,7 +6,31 @@ import { isValidUrl } from '@/lib/scanner';
 import { NextRequest, NextResponse } from 'next/server';
 import { performExtendedScan } from '@/lib/extendedScanner';
 
+const ipScanMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 3;
+const WINDOW_MS = 60 * 60 * 1000;
+
 export async function POST(request: NextRequest) {
+  // Rate limiting for unauthenticated requests
+  const authHeader = request.headers.get('authorization');
+  const isAuthenticated = authHeader?.startsWith('Bearer ');
+  if (!isAuthenticated) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const now = Date.now();
+    const entry = ipScanMap.get(ip);
+    if (entry && now < entry.resetAt) {
+      if (entry.count >= RATE_LIMIT) {
+        return NextResponse.json(
+          { success: false, error: 'Rate limit exceeded. Please try again later.' },
+          { status: 429 }
+        );
+      }
+      entry.count++;
+    } else {
+      ipScanMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    }
+  }
+
   try {
     let body;
     try {

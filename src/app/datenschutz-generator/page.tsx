@@ -151,7 +151,7 @@ function DataschutzGeneratorInner() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
       const { data: billing } = await supabase
-        .from('billing')
+        .from('subscriptions')
         .select('id')
         .eq('user_id', session.user.id)
         .eq('status', 'active')

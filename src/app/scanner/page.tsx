@@ -47,6 +47,7 @@ export default function Scanner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reminderSent, setReminderSent] = useState(false);
+  const [reminderOptIn, setReminderOptIn] = useState(false);
 
   const handleScan = async () => {
     if (!url.trim()) return;
@@ -83,7 +84,7 @@ export default function Scanner() {
   // Retargeting: Create reminder if user leaves without buying
   useEffect(() => {
     return () => {
-      if (result && !loading && !reminderSent && user?.email) {
+      if (result && !loading && !reminderSent && user?.email && reminderOptIn) {
         fetch('/api/reminders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -142,8 +143,20 @@ export default function Scanner() {
             </button>
           </div>
 
+          {user && (
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer mt-2">
+              <input
+                type="checkbox"
+                checked={reminderOptIn}
+                onChange={(e) => setReminderOptIn(e.target.checked)}
+                className="w-4 h-4 rounded border-indigo-600 bg-indigo-800 text-indigo-500"
+              />
+              Ich möchte eine Erinnerung erhalten, falls ich noch keine Massnahmen ergriffen habe.
+            </label>
+          )}
+
           {error && (
-            <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded">
+            <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded mt-2">
               ❌ {error}
             </div>
           )}

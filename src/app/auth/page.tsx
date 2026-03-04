@@ -18,6 +18,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -36,6 +37,12 @@ export default function AuthPage() {
       router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
+
+  const handleResetPassword = async () => {
+    if (!email) { setError('Bitte E-Mail-Adresse eingeben'); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) { setError(error.message); } else { setResetSent(true); setError(''); }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,13 +153,30 @@ export default function AuthPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {!isSignUp && (
+            <div className="mt-4 text-center">
+              {resetSent ? (
+                <p className="text-green-400 text-sm">E-Mail gesendet – bitte prüfen Sie Ihren Posteingang.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
+                  className="text-gray-400 hover:text-gray-300 text-sm"
+                >
+                  Passwort vergessen?
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4 text-center">
             <button
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setError('');
                 setEmail('');
                 setPassword('');
+                setResetSent(false);
               }}
               className="text-indigo-300 hover:text-indigo-200"
             >

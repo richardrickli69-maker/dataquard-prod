@@ -2,6 +2,12 @@
 
 import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 function SuccessInner() {
   const searchParams = useSearchParams();
@@ -12,19 +18,28 @@ function SuccessInner() {
   useEffect(() => {
     if (!sessionId) return;
 
-    if (product === 'impressum') {
-      // Redirect to Impressum Generator with paid flag
-      const timer = setTimeout(() => {
-        router.push(`/impressum-generator?paid=true&session_id=${sessionId}`);
-      }, 2500);
-      return () => clearTimeout(timer);
-    } else {
-      // Starter or Professional → Dashboard
-      const timer = setTimeout(() => {
-        router.push('/dashboard');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+    let cleanup: (() => void) | undefined;
+    const run = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.email) {
+          await fetch('/api/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'welcome', email: session.user.email }),
+          });
+        }
+      } catch {}
+      if (product === 'impressum') {
+        const t = setTimeout(() => router.push('/impressum-generator'), 2500);
+        cleanup = () => clearTimeout(t);
+      } else {
+        const t = setTimeout(() => router.push('/dashboard'), 3000);
+        cleanup = () => clearTimeout(t);
+      }
+    };
+    run();
+    return () => cleanup?.();
   }, [sessionId, product, router]);
 
   const isImpressum = product === 'impressum';
@@ -59,7 +74,6 @@ function SuccessInner() {
             ) : (
               <>
                 <li className="flex gap-2"><span className="text-green-400">✓</span>Datenschutzerklärung aktiviert</li>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>Automatische Updates bei Gesetzesänderungen</li>
                 <li className="flex gap-2"><span className="text-green-400">✓</span>Dashboard-Zugang freigeschaltet</li>
               </>
             )}
@@ -80,7 +94,7 @@ function SuccessInner() {
         {/* Manual Link */}
         <div className="mt-6">
           <a
-            href={isImpressum ? `/impressum-generator?paid=true&session_id=${sessionId}` : '/dashboard'}
+            href={isImpressum ? '/impressum-generator' : '/dashboard'}
             className="text-indigo-400 hover:text-indigo-300 text-sm underline"
           >
             Nicht weitergeleitet? Hier klicken →
