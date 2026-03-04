@@ -2,6 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface PolicyData {
   // Website
@@ -136,8 +142,25 @@ function DataschutzGeneratorInner() {
   const [generating, setGenerating] = useState(false);
   const [generatedPolicy, setGeneratedPolicy] = useState('');
   const [useAI, setUseAI] = useState(false);
-  const [isPaid] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Check billing status
+  useEffect(() => {
+    const checkBilling = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data: billing } = await supabase
+        .from('billing')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      if (billing) setIsPaid(true);
+    };
+    checkBilling();
+  }, []);
 
   // Auto-fill from scanner
   useEffect(() => {

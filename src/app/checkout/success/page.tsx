@@ -41,7 +41,7 @@ function SuccessInner() {
         <p className="text-gray-300 text-lg mb-8">
           {isImpressum
             ? 'Ihr Impressum wird jetzt freigeschaltet. Sie werden in Kürze weitergeleitet...'
-            : 'Ihr Dataquard-Abo ist aktiv. Sie werden zum Dashboard weitergeleitet...'}
+            : 'Ihr Dataquard-Zugang ist aktiv. Sie werden zum Dashboard weitergeleitet...'}
         </p>
 
         {/* Product Info */}

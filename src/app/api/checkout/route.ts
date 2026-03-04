@@ -8,13 +8,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const PRICES = {
   impressum: 1900,   // CHF 19.00 in Rappen
   starter: 7900,     // CHF 79.00 in Rappen
-  professional: 19900, // CHF 199.00 in Rappen
+  professional: 14900, // CHF 149.00 in Rappen
 };
 
 const PRODUCT_NAMES = {
   impressum: 'Dataquard Impressum',
-  starter: 'Dataquard Starter (1 Jahr)',
-  professional: 'Dataquard Professional (1 Jahr)',
+  starter: 'Dataquard Starter',
+  professional: 'Dataquard Professional',
 };
 
 export async function POST(req: NextRequest) {

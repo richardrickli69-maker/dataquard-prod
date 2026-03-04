@@ -138,7 +138,7 @@ export default function Scanner() {
               disabled={loading || !url.trim()}
               className="bg-indigo-600 text-white px-8 py-3 rounded font-semibold hover:bg-indigo-500 disabled:bg-gray-600 transition"
             >
-              {loading ? 'Scanning...' : '🚀 Scan'}
+              {loading ? 'Wird gescannt...' : '🚀 Scan'}
             </button>
           </div>
 
@@ -166,7 +166,7 @@ export default function Scanner() {
               </div>
 
               <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.optimization.score)}`}>
-                <h3 className="font-bold text-white mb-2">⚡ Optimization</h3>
+                <h3 className="font-bold text-white mb-2">⚡ Optimierung</h3>
                 <div className={`text-5xl font-bold ${getScoreColor(result.scan.optimization.score)} mb-2`}>
                   {result.scan.optimization.score}%
                 </div>
@@ -176,7 +176,7 @@ export default function Scanner() {
               </div>
 
               <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.trust.score)}`}>
-                <h3 className="font-bold text-white mb-2">🔒 Trust</h3>
+                <h3 className="font-bold text-white mb-2">🔒 Vertrauen</h3>
                 <div className={`text-5xl font-bold ${getScoreColor(result.scan.trust.score)} mb-2`}>
                   {result.scan.trust.score}%
                 </div>

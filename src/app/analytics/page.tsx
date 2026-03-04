@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
 
     // Reminders
     const { data: reminders } = await supabase
-      .from('reminders').select('*').order('created_at', { ascending: false }).limit(10);
+      .from('reminders').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(10);
     if (reminders) {
       setRemindersTotal(reminders.length);
       setRemindersSent(reminders.filter(r => r.status === 'sent').length);

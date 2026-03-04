@@ -26,8 +26,8 @@ export default function HomePage() {
 
       {/* Navbar – Logo zentriert, weisser Hintergrund */}
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-16 flex justify-center items-center">
-          <Image src="/logo.png" alt="Dataquard" width={256} height={256} className="h-64 w-auto" />
+        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-center items-center">
+          <Image src="/logo.png" alt="Dataquard" width={256} height={256} className="h-10 w-auto" />
         </div>
       </nav>
 
@@ -146,7 +146,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <Link href="#" className="inline-block px-8 py-3 border border-indigo-500 text-indigo-300 rounded-lg hover:bg-indigo-900 transition text-sm">Vollständige AGB lesen →</Link>
+          <Link href="/agb" className="inline-block px-8 py-3 border border-indigo-500 text-indigo-300 rounded-lg hover:bg-indigo-900 transition text-sm">Vollständige AGB lesen →</Link>
         </div>
       </section>
 
@@ -247,7 +247,7 @@ export default function HomePage() {
             <Link href="/datenschutz-generator" className="hover:text-white">Datenschutz</Link>
             <Link href="/impressum-generator" className="hover:text-white">Impressum</Link>
             <Link href="#preise" className="hover:text-white">Preise</Link>
-            <Link href="#" className="hover:text-white">AGB</Link>
+            <Link href="/agb" className="hover:text-white">AGB</Link>
             <Link href="/auth" className="px-4 py-1.5 border border-indigo-700 text-indigo-400 rounded-lg hover:bg-indigo-900 hover:text-white transition">Anmelden</Link>
           </div>
         </div>

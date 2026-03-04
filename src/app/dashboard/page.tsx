@@ -77,7 +77,7 @@ export default function DashboardPage() {
     if (policiesData) setPolicies(policiesData);
 
     const { data: auditData } = await supabase
-      .from('audit_log').select('*').order('created_at', { ascending: false }).limit(20);
+      .from('audit_log').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);
     if (auditData) setAuditLog(auditData);
 
     const { data: jobsData } = await supabase
