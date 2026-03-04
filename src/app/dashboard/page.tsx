@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import ActionPlan from '@/components/ActionPlan';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -55,7 +56,8 @@ export default function DashboardPage() {
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing'>('overview');
+  const [latestScan, setLatestScan] = useState<{ url: string; scan: any } | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen'>('overview');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -88,6 +90,16 @@ export default function DashboardPage() {
       .from('subscriptions').select('*').eq('user_id', userId)
       .eq('status', 'active').order('created_at', { ascending: false }).limit(1).single();
     if (subData) setSubscription(subData);
+
+    // Letzten Scan des Users laden für Massnahmenplan
+    const { data: scanData } = await supabase
+      .from('scans')
+      .select('url, jurisdiction, ampel')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (scanData) setLatestScan({ url: scanData.url, scan: null });
   };
 
   const getEventLabel = (type: string) => ({
@@ -165,6 +177,7 @@ export default function DashboardPage() {
             { key: 'audit', label: '📋 Audit-Trail' },
             { key: 'jobs', label: '⚙️ Batch Jobs' },
             { key: 'billing', label: '💳 Billing' },
+            { key: 'massnahmen', label: '🎯 Massnahmen' },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
               className={`px-4 py-2 rounded-t-lg text-sm font-bold transition whitespace-nowrap ${activeTab === tab.key ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>
@@ -356,6 +369,30 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-bold mb-2">Bereit für mehr?</h3>
                 <p className="text-gray-300 mb-4">Starter ab CHF 79 – vollständige Compliance für Ihre Website.</p>
                 <Link href="/checkout" className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-lg hover:bg-gray-100">Jetzt starten →</Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Massnahmen */}
+        {activeTab === 'massnahmen' && (
+          <div>
+            {latestScan ? (
+              <ActionPlan
+                scanResult={latestScan.scan ?? {
+                  compliance: { score: 0, jurisdiction: 'nDSG', ampel: '🔴', hasPrivacyPolicy: false, trackersFound: [], hasCookieBanner: false },
+                  optimization: { score: 0, loadTime: 0, trackerCount: 0 },
+                  trust: { score: 0, hasSSL: false, hasImpressum: false },
+                  recommendations: [],
+                }}
+                url={latestScan.url}
+              />
+            ) : (
+              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-8 rounded-lg text-center">
+                <p className="text-gray-400 mb-4">Noch kein Scan vorhanden – scannen Sie zuerst Ihre Website.</p>
+                <Link href="/scanner" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">
+                  🔍 Website scannen →
+                </Link>
               </div>
             )}
           </div>

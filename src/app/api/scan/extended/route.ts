@@ -73,13 +73,45 @@ export async function POST(request: NextRequest) {
     try {
       const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
       const domain = trimmedUrl.replace('https://', '').replace('http://', '').split('/')[0];
+
+      // User-ID aus Bearer-Token extrahieren
+      let userId: string | null = null;
+      let rescanEnabled = false;
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.slice(7);
+        // Anon-Key-Client für JWT-Verifikation verwenden (zuverlässiger als Admin-Client)
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseVerify = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        const { data: { user }, error: authError } = await supabaseVerify.auth.getUser(token);
+        if (!authError && user?.id) {
+          userId = user.id;
+          // Rescan aktivieren wenn User aktive Subscription hat
+          const { data: sub } = await supabaseAdmin
+            .from('subscriptions')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+          rescanEnabled = !!sub;
+        }
+      }
+
+      const trackersFound = scanResult.compliance.trackersFound ?? [];
       const { data, error } = await supabaseAdmin.from('scans').insert([{
-        url:          trimmedUrl,
-        domain:       domain,
-        jurisdiction: scanResult.compliance.jurisdiction ?? 'nDSG',
-        ampel:        scanResult.compliance.ampel       ?? 'gelb',
-        confidence:   0.8,
-        reasons:      [],
+        url:               trimmedUrl,
+        domain:            domain,
+        jurisdiction:      scanResult.compliance.jurisdiction ?? 'nDSG',
+        ampel:             scanResult.compliance.ampel        ?? 'gelb',
+        confidence:        0.8,
+        reasons:           [],
+        user_id:           userId,
+        previous_services: trackersFound,
+        rescan_enabled:    rescanEnabled,
       }]).select();
 
       if (error) {

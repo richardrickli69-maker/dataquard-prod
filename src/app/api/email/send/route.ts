@@ -1,11 +1,11 @@
 // src/app/api/email/send/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { sendPolicyReadyEmail, sendWelcomeEmail, sendReminderEmail } from '@/lib/emailService';
+import { sendPolicyReadyEmail, sendWelcomeEmail, sendReminderEmail, sendRescanChangeEmail } from '@/lib/emailService';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { type, email, domain, policyContent, jobId, name } = body;
+    const { type, email, domain, policyContent, jobId, name, addedTrackers, removedTrackers } = body;
 
     if (!type || !email) {
       return NextResponse.json(
@@ -33,6 +33,15 @@ export async function POST(request: NextRequest) {
 
       case 'reminder':
         result = await sendReminderEmail(email);
+        break;
+
+      case 'rescan-change':
+        result = await sendRescanChangeEmail({
+          email,
+          domain: domain ?? '',
+          addedTrackers: addedTrackers ?? [],
+          removedTrackers: removedTrackers ?? [],
+        });
         break;
 
       default:
