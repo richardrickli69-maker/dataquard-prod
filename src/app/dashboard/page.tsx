@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -47,6 +48,7 @@ interface Subscription {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [policies, setPolicies] = useState<Policy[]>([]);
@@ -61,8 +63,10 @@ export default function DashboardPage() {
       if (session?.user) {
         setUser(session.user);
         await loadData(session.user.id);
+        setLoading(false);
+      } else {
+        router.push('/auth');
       }
-      setLoading(false);
     };
     checkAuth();
   }, []);
@@ -97,8 +101,8 @@ export default function DashboardPage() {
   }[status] || 'text-gray-400');
 
   const getPlanLabel = (plan: string) => ({
-    starter: '🟢 Starter – CHF 79/Jahr',
-    professional: '🔵 Professional – CHF 199/Jahr',
+    starter: '🟢 Starter – CHF 79',
+    professional: '🔵 Professional – CHF 149',
     enterprise: '🟣 Enterprise',
     impressum: '📄 Impressum Only – CHF 19',
   }[plan] || plan);
@@ -350,7 +354,7 @@ export default function DashboardPage() {
             {!subscription && (
               <div className="bg-gradient-to-r from-indigo-800 to-purple-800 border border-indigo-500 p-6 rounded-lg text-center">
                 <h3 className="text-xl font-bold mb-2">Bereit für mehr?</h3>
-                <p className="text-gray-300 mb-4">Starter ab CHF 79/Jahr – vollständige Compliance für Ihre Website.</p>
+                <p className="text-gray-300 mb-4">Starter ab CHF 79 – vollständige Compliance für Ihre Website.</p>
                 <Link href="/checkout" className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-lg hover:bg-gray-100">Jetzt starten →</Link>
               </div>
             )}

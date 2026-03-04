@@ -12,8 +12,8 @@ Dataquard-Produkte:
 
 Preispläne:
 - Free: Kostenloser Scanner
-- Starter: CHF 79/Jahr (1 Domain, Auto-Updates)
-- Professional: CHF 199/Jahr (5 Domains, Re-Scans, Priority Support)
+- Starter: CHF 79 Einmalkauf (1 Domain)
+- Professional: CHF 149 Einmalkauf (5 Domains, Priority Support)
 - Impressum Only: CHF 19 (einmalig)
 
 Rechtliche Grundlagen:

@@ -558,8 +558,8 @@ function ImpressumGeneratorInner() {
                   <div>
                     <h3 className="text-white font-bold text-lg mb-2">Noch mehr Schutz mit Dataquard Starter</h3>
                     <p className="text-gray-300 text-sm mb-4">
-                      Für CHF 79/Jahr erhalten Sie: Impressum + Datenschutzerklärung + Cookie-Analyse + 
-                      Performance-Check + automatische Updates bei Gesetzesänderungen.
+                      Für CHF 79 (Einmalkauf) erhalten Sie: Impressum + Datenschutzerklärung + Cookie-Analyse +
+                      Performance-Check.
                     </p>
                     <div className="flex gap-3">
                       <a
@@ -572,7 +572,7 @@ function ImpressumGeneratorInner() {
                         href="/checkout?product=starter"
                         className="bg-indigo-600 text-white font-bold px-5 py-2 rounded-lg text-sm hover:bg-indigo-500 transition-all"
                       >
-                        Starter – CHF 79/Jahr ⭐
+                        Starter – CHF 79 ⭐
                       </a>
                     </div>
                   </div>

@@ -523,7 +523,7 @@ function DataschutzGeneratorInner() {
                       href="/checkout?product=starter"
                       className="bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-lg transition-all text-center flex items-center justify-center"
                     >
-                      🔓 Freischalten – CHF 79/Jahr
+                      🔓 Freischalten – CHF 79
                     </a>
                   </>
                 )}
@@ -536,7 +536,7 @@ function DataschutzGeneratorInner() {
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🔒</div>
                   <div>
-                    <h3 className="text-white font-bold text-lg mb-2">Dataquard Starter – CHF 79/Jahr</h3>
+                    <h3 className="text-white font-bold text-lg mb-2">Dataquard Starter – CHF 79</h3>
                     <p className="text-gray-300 text-sm mb-4">
                       Datenschutzerklärung + Impressum + Cookie-Analyse + Performance-Check + automatische Updates
                     </p>
@@ -545,7 +545,7 @@ function DataschutzGeneratorInner() {
                         href="/checkout?product=starter"
                         className="bg-green-600 text-white font-bold px-5 py-2 rounded-lg text-sm hover:bg-green-500 transition-all"
                       >
-                        ⭐ Starter – CHF 79/Jahr
+                        ⭐ Starter – CHF 79
                       </a>
                       <a
                         href="/checkout?product=impressum"
