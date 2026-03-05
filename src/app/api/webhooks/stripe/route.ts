@@ -22,6 +22,7 @@ const PLAN_MAP: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
+  console.log('[Webhook] Request received');
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
 
