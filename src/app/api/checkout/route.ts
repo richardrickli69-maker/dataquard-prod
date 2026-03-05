@@ -19,13 +19,13 @@ const PRODUCT_NAMES = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { product } = await req.json();
+    const { product, userId, userEmail } = await req.json();
 
     if (!product || !PRICES[product as keyof typeof PRICES]) {
       return NextResponse.json({ error: 'Ungültiges Produkt' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -43,6 +43,11 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
+      ...(userEmail ? { customer_email: userEmail } : {}),
+      metadata: {
+        product,
+        ...(userId ? { user_id: userId } : {}),
+      },
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&product=${product}`,
       cancel_url: `${baseUrl}/checkout?product=${product}`,
       locale: 'de',
@@ -50,9 +55,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    console.error('Stripe error:', err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Stripe error:', message);
     return NextResponse.json(
-      { error: 'Zahlung konnte nicht initiiert werden' },
+      { error: message },
       { status: 500 }
     );
   }

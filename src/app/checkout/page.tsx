@@ -50,10 +50,15 @@ export default function CheckoutPage() {
     setError('');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: selectedPlan }),
+        body: JSON.stringify({
+          product: selectedPlan,
+          userId: session?.user?.id ?? null,
+          userEmail: session?.user?.email ?? null,
+        }),
       });
 
       const result = await response.json();
