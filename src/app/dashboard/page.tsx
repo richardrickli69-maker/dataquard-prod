@@ -57,7 +57,11 @@ export default function DashboardPage() {
   const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [latestScan, setLatestScan] = useState<{ url: string; scan: any } | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen'>('overview');
+  const [badges, setBadges] = useState<{ id: string; website_url: string; issued_at: string; expires_at: string; is_active: boolean }[]>([]);
+  const [badgeUrl, setBadgeUrl] = useState('');
+  const [badgeLoading, setBadgeLoading] = useState(false);
+  const [badgeCopied, setBadgeCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen' | 'badge'>('overview');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -100,6 +104,49 @@ export default function DashboardPage() {
       .limit(1)
       .maybeSingle();
     if (scanData) setLatestScan({ url: scanData.url, scan: null });
+
+    // Verified Badges laden
+    const { data: badgeData } = await supabase
+      .from('verified_badges')
+      .select('id, website_url, issued_at, expires_at, is_active')
+      .eq('user_id', userId)
+      .order('issued_at', { ascending: false });
+    if (badgeData) setBadges(badgeData);
+  };
+
+  const generateBadge = async () => {
+    if (!badgeUrl.trim()) return;
+    setBadgeLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/badges/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ website_url: badgeUrl.trim() }),
+      });
+      const json = await res.json();
+      if (json.badge_id) {
+        const { data: badgeData } = await supabase
+          .from('verified_badges')
+          .select('id, website_url, issued_at, expires_at, is_active')
+          .eq('user_id', user?.id)
+          .order('issued_at', { ascending: false });
+        if (badgeData) setBadges(badgeData);
+        setBadgeUrl('');
+      }
+    } finally {
+      setBadgeLoading(false);
+    }
+  };
+
+  const copyEmbedCode = (badgeId: string) => {
+    const code = `<a href="https://dataquard.ch/verify/${badgeId}" target="_blank" rel="noopener">\n  <img src="https://dataquard.ch/api/badges/${badgeId}/image" alt="Dataquard Verified" width="200" height="120" />\n</a>`;
+    navigator.clipboard.writeText(code);
+    setBadgeCopied(true);
+    setTimeout(() => setBadgeCopied(false), 2000);
   };
 
   const getEventLabel = (type: string) => ({
@@ -178,6 +225,7 @@ export default function DashboardPage() {
             { key: 'jobs', label: '⚙️ Batch Jobs' },
             { key: 'billing', label: '💳 Billing' },
             { key: 'massnahmen', label: '🎯 Massnahmen' },
+            { key: 'badge', label: '🛡️ Verified Badge' },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
               className={`px-4 py-2 rounded-t-lg text-sm font-bold transition whitespace-nowrap ${activeTab === tab.key ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>
@@ -393,6 +441,127 @@ export default function DashboardPage() {
                 <Link href="/scanner" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">
                   🔍 Website scannen →
                 </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Verified Badge */}
+        {activeTab === 'badge' && (
+          <div className="space-y-6">
+
+            {/* Erklärung */}
+            <div className="bg-gradient-to-r from-green-900 to-emerald-900 bg-opacity-40 border border-green-700 p-6 rounded-lg">
+              <h2 className="text-xl font-bold text-green-300 mb-2">🛡️ Dataquard Verified Badge</h2>
+              <p className="text-gray-300 text-sm">
+                Zeigen Sie Ihren Besuchern, dass Ihre Website auf DSGVO/nDSG-Compliance geprüft wurde.
+                Betten Sie das Badge auf Ihrer Website ein – es verlinkt auf eine öffentliche Verifikationsseite.
+              </p>
+            </div>
+
+            {/* Neuen Badge erstellen */}
+            {subscription && subscription.plan !== 'impressum' ? (
+              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
+                <h3 className="text-lg font-bold mb-4">Badge generieren</h3>
+                <div className="flex gap-3">
+                  <input
+                    type="url"
+                    value={badgeUrl}
+                    onChange={(e) => setBadgeUrl(e.target.value)}
+                    placeholder="https://ihrewebsite.ch"
+                    className="flex-1 px-4 py-2 bg-indigo-800 bg-opacity-50 border border-indigo-600 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-400"
+                  />
+                  <button
+                    onClick={generateBadge}
+                    disabled={badgeLoading || !badgeUrl.trim()}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 text-sm whitespace-nowrap"
+                  >
+                    {badgeLoading ? '⏳ Erstelle...' : '🛡️ Badge erstellen'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg text-center">
+                <p className="text-gray-400 mb-4">Verified Badge erfordert einen Starter- oder Professional-Plan.</p>
+                <Link href="/checkout" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">Jetzt upgraden →</Link>
+              </div>
+            )}
+
+            {/* Badge-Liste */}
+            {badges.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold">Deine Badges</h3>
+                {badges.map((badge) => {
+                  const isExpired = badge.expires_at && new Date(badge.expires_at) < new Date();
+                  const isValid = badge.is_active && !isExpired;
+                  return (
+                    <div key={badge.id} className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6">
+                      <div className="flex flex-col md:flex-row gap-6 items-start">
+
+                        {/* Badge Preview */}
+                        <div className="flex-shrink-0">
+                          <img
+                            src={`/api/badges/${badge.id}/image`}
+                            alt="Verified Badge"
+                            width={200}
+                            height={120}
+                            className="rounded-lg shadow-lg border border-indigo-700"
+                          />
+                        </div>
+
+                        {/* Badge Info */}
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${isValid ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                              {isValid ? '✓ Aktiv' : '✗ Inaktiv/Abgelaufen'}
+                            </span>
+                            <a href={badge.website_url} target="_blank" rel="noopener noreferrer"
+                              className="text-indigo-300 hover:text-indigo-200 font-semibold text-sm">
+                              {badge.website_url}
+                            </a>
+                          </div>
+                          <div className="text-xs text-gray-400 space-y-1">
+                            <p>Ausgestellt: {new Date(badge.issued_at).toLocaleDateString('de-CH')}</p>
+                            <p>Gültig bis: {badge.expires_at ? new Date(badge.expires_at).toLocaleDateString('de-CH') : '–'}</p>
+                            <p className="font-mono text-gray-500">ID: {badge.id}</p>
+                          </div>
+
+                          {/* Verifikationslink */}
+                          <a
+                            href={`/verify/${badge.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-xs text-green-400 hover:text-green-300"
+                          >
+                            🔗 Verifikationsseite öffnen →
+                          </a>
+
+                          {/* Embed Code */}
+                          <div>
+                            <p className="text-xs text-gray-400 mb-2">Embed-Code für Ihre Website:</p>
+                            <div className="bg-black bg-opacity-40 rounded-lg p-3 font-mono text-xs text-green-300 break-all">
+                              {`<a href="https://dataquard.ch/verify/${badge.id}" target="_blank" rel="noopener">`}<br />
+                              {`  <img src="https://dataquard.ch/api/badges/${badge.id}/image" alt="Dataquard Verified" width="200" height="120" />`}<br />
+                              {`</a>`}
+                            </div>
+                            <button
+                              onClick={() => copyEmbedCode(badge.id)}
+                              className="mt-2 px-4 py-1.5 bg-indigo-700 text-white rounded text-xs hover:bg-indigo-600 transition"
+                            >
+                              {badgeCopied ? '✅ Kopiert!' : '📋 Code kopieren'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {badges.length === 0 && subscription && subscription.plan !== 'impressum' && (
+              <div className="text-center text-gray-400 py-8">
+                Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf "Badge erstellen".
               </div>
             )}
           </div>
