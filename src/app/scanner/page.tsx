@@ -120,6 +120,12 @@ export default function ScannerPage() {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, chatOpen]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get('url');
+    if (urlParam) setUrl(urlParam);
+  }, []);
+
   // ── Scan ──────────────────────────────────────────────────────────────────
 
   const handleScan = async () => {

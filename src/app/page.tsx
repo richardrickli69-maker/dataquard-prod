@@ -4,9 +4,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [heroUrl, setHeroUrl] = useState('');
+  const router = useRouter();
+
+  const handleHeroScan = () => {
+    if (!heroUrl.trim()) return;
+    let url = heroUrl.trim();
+    if (!url.startsWith('http')) url = 'https://' + url;
+    router.push(`/scanner?url=${encodeURIComponent(url)}`);
+  };
 
   const faqs = [
     { question: 'Wie lange dauert die Policy-Generierung?', answer: 'Die Website-Analyse dauert wenige Sekunden. Die Policy ist typischerweise innerhalb von 30-60 Sekunden verfügbar.' },
@@ -40,12 +50,31 @@ export default function HomePage() {
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
           Der einzige Schweizer All-in-One-Check: Compliance, Performance, Security und Impressum – automatisch geprüft, sofort behoben. Nur von Dataquard.
         </p>
-        <div className="flex flex-wrap gap-4 justify-center mb-8">
-          <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
-          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79</Link>
-          <Link href="/impressum-generator" className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">📄 Impressum – CHF 19</Link>
+        {/* Hero Scanner-Eingabe */}
+        <div className="mt-2 mb-4 max-w-xl mx-auto">
+          <div className="flex gap-3 bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-2 shadow-xl">
+            <input
+              type="text"
+              value={heroUrl}
+              onChange={e => setHeroUrl(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleHeroScan()}
+              placeholder="https://ihre-website.ch"
+              className="flex-1 bg-transparent px-4 py-3 text-white placeholder-white/50 focus:outline-none text-sm"
+            />
+            <button
+              onClick={handleHeroScan}
+              className="bg-red-500 hover:bg-red-400 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
+            >
+              Kostenlos scannen →
+            </button>
+          </div>
+          <p className="text-center text-white/50 text-xs mt-3">
+            🇨🇭 Schweizer Server · 🔒 SSL · Keine Anmeldung nötig
+          </p>
         </div>
-        <p className="text-sm text-gray-400 mb-12">Kostenlos · Keine Anmeldung · Ergebnis in 10 Sekunden</p>
+        <p className="text-sm text-gray-400 mb-8">
+          <Link href="#preise" className="text-indigo-400 hover:text-indigo-300 underline">Preise ansehen ↓</Link>
+        </p>
         <div className="flex justify-center gap-6 text-sm">
           <span className="text-gray-300">🇨🇭 Schweizer Produkt</span>
           <span className="text-gray-300">🔒 Daten in Zürich</span>
@@ -108,22 +137,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* In 3 Schritten */}
-      <section className="max-w-6xl mx-auto px-4 py-16 border-t border-indigo-700">
-        <h2 className="text-3xl font-bold mb-12 text-center">In 3 Schritten rechtssicher</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { num: '01', title: 'Website scannen', desc: 'URL eingeben – in 10 Sekunden erhalten Sie einen vollständigen Bericht mit Compliance-, Performance- und Trust-Score.', link: '/scanner', cta: 'Jetzt scannen →' },
-            { num: '02', title: 'Dokumente generieren', desc: 'Datenschutzerklärung und Impressum werden automatisch auf Basis Ihres Scans ausgefüllt – individuell, rechtssicher, sofort.', link: '/datenschutz-generator', cta: 'Datenschutz erstellen →' },
-            { num: '03', title: 'Einbinden & fertig', desc: 'HTML-Snippet kopieren, auf Ihrer Website einfügen. Dataquard informiert Sie bei Gesetzesänderungen automatisch.', link: '/checkout', cta: 'Starter kaufen →' },
-          ].map((s) => (
-            <div key={s.num} className="bg-indigo-900 bg-opacity-30 p-8 rounded-lg border border-indigo-700">
-              <div className="text-4xl font-bold text-indigo-700 mb-4">{s.num}</div>
-              <h3 className="text-xl font-bold mb-3">{s.title}</h3>
-              <p className="text-gray-300 mb-4">{s.desc}</p>
-              <Link href={s.link} className="text-indigo-400 hover:text-indigo-300">{s.cta}</Link>
-            </div>
-          ))}
+      {/* So funktioniert's */}
+      <section className="py-16 border-t border-indigo-700">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-white mb-12">In 3 Schritten zu Ihrer Datenschutzerklärung</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { num: '1', icon: '🔍', title: 'Website scannen', desc: 'URL eingeben – kostenlos, ohne Anmeldung. Wir erkennen automatisch alle Drittanbieter.' },
+              { num: '2', icon: '📊', title: 'Report erhalten', desc: 'Compliance-Score, Jurisdiktion (nDSG/DSGVO) und konkrete Handlungsempfehlungen.' },
+              { num: '3', icon: '📄', title: 'Dokument herunterladen', desc: 'Datenschutzerklärung + Impressum generiert, als PDF herunterladbar. Fertig in Minuten.' },
+            ].map((step) => (
+              <div key={step.num} className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg font-mono">
+                  {step.num}
+                </div>
+                <div className="text-3xl">{step.icon}</div>
+                <h3 className="font-bold text-white">{step.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -231,10 +264,8 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto px-4 py-16 text-center border-t border-indigo-700">
         <h2 className="text-3xl font-bold mb-6">Ist Ihre Website wirklich rechtssicher?</h2>
         <p className="text-xl text-gray-300 mb-8">Finden Sie es in 10 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Kostenlos scannen →</Link>
-          <Link href="/checkout" className="px-8 py-4 border-2 border-indigo-400 text-indigo-300 font-bold rounded-lg hover:border-indigo-200 transition text-lg">Starter – CHF 79</Link>
-          <Link href="/impressum-generator" className="px-8 py-4 border-2 border-red-500 text-red-300 font-bold rounded-lg hover:border-red-300 transition text-lg">Impressum – CHF 19</Link>
+        <div className="flex justify-center">
+          <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Jetzt kostenlos scannen →</Link>
         </div>
       </section>
 
