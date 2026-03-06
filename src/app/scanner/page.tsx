@@ -63,21 +63,21 @@ const scoreLabel = (score: number) => {
 // ─── Score Circle ─────────────────────────────────────────────────────────────
 
 function ScoreCircle({ score, label, icon }: { score: number; label: string; icon: string }) {
-  const r = 28;
+  const r = 20;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-        <svg className="w-16 h-16 sm:w-20 sm:h-20 -rotate-90" viewBox="0 0 72 72">
-          <circle cx="36" cy="36" r={r} fill="none" stroke="#1e293b" strokeWidth="6" />
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative w-12 h-12 sm:w-14 sm:h-14">
+        <svg className="w-12 h-12 sm:w-14 sm:h-14 -rotate-90" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r={r} fill="none" stroke="#1e293b" strokeWidth="5" />
           <circle
-            cx="36" cy="36" r={r}
+            cx="26" cy="26" r={r}
             fill="none"
             stroke={color}
-            strokeWidth="6"
+            strokeWidth="5"
             strokeDasharray={circ}
             strokeDashoffset={offset}
             strokeLinecap="round"
@@ -85,12 +85,12 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-base sm:text-lg">{icon}</span>
-          <span className="text-xs font-bold text-white">{score}%</span>
+          <span className="text-sm leading-none">{icon}</span>
+          <span className="text-[10px] font-bold text-white leading-none mt-0.5">{score}%</span>
         </div>
       </div>
-      <span className="text-xs text-slate-400 font-medium">{label}</span>
-      <span className="text-xs font-semibold" style={{ color }}>{scoreLabel(score)}</span>
+      <span className="text-[11px] text-slate-400 font-medium leading-tight text-center">{label}</span>
+      <span className="text-[11px] font-semibold leading-tight" style={{ color }}>{scoreLabel(score)}</span>
     </div>
   );
 }
@@ -364,7 +364,7 @@ export default function ScannerPage() {
             {/* Score circles */}
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
               <h2 className="text-sm font-semibold text-slate-300 mb-5">Analyse-Ergebnis</h2>
-              <div className="flex justify-around flex-wrap gap-3 sm:gap-6">
+              <div className="flex justify-around flex-wrap gap-2 sm:gap-4">
                 <ScoreCircle score={result.scores.compliance} label="Compliance" icon="🔒" />
                 <ScoreCircle score={result.scores.optimization} label="Optimierung" icon="⚡" />
                 <ScoreCircle score={result.scores.trust} label="Vertrauen" icon="✅" />
