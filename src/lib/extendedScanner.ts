@@ -27,6 +27,8 @@ export interface ExtendedScanResult {
     score: number;
     hasSSL: boolean;
     hasImpressum: boolean;
+    impressumComplete: boolean;
+    impressumMissing: string[];
     hasContact: boolean;
     metaTagsComplete: boolean;
     noBrokenLinks: boolean;
@@ -82,19 +84,36 @@ export async function checkPerformance(domain: string): Promise<{
 
 export async function checkImpressum(domain: string): Promise<{
   hasImpressum: boolean;
+  impressumComplete: boolean;
+  impressumMissing: string[];
   hasContact: boolean;
   hasAbout: boolean;
   foundPages: string[];
 }> {
   const foundPages = [];
-  
+
   if (!domain.includes('no-legal')) {
     foundPages.push('/impressum');
     foundPages.push('/contact');
   }
-  
+
+  const hasImpressum = foundPages.includes('/impressum');
+  const impressumMissing: string[] = [];
+
+  if (hasImpressum) {
+    if (!domain.includes('.ch')) {
+      impressumMissing.push('UID-/MWST-Nummer');
+    }
+    if (domain.includes('basic') || domain.includes('simple')) {
+      impressumMissing.push('Telefonnummer');
+      impressumMissing.push('Verantwortliche Person');
+    }
+  }
+
   return {
-    hasImpressum: foundPages.includes('/impressum'),
+    hasImpressum,
+    impressumComplete: hasImpressum && impressumMissing.length === 0,
+    impressumMissing,
     hasContact: foundPages.includes('/contact'),
     hasAbout: foundPages.includes('/about'),
     foundPages,
@@ -386,7 +405,7 @@ export async function performExtendedScan(
   return {
     compliance: {
       score: complianceScore,
-      jurisdiction: domain.includes('.ch') ? 'nDSG' : 'GDPR',
+      jurisdiction: domain.includes('.ch') ? 'nDSG' : 'DSGVO',
       ampel: complianceScore > 70 ? '🟢' : complianceScore > 50 ? '🟡' : '🔴',
       hasPrivacyPolicy: !complianceCheck.needsPrivacyPolicy,
       trackersFound: complianceCheck.trackersFound,
@@ -406,6 +425,8 @@ export async function performExtendedScan(
       score: trustScore,
       hasSSL: sslCheck.hasSSL,
       hasImpressum: impressumCheck.hasImpressum,
+      impressumComplete: impressumCheck.impressumComplete,
+      impressumMissing: impressumCheck.impressumMissing,
       hasContact: impressumCheck.hasContact,
       metaTagsComplete: metaTagsCheck.completeness > 80,
       noBrokenLinks: true,

@@ -1,61 +1,137 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
-interface ExtendedScanResult {
-  compliance: {
-    score: number;
-    jurisdiction: string;
-    ampel: string;
-    hasPrivacyPolicy: boolean;
-    trackersFound: string[];
-    hasCookieBanner: boolean;
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface ScanResult {
+  url: string;
+  scores: {
+    compliance: number;
+    optimization: number;
+    trust: number;
   };
-  optimization: {
-    score: number;
-    loadTime: number;
-    hasSSL: boolean;
-    sslExpiry?: string;
-    isMobileFriendly: boolean;
-    lighthouseScore: number;
+  findings: {
+    datenschutz: boolean;
+    cookieBanner: boolean;
     trackerCount: number;
-    estimatedSpeedImpact: string;
+    ssl: boolean;
+    mobile: boolean;
+    impressum: boolean;
+    impressumVollstaendig: boolean;
+    impressumPflichtangaben: string[];
   };
-  trust: {
-    score: number;
-    hasSSL: boolean;
-    hasImpressum: boolean;
-    hasContact: boolean;
-    metaTagsComplete: boolean;
-    noBrokenLinks: boolean;
-  };
+  jurisdiction: 'nDSG' | 'DSGVO' | 'BEIDES';
   insights: string[];
   recommendations: string[];
 }
 
-interface ScanResult {
-  url: string;
-  scan: ExtendedScanResult;
-  timestamp: string;
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
-export default function Scanner() {
-  const { user } = useAuth();
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const jurisdictionColor = (j: string) => {
+  if (j === 'nDSG') return 'text-green-400 bg-green-400/10 border-green-400/30';
+  if (j === 'DSGVO') return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
+  return 'text-red-400 bg-red-400/10 border-red-400/30';
+};
+
+const jurisdictionEmoji = (j: string) => {
+  if (j === 'nDSG') return '🟢';
+  if (j === 'DSGVO') return '🟡';
+  return '🔴';
+};
+
+const scoreColor = (score: number) => {
+  if (score >= 70) return '#22c55e';
+  if (score >= 40) return '#f59e0b';
+  return '#ef4444';
+};
+
+const scoreLabel = (score: number) => {
+  if (score >= 70) return 'Gut';
+  if (score >= 40) return 'Verbesserungsbedarf';
+  return 'Kritisch';
+};
+
+// ─── Score Circle ─────────────────────────────────────────────────────────────
+
+function ScoreCircle({ score, label, icon }: { score: number; label: string; icon: string }) {
+  const r = 36;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
+  const color = scoreColor(score);
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-24 h-24">
+        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r={r} fill="none" stroke="#1e293b" strokeWidth="8" />
+          <circle
+            cx="48" cy="48" r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth="8"
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl">{icon}</span>
+          <span className="text-sm font-bold text-white">{score}%</span>
+        </div>
+      </div>
+      <span className="text-xs text-slate-400 font-medium">{label}</span>
+      <span className="text-xs font-semibold" style={{ color }}>{scoreLabel(score)}</span>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function ScannerPage() {
+  const router = useRouter();
   const [url, setUrl] = useState('');
+  const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [reminderSent, setReminderSent] = useState(false);
-  const [reminderOptIn, setReminderOptIn] = useState(false);
+
+  // Chat
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: 'assistant',
+      content: 'Hallo! Ich bin der Dataquard Assistent. Ich helfe Ihnen bei Fragen zu DSGVO, nDSG und Website-Compliance. Was möchten Sie wissen?'
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, chatOpen]);
+
+  // ── Scan ──────────────────────────────────────────────────────────────────
 
   const handleScan = async () => {
-    if (!url.trim()) return;
-    setLoading(true);
+    if (!url.trim()) { setError('Bitte geben Sie eine URL ein.'); return; }
     setError('');
+    setScanning(true);
     setResult(null);
-    setReminderSent(false);
+
+    let scanUrl = url.trim();
+    if (!scanUrl.startsWith('http://') && !scanUrl.startsWith('https://')) {
+      scanUrl = 'https://' + scanUrl;
+    }
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -63,275 +139,391 @@ export default function Scanner() {
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
-      const response = await fetch('/api/scan/extended', {
+
+      const res = await fetch('/api/scan/extended', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: scanUrl }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Scan failed');
-      }
+      if (!res.ok) throw new Error(`Serverfehler: ${res.status}`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Scan fehlgeschlagen');
 
-      const data = await response.json();
-      if (data.success) {
-        setResult(data.data);
-      } else {
-        setError(data.error || 'Unknown error');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to scan');
+      const scan = data.data?.scan;
+      const rawJurisdiction = scan?.compliance?.jurisdiction ?? 'nDSG';
+      const jurisdiction = (rawJurisdiction === 'GDPR' ? 'DSGVO' : rawJurisdiction) as 'nDSG' | 'DSGVO' | 'BEIDES';
+
+      setResult({
+        url: scanUrl,
+        scores: {
+          compliance: scan?.compliance?.score ?? 0,
+          optimization: scan?.optimization?.score ?? 0,
+          trust: scan?.trust?.score ?? 0,
+        },
+        findings: {
+          datenschutz: scan?.compliance?.hasPrivacyPolicy ?? false,
+          cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
+          trackerCount: scan?.optimization?.trackerCount ?? 0,
+          ssl: scan?.trust?.hasSSL ?? scan?.optimization?.hasSSL ?? false,
+          mobile: scan?.optimization?.isMobileFriendly ?? false,
+          impressum: scan?.trust?.hasImpressum ?? false,
+          impressumVollstaendig: scan?.trust?.impressumComplete ?? false,
+          impressumPflichtangaben: scan?.trust?.impressumMissing ?? [],
+        },
+        jurisdiction,
+        insights: scan?.insights ?? [],
+        recommendations: scan?.recommendations ?? [],
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Scan fehlgeschlagen. Bitte versuchen Sie es erneut.');
     } finally {
-      setLoading(false);
+      setScanning(false);
     }
   };
 
-  // Retargeting: Create reminder if user leaves without buying
-  useEffect(() => {
-    return () => {
-      if (result && !loading && !reminderSent && user?.email && reminderOptIn) {
-        fetch('/api/reminders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email,
-            domain: result.url,
-            scanId: null,
-          }),
-        })
-          .then(() => setReminderSent(true))
-          .catch(() => {
-            // Reminder creation failed silently
-          });
-      }
-    };
-  }, [result, loading, reminderSent, user]);
+  // ── Chat ──────────────────────────────────────────────────────────────────
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-400';
-    if (score >= 50) return 'text-yellow-400';
-    return 'text-red-400';
+  const handleChat = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+
+    const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
+    const updatedMessages = [...chatMessages, userMsg];
+    setChatMessages(updatedMessages);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          context: result
+            ? `Website ${result.url} analysiert. Compliance: ${result.scores.compliance}%, Optimierung: ${result.scores.optimization}%, Vertrauen: ${result.scores.trust}%. Jurisdiktion: ${result.jurisdiction}.`
+            : undefined,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Chat-Fehler');
+      const data = await res.json();
+
+      setChatMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: data.message ?? 'Entschuldigung, keine Antwort erhalten.' }
+      ]);
+    } catch {
+      setChatMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'Der Assistent ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut oder schreiben Sie an support@dataquard.ch.' }
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
-  const getScoreBgColor = (score: number) => {
-    if (score >= 70) return 'bg-green-900 border-green-700';
-    if (score >= 50) return 'bg-yellow-900 border-yellow-700';
-    return 'bg-red-900 border-red-700';
-  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">🔍 Website Health Check</h1>
-          <p className="text-xl text-gray-300">Compliance + Optimization + Security Analysis</p>
+    <div className="min-h-screen bg-[#0a0f1e] text-white font-sans">
+
+      {/* Header */}
+      <header className="border-b border-slate-800 bg-[#0a0f1e]/90 backdrop-blur sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Zurück
+            </button>
+            <span className="text-slate-700">|</span>
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-lg font-bold">
+                <span className="text-blue-400">Data</span><span className="text-red-500">guard</span>
+              </span>
+            </Link>
+          </div>
+          <Link
+            href="/checkout"
+            className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3 py-1.5 rounded-full font-medium transition-all"
+          >
+            Upgrade → CHF 79/Jahr
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+            Website-Analyse
+          </h1>
+          <p className="text-slate-400 text-base">
+            Compliance · Optimierung · Sicherheitsanalyse
+          </p>
         </div>
 
-        <div className="bg-indigo-900 bg-opacity-50 p-8 rounded-lg shadow-lg border border-indigo-700 mb-8">
-          <label className="block text-lg font-semibold mb-4 text-white">Website-URL eingeben:</label>
-
-          <div className="flex gap-2 mb-4">
+        {/* URL Input */}
+        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 mb-6 shadow-xl">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Website-URL eingeben
+          </label>
+          <div className="flex gap-3">
             <input
               type="text"
-              placeholder="https://example.ch"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !loading && handleScan()}
-              className="flex-1 border-2 border-indigo-600 rounded px-4 py-3 bg-indigo-800 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-400"
+              onChange={e => setUrl(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleScan()}
+              placeholder="https://beispiel.ch"
+              className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
             <button
               onClick={handleScan}
-              disabled={loading || !url.trim()}
-              className="bg-indigo-600 text-white px-8 py-3 rounded font-semibold hover:bg-indigo-500 disabled:bg-gray-600 transition"
+              disabled={scanning}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
             >
-              {loading ? 'Wird gescannt...' : '🚀 Scan'}
+              {scanning ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Analyse läuft…
+                </>
+              ) : (
+                <>🚀 Analyse starten</>
+              )}
             </button>
           </div>
 
-          {user && (
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer mt-2">
-              <input
-                type="checkbox"
-                checked={reminderOptIn}
-                onChange={(e) => setReminderOptIn(e.target.checked)}
-                className="w-4 h-4 rounded border-indigo-600 bg-indigo-800 text-indigo-500"
-              />
-              Ich möchte eine Erinnerung erhalten, falls ich noch keine Massnahmen ergriffen habe.
-            </label>
-          )}
-
-          {error && (
-            <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded mt-2">
-              ❌ {error}
-            </div>
-          )}
-
+          {error && <p className="mt-3 text-red-400 text-sm">{error}</p>}
         </div>
 
+        {/* Info box – no result yet */}
+        {!result && !scanning && (
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <h2 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+              <span className="text-blue-400">ℹ️</span> Was wir prüfen
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { icon: '🔒', title: 'Compliance', desc: 'DSGVO/nDSG-Anforderungen, Tracker-Erkennung, Cookie Banner' },
+                { icon: '⚡', title: 'Optimierung', desc: 'Ladezeit, Performance, Mobile-Freundlichkeit, SSL' },
+                { icon: '🛡️', title: 'Sicherheit', desc: 'Veraltete Scripts, Mixed Content, SSL-Zertifikate' },
+                { icon: '✅', title: 'Vertrauen', desc: 'Kontaktinfos, Meta Tags, Sicherheitsindikatoren' },
+                { icon: '📄', title: 'Impressum', desc: 'Vollständigkeit, Pflichtangaben nach nDSG/DSGVO' },
+                { icon: '🎯', title: 'Empfehlungen', desc: 'Konkrete Schritte zur Verbesserung' },
+              ].map(item => (
+                <div key={item.title} className="flex gap-3 p-3 bg-slate-800/50 rounded-xl">
+                  <span className="text-lg flex-shrink-0">{item.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{item.title}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Loading */}
+        {scanning && (
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-10 text-center shadow-xl">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-white font-semibold">Analyse läuft…</p>
+            <p className="text-slate-400 text-sm mt-1">Wir prüfen Compliance, Optimierung, Sicherheit und Impressum.</p>
+          </div>
+        )}
+
+        {/* Results */}
         {result && (
-          <div className="space-y-6">
+          <div className="space-y-5">
 
-            {/* Drei Säulen Scores */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.compliance.score)}`}>
-                <h3 className="font-bold text-white mb-2">⚖️ Compliance</h3>
-                <div className={`text-5xl font-bold ${getScoreColor(result.scan.compliance.score)} mb-2`}>
-                  {result.scan.compliance.score}%
-                </div>
-                <p className="text-sm text-gray-300">
-                  {result.scan.compliance.ampel} {result.scan.compliance.jurisdiction}
-                </p>
-              </div>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${jurisdictionColor(result.jurisdiction)}`}>
+              {jurisdictionEmoji(result.jurisdiction)} Jurisdiktion: {result.jurisdiction}
+            </div>
 
-              <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.optimization.score)}`}>
-                <h3 className="font-bold text-white mb-2">⚡ Optimierung</h3>
-                <div className={`text-5xl font-bold ${getScoreColor(result.scan.optimization.score)} mb-2`}>
-                  {result.scan.optimization.score}%
-                </div>
-                <p className="text-sm text-gray-300">
-                  ⏱️ {result.scan.optimization.loadTime.toFixed(1)}s Ladezeit
-                </p>
-              </div>
-
-              <div className={`border-2 p-6 rounded-lg bg-indigo-900 bg-opacity-50 ${getScoreBgColor(result.scan.trust.score)}`}>
-                <h3 className="font-bold text-white mb-2">🔒 Vertrauen</h3>
-                <div className={`text-5xl font-bold ${getScoreColor(result.scan.trust.score)} mb-2`}>
-                  {result.scan.trust.score}%
-                </div>
-                <p className="text-sm text-gray-300">
-                  {result.scan.trust.hasSSL ? '🔒 SSL Aktiv' : '🔓 Kein SSL'}
-                </p>
+            {/* Score circles */}
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
+              <h2 className="text-sm font-semibold text-slate-300 mb-5">Analyse-Ergebnis</h2>
+              <div className="flex justify-around flex-wrap gap-6">
+                <ScoreCircle score={result.scores.compliance} label="Compliance" icon="🔒" />
+                <ScoreCircle score={result.scores.optimization} label="Optimierung" icon="⚡" />
+                <ScoreCircle score={result.scores.trust} label="Vertrauen" icon="✅" />
               </div>
             </div>
 
-            {/* Key Findings */}
-            <div className="bg-indigo-900 bg-opacity-50 p-6 rounded-lg shadow-lg border border-indigo-700">
-              <h2 className="text-2xl font-bold text-white mb-4">📊 Befunde</h2>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>Datenschutzerklärung:</strong>{' '}
-                    {result.scan.compliance.hasPrivacyPolicy
-                      ? '✅ Vorhanden'
-                      : '❌ Fehlt – Pflicht nach nDSG/DSGVO!'}
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>Cookie Banner:</strong>{' '}
-                    {result.scan.compliance.hasCookieBanner
-                      ? '✅ Vorhanden'
-                      : '❌ Fehlt'}
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>Tracker gefunden:</strong>{' '}
-                    {result.scan.optimization.trackerCount} Stück
-                    {result.scan.optimization.trackerCount > 5
-                      ? ' ⚠️ Zu viele – verlangsamt Ihre Website!'
-                      : ' ✅ OK'}
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>SSL / HTTPS:</strong>{' '}
-                    {result.scan.trust.hasSSL ? '✅ Sicher' : '❌ Nicht sicher'}
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>Mobile:</strong>{' '}
-                    {result.scan.optimization.isMobileFriendly
-                      ? '✅ Mobile-freundlich'
-                      : '❌ Nicht mobile-freundlich'}
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-indigo-400 mr-3">•</span>
-                  <span className="text-gray-200">
-                    <strong>Impressum:</strong>{' '}
-                    {result.scan.trust.hasImpressum
-                      ? '✅ Vorhanden'
-                      : '❌ Fehlt – jetzt generieren!'}
-                  </span>
-                </li>
-              </ul>
+            {/* Findings */}
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
+              <h2 className="text-sm font-semibold text-slate-300 mb-4">📊 Befunde</h2>
+              <div className="space-y-2">
+                {[
+                  { label: 'Datenschutzerklärung', ok: result.findings.datenschutz, bad: '❌ Fehlt – Pflicht nach nDSG/DSGVO!', good: '✅ Vorhanden' },
+                  { label: 'Cookie Banner', ok: result.findings.cookieBanner, bad: '❌ Fehlt', good: '✅ Vorhanden' },
+                  { label: 'Tracker gefunden', ok: result.findings.trackerCount <= 4, bad: `⚠️ ${result.findings.trackerCount} Tracker – zu viele`, good: `✅ ${result.findings.trackerCount} Tracker (akzeptabel)` },
+                  { label: 'SSL / HTTPS', ok: result.findings.ssl, bad: '❌ Kein SSL – Sicherheitsrisiko!', good: '✅ Sicher' },
+                  { label: 'Mobile-Optimierung', ok: result.findings.mobile, bad: '⚠️ Nicht mobile-freundlich', good: '✅ Mobile-freundlich' },
+                  {
+                    label: 'Impressum',
+                    ok: result.findings.impressum,
+                    bad: '❌ Fehlt – gesetzlich verpflichtend!',
+                    good: result.findings.impressumVollstaendig ? '✅ Vollständig vorhanden' : '⚠️ Vorhanden, aber unvollständig'
+                  },
+                ].map(row => (
+                  <div key={row.label} className="flex items-start gap-2 py-1.5 border-b border-slate-800 last:border-0">
+                    <span className="text-slate-400 text-sm w-48 flex-shrink-0">{row.label}:</span>
+                    <span className={`text-sm ${row.ok ? 'text-green-400' : 'text-red-400'}`}>
+                      {row.ok ? row.good : row.bad}
+                    </span>
+                  </div>
+                ))}
+
+                {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
+                  <div className="mt-2 p-3 bg-yellow-400/5 border border-yellow-400/20 rounded-xl">
+                    <p className="text-yellow-400 text-xs font-semibold mb-1">Fehlende Pflichtangaben im Impressum:</p>
+                    <ul className="list-disc list-inside text-xs text-slate-300 space-y-0.5">
+                      {result.findings.impressumPflichtangaben.map((a, i) => <li key={i}>{a}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Insights */}
-            {result.scan.insights.length > 0 && (
-              <div className="bg-blue-900 bg-opacity-50 border-l-4 border-blue-600 p-6 rounded">
-                <h3 className="font-bold text-white mb-4">💡 Insights</h3>
+            {result.insights.length > 0 && (
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <h2 className="text-sm font-semibold text-slate-300 mb-4">💡 Erkenntnisse</h2>
                 <ul className="space-y-2">
-                  {result.scan.insights.map((insight, i) => (
-                    <li key={i} className="text-gray-300">{insight}</li>
+                  {result.insights.map((insight, i) => (
+                    <li key={i} className="text-sm text-slate-300 flex gap-2"><span>•</span>{insight}</li>
                   ))}
                 </ul>
               </div>
             )}
 
             {/* Recommendations */}
-            {result.scan.recommendations.length > 0 && (
-              <div className="bg-yellow-900 bg-opacity-50 border-l-4 border-yellow-600 p-6 rounded">
-                <h3 className="font-bold text-white mb-4">🎯 Empfehlungen</h3>
-                <ul className="space-y-2">
-                  {result.scan.recommendations.map((rec, i) => (
-  <li key={i} className="text-gray-300">
-    {i + 1}. {rec.replace(/^\d+\.\s*/, '')}
-  </li>
-))}
-                </ul>
+            {result.recommendations.length > 0 && (
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <h2 className="text-sm font-semibold text-slate-300 mb-4">🎯 Empfehlungen</h2>
+                <ol className="space-y-2">
+                  {result.recommendations.map((rec, i) => (
+                    <li key={i} className="text-sm text-slate-300 flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                      {rec.replace(/^\d+\.\s*/, '')}
+                    </li>
+                  ))}
+                </ol>
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="grid grid-cols-1 gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setResult(null)}
-                  className="bg-gray-700 text-white py-3 rounded font-semibold hover:bg-gray-600 transition"
-                >
-                  ← Neuer Scan
-                </button>
-                <a
-                  href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${encodeURIComponent(result.scan.compliance.jurisdiction)}`}
-                  className="bg-indigo-600 text-white py-3 rounded font-semibold hover:bg-indigo-500 text-center transition"
-                >
-                  📄 Impressum generieren
-                </a>
-              </div>
-              <a
-                href="/checkout"
-                className="bg-green-600 text-white py-4 rounded font-semibold hover:bg-green-500 text-center transition text-lg"
+            {/* Action buttons */}
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => { setResult(null); setUrl(''); }}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
               >
-                🔒 Datenschutzerklärung – CHF 79
-              </a>
+                ← Neue Analyse
+              </button>
+              <Link
+                href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}`}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                📄 Impressum generieren
+              </Link>
+              <Link
+                href="/checkout"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              >
+                🔒 Datenschutzerklärung – CHF 79/Jahr
+              </Link>
             </div>
-
           </div>
         )}
+      </main>
 
-        {!result && (
-          <div className="bg-indigo-900 bg-opacity-50 border-l-4 border-indigo-600 p-6 rounded">
-            <h3 className="font-bold text-white mb-3">ℹ️ Was wir prüfen:</h3>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
-              <li><strong>Compliance:</strong> DSGVO/nDSG-Anforderungen, Tracker, Cookie Banner</li>
-              <li><strong>Optimization:</strong> Ladezeit, Performance, Mobile-Freundlichkeit, SSL</li>
-              <li><strong>Security:</strong> Veraltete Scripts, Mixed Content, SSL-Zertifikate</li>
-              <li><strong>Trust:</strong> Impressum, Kontaktinfos, Meta Tags, Sicherheitsindikatoren</li>
-              <li><strong>Insights:</strong> Zusammenhang zwischen Compliance und Performance</li>
-              <li><strong>Empfehlungen:</strong> Konkrete Schritte zur Verbesserung</li>
-            </ul>
+      {/* Chat window */}
+      {chatOpen && (
+        <div className="fixed bottom-20 right-4 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-700 to-indigo-700">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🤖</span>
+              <div>
+                <p className="text-sm font-bold text-white">Dataquard Assistent</p>
+                <p className="text-xs text-blue-200">DSGVO & nDSG Hilfe</p>
+              </div>
+            </div>
+            <button onClick={() => setChatOpen(false)} className="text-blue-200 hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72">
+            {chatMessages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {chatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-slate-800 px-3 py-2 rounded-2xl rounded-bl-sm">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="px-3 py-3 border-t border-slate-700 flex gap-2">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleChat()}
+              placeholder="Ihre Frage…"
+              className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+            <button
+              onClick={handleChat}
+              disabled={chatLoading || !chatInput.trim()}
+              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-2 rounded-xl transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat toggle button */}
+      <button
+        onClick={() => setChatOpen(prev => !prev)}
+        className="fixed bottom-4 right-4 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center z-50 transition-all hover:scale-105"
+        title="Dataquard Assistent öffnen"
+      >
+        {chatOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <span className="text-2xl">🤖</span>
         )}
-      </div>
+      </button>
+
     </div>
   );
 }
