@@ -413,7 +413,9 @@ export default function ScannerPage() {
                 <h2 className="text-sm font-semibold text-slate-300 mb-4">💡 Erkenntnisse</h2>
                 <ul className="space-y-2">
                   {result.insights.map((insight, i) => (
-                    <li key={i} className="text-sm text-slate-300 flex gap-2"><span>•</span>{insight}</li>
+                    <li key={i} className="text-sm text-slate-300 pl-3 border-l border-slate-700">
+                      {insight}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -426,8 +428,10 @@ export default function ScannerPage() {
                 <ol className="space-y-2">
                   {result.recommendations.map((rec, i) => (
                     <li key={i} className="text-sm text-slate-300 flex gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">{i + 1}</span>
-                      {rec.replace(/^\d+\.\s*/, '')}
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{rec.replace(/^\d+\.?\s*/, '')}</span>
                     </li>
                   ))}
                 </ol>
