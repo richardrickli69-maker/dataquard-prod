@@ -63,21 +63,21 @@ const scoreLabel = (score: number) => {
 // ─── Score Circle ─────────────────────────────────────────────────────────────
 
 function ScoreCircle({ score, label, icon }: { score: number; label: string; icon: string }) {
-  const r = 36;
+  const r = 28;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-24 h-24">
-        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
-          <circle cx="48" cy="48" r={r} fill="none" stroke="#1e293b" strokeWidth="8" />
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+        <svg className="w-16 h-16 sm:w-20 sm:h-20 -rotate-90" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r={r} fill="none" stroke="#1e293b" strokeWidth="6" />
           <circle
-            cx="48" cy="48" r={r}
+            cx="36" cy="36" r={r}
             fill="none"
             stroke={color}
-            strokeWidth="8"
+            strokeWidth="6"
             strokeDasharray={circ}
             strokeDashoffset={offset}
             strokeLinecap="round"
@@ -85,8 +85,8 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl">{icon}</span>
-          <span className="text-sm font-bold text-white">{score}%</span>
+          <span className="text-base sm:text-lg">{icon}</span>
+          <span className="text-xs font-bold text-white">{score}%</span>
         </div>
       </div>
       <span className="text-xs text-slate-400 font-medium">{label}</span>
@@ -140,7 +140,13 @@ export default function ScannerPage() {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      let session = null;
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (!error) session = data.session;
+      } catch {
+        // Abgelaufener Token – User ist nicht eingeloggt, kein Problem
+      }
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
@@ -239,9 +245,9 @@ export default function ScannerPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm"
+              className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-xs sm:text-sm px-2 py-1 rounded-lg hover:bg-slate-800"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Zurück
@@ -358,7 +364,7 @@ export default function ScannerPage() {
             {/* Score circles */}
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
               <h2 className="text-sm font-semibold text-slate-300 mb-5">Analyse-Ergebnis</h2>
-              <div className="flex justify-around flex-wrap gap-6">
+              <div className="flex justify-around flex-wrap gap-3 sm:gap-6">
                 <ScoreCircle score={result.scores.compliance} label="Compliance" icon="🔒" />
                 <ScoreCircle score={result.scores.optimization} label="Optimierung" icon="⚡" />
                 <ScoreCircle score={result.scores.trust} label="Vertrauen" icon="✅" />
