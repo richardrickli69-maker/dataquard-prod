@@ -160,7 +160,7 @@ export default function CheckoutPage() {
           )}
 
           <button
-            onClick={handlePayment}
+            onClick={() => handlePayment()}
             disabled={loading}
             className="w-full px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg"
           >
