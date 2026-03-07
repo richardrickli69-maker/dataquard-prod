@@ -68,15 +68,22 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 py-20 text-center">
+        {/* Urgency Badge */}
+        <div className="inline-flex items-center gap-2 bg-red-600/90 border border-red-400/50 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
+          <span>⚠</span>
+          <span>nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000</span>
+        </div>
+
         <h1 className="text-5xl md:text-6xl font-bold mb-6">
-          Ihre Website. Rechtssicher.<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">In 3 Minuten.</span>
+          Keine Busse. Kein Anwalt.<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">Fertig in 3 Min.</span>
         </h1>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          Der einzige Schweizer All-in-One-Check: Compliance, Performance, Security und Impressum – automatisch geprüft, sofort behoben. Nur von Dataquard.
+          Das neue Schweizer nDSG gilt seit 2023. Dataquard scannt Ihre Website kostenlos und erstellt die rechtssichere Datenschutzerklärung – automatisch, ohne Rechtskenntnisse.
         </p>
+
         {/* Hero Scanner-Eingabe */}
-        <div className="mt-2 mb-4 max-w-xl mx-auto">
+        <div className="mt-2 mb-8 max-w-xl mx-auto">
           <div className="flex gap-3 bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-2 shadow-xl">
             <input
               type="text"
@@ -90,16 +97,8 @@ export default function HomePage() {
               onClick={handleHeroScan}
               className="bg-red-500 hover:bg-red-400 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
             >
-              Kostenlos scannen →
+              Jetzt kostenlos prüfen →
             </button>
-          </div>
-          <div className="mt-3 flex flex-col items-center gap-1.5">
-            <p className="text-center text-white/50 text-xs">
-              🇨🇭 Schweizer Server · 🔒 SSL · Keine Anmeldung nötig
-            </p>
-            <p className="text-center text-white/40 text-xs">
-              ✓ Bereits von KMUs in der Region Basel genutzt
-            </p>
           </div>
         </div>
 
@@ -119,15 +118,38 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
         <p className="text-sm text-gray-400 mb-8">
           <Link href="#preise" className="text-indigo-400 hover:text-indigo-300 underline">Preise ansehen ↓</Link>
         </p>
-        <div className="flex justify-center gap-6 text-sm">
-          <span className="text-gray-300">🇨🇭 Schweizer Produkt</span>
-          <span className="text-gray-300">🔒 Daten in Zürich</span>
-          <span className="text-gray-300">⚖️ nDSG/DSGVO-konform</span>
-        </div>
       </section>
+
+      {/* Trust Badges Strip */}
+      <div style={{ background: '#0D1B2A' }} className="border-y border-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-5 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
+          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
+            <span className="text-2xl">🇨🇭</span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">Daten in der Schweiz</div>
+              <div className="text-xs text-gray-400">Sicher auf Schweizer Servern</div>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
+            <span className="text-2xl">✅</span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">EDÖB-konform</div>
+              <div className="text-xs text-gray-400">nDSG 2023 erfüllt</div>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
+            <span className="text-2xl">🔒</span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">Keine Kreditkarte</div>
+              <div className="text-xs text-gray-400">Kostenlos starten</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* 3 Säulen */}
       <section className="max-w-6xl mx-auto px-4 py-16 border-t border-indigo-700">
@@ -147,6 +169,79 @@ export default function HomePage() {
               </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Scan Preview */}
+      <section className="max-w-6xl mx-auto px-4 py-16 border-t border-indigo-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Mock-up */}
+          <div className="bg-[#0D1B2A] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Browser Bar */}
+            <div className="bg-[#1A2A3A] px-4 py-3 flex items-center gap-3 border-b border-white/10">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                <div className="w-3 h-3 rounded-full bg-green-500/70" />
+              </div>
+              <div className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-1 text-xs text-gray-400 font-mono">
+                muster-kmu.ch
+              </div>
+            </div>
+            {/* Scan Result */}
+            <div className="p-6">
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-4">Scan-Ergebnis</div>
+              <div className="space-y-3">
+                {[
+                  { label: 'Datenschutzerklärung', icon: '❌', color: 'text-red-400' },
+                  { label: 'Cookie-Banner', icon: '⚠️', color: 'text-yellow-400' },
+                  { label: 'Google Analytics', icon: '❌', color: 'text-red-400' },
+                  { label: 'SSL-Zertifikat', icon: '✅', color: 'text-green-400' },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between py-2.5 px-3 bg-white/5 rounded-lg border border-white/5">
+                    <span className="text-sm text-gray-300">{row.label}</span>
+                    <span className={`text-sm font-semibold ${row.color}`}>{row.icon}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10">
+                <span className="text-xs text-gray-500">Compliance-Score</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-24 bg-white/10 rounded-full h-2">
+                    <div className="bg-red-500 h-2 rounded-full" style={{ width: '28%' }} />
+                  </div>
+                  <span className="text-lg font-bold text-red-400">28/100</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Text */}
+          <div>
+            <h2 className="text-3xl font-bold mb-4">So sieht Ihr Ergebnis aus</h2>
+            <p className="text-gray-400 mb-8">In Sekunden sehen Sie, wo Ihre Website rechtliche Risiken hat – klar, verständlich, ohne Fachjargon.</p>
+            <ul className="space-y-5">
+              {[
+                { icon: '🔍', title: 'Alle Tracker werden erkannt', desc: 'Google Analytics, Facebook Pixel, Hotjar – wir finden jeden Drittanbieter auf Ihrer Seite.' },
+                { icon: '🚦', title: 'Ampel zeigt Handlungsbedarf', desc: 'Rot, Gelb, Grün – auf einen Blick sehen Sie, was sofort behoben werden muss.' },
+                { icon: '⚡', title: 'Policy mit einem Klick generieren', desc: 'Direkt aus dem Ergebnis: Datenschutzerklärung erstellen, herunterladen, einbinden. Fertig.' },
+              ].map((point) => (
+                <li key={point.title} className="flex gap-4">
+                  <span className="text-2xl flex-shrink-0">{point.icon}</span>
+                  <div>
+                    <div className="font-semibold text-white mb-1">{point.title}</div>
+                    <div className="text-gray-400 text-sm leading-relaxed">{point.desc}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={handleHeroScan}
+              className="mt-8 px-8 py-3 bg-red-500 hover:bg-red-400 text-white font-semibold rounded-xl transition-all text-sm"
+            >
+              Jetzt kostenlos prüfen →
+            </button>
+          </div>
         </div>
       </section>
 
