@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { logAudit } from '@/lib/audit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -87,6 +88,12 @@ export async function POST(request: NextRequest) {
     console.error('[Badge] Insert-Fehler:', insertError?.message);
     return NextResponse.json({ error: 'Badge konnte nicht erstellt werden' }, { status: 500 });
   }
+
+  await logAudit({
+    user_id: user.id,
+    action: 'badge_created',
+    resource: website_url,
+  });
 
   return NextResponse.json({ badge_id: badge.id, already_exists: false });
 }

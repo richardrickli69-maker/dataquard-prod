@@ -5,6 +5,7 @@
 import { isValidUrl } from '@/lib/scanner';
 import { NextRequest, NextResponse } from 'next/server';
 import { performExtendedScan } from '@/lib/extendedScanner';
+import { logAudit } from '@/lib/audit';
 
 const ipScanMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 3;
@@ -118,6 +119,17 @@ export async function POST(request: NextRequest) {
         console.error('[saveScan] Supabase Fehler:', error.message, error.details);
       } else {
         console.log('[saveScan] ✅ Gespeichert:', data);
+        if (userId) {
+          await logAudit({
+            user_id: userId,
+            action: 'scan',
+            resource: trimmedUrl,
+            details: {
+              risk_level: scanResult.compliance.ampel ?? 'unknown',
+              detected_services_count: scanResult.compliance.trackersFound?.length ?? 0,
+            },
+          });
+        }
       }
     } catch (saveError) {
       console.error('[saveScan] Exception:', saveError);

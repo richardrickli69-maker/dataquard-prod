@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { logAudit } from '@/lib/audit';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -62,6 +63,26 @@ WICHTIG: Antworte ausschliesslich mit dem Text der Datenschutzerklärung, ohne P
     });
 
     const policy = message.content[0].type === 'text' ? message.content[0].text : templatePolicy;
+
+    // Audit: User-ID optional aus Authorization-Header
+    const authHeader = req.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseVerify = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      const { data: { user } } = await supabaseVerify.auth.getUser(authHeader.slice(7));
+      if (user?.id) {
+        await logAudit({
+          user_id: user.id,
+          action: 'policy_generated',
+          resource: data.rechtsraum ?? 'CH',
+          details: { language: data.rechtsraum === 'DE' ? 'de-DE' : 'de-CH' },
+        });
+      }
+    }
 
     return NextResponse.json({ policy, source: 'ai' });
   } catch (err) {
