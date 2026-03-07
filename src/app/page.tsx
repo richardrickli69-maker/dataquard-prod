@@ -192,7 +192,7 @@ export default function HomePage() {
             {[
               { num: '1', icon: '🔍', title: 'Website scannen', desc: 'URL eingeben – kostenlos, ohne Anmeldung. Wir erkennen automatisch alle Drittanbieter.' },
               { num: '2', icon: '📊', title: 'Report erhalten', desc: 'Compliance-Score, Jurisdiktion (nDSG/DSGVO) und konkrete Handlungsempfehlungen.' },
-              { num: '3', icon: '📄', title: 'Dokument herunterladen', desc: 'Datenschutzerklärung + Impressum generiert, als PDF herunterladbar. Fertig in Minuten.' },
+              { num: '3', icon: '📄', title: 'Dokument herunterladen', desc: 'Datenschutzerklärung + Impressum + Cookie-Banner generiert, als PDF herunterladbar. Fertig in Minuten.' },
             ].map((step) => (
               <div key={step.num} className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg font-mono">
@@ -238,7 +238,7 @@ export default function HomePage() {
             { name: 'Impressum', price: 'CHF 19', sub: 'Einmalkauf', desc: 'Nur das Impressum', features: ['Impressum Generator', 'Schweiz + Deutschland', 'Sofort downloadbar'], missing: [], cta: 'Impressum erstellen', link: '/impressum-generator', highlight: false },
             { name: 'Free', price: 'CHF 0', sub: 'immer kostenlos', desc: 'Für den ersten Überblick', features: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], missing: ['Datenschutzerklärung', 'Impressum'], cta: 'Kostenlos scannen', link: '/scanner', highlight: false },
             { name: 'Starter', price: 'CHF 79', sub: 'Einmalkauf', desc: 'Für Schweizer KMUs', features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain'], missing: [], cta: 'Jetzt starten', link: '/checkout', highlight: true },
-            { name: 'Professional', price: 'CHF 149', sub: 'Einmalkauf', desc: 'Für wachsende Teams', features: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator (5 Domains)', 'Bis zu 5 Domains', 'Priority Support'], missing: [], cta: 'Professional wählen', link: '/checkout', highlight: false },
+            { name: 'Professional', price: 'CHF 149', sub: 'Einmalkauf', desc: 'Für wachsende Teams', features: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator (5 Domains)', 'Priority Support'], missing: [], cta: 'Professional wählen', link: '/checkout', highlight: false },
           ].map((plan) => (
             <div key={plan.name} className={`p-5 rounded-lg border-2 ${plan.highlight ? 'border-indigo-500 bg-indigo-900 bg-opacity-50' : 'border-indigo-700 bg-indigo-900 bg-opacity-20'}`}>
               {plan.highlight && <div className="text-xs text-indigo-300 font-bold mb-2">EMPFOHLEN</div>}
@@ -276,6 +276,7 @@ export default function HomePage() {
                 ['Security-Check', '✅', '❌', '❌'],
                 ['Schweizer nDSG', '✅', '✅', '⚠️'],
                 ['Auto-Scan & Pre-fill', '✅', '✅', '❌'],
+                ['Cookie-Banner Generator', '✅', '❌', '⚠️'],
                 ['Preis', 'CHF 79', 'CHF 55', '€ 144+'],
                 ['Daten in Schweiz', '✅', '⚠️', '❌'],
               ].map(([feature, dq, pb, iu]) => (
