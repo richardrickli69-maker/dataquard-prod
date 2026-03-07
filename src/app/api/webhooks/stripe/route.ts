@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
 import { logAudit } from '@/lib/audit';
+import { generateInvoicePdf } from '@/lib/generateInvoicePdf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -137,11 +138,26 @@ export async function POST(request: NextRequest) {
         day: '2-digit', month: '2-digit', year: 'numeric',
       });
 
+      const planAmount = plan === 'professional' ? 149 : 79;
+      const pdfBuffer = await generateInvoicePdf({
+        invoiceNumber,
+        date: formattedDate,
+        product: `Dataquard ${planLabel}`,
+        amount: planAmount,
+        customerEmail,
+      });
+
       const { error: emailError } = await resend.emails.send({
         from: 'Dataquard <noreply@dataquard.ch>',
         to: customerEmail,
         subject: `Vielen Dank für Ihren Kauf – Dataquard ${planLabel}`,
         html: generateEmailHtml({ planLabel, planPrice, currency, invoiceNumber, formattedDate, userEmail: customerEmail }),
+        attachments: [
+          {
+            filename: `Dataquard-Rechnung-${invoiceNumber}.pdf`,
+            content: pdfBuffer,
+          },
+        ],
       });
 
       if (emailError) {
