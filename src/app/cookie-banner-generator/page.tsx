@@ -30,6 +30,9 @@ async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
     error: authError,
   } = await supabase.auth.getUser();
 
+  console.log('[CookieBanner] authError:', authError?.message ?? null);
+  console.log('[CookieBanner] user.id:', user?.id ?? 'nicht eingeloggt');
+
   if (authError || !user) return "free";
 
   // subscription_tier aus users-Tabelle lesen
@@ -39,9 +42,15 @@ async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
     .eq("id", user.id)
     .single();
 
+  console.log('[CookieBanner] DB error:', error?.message ?? null);
+  console.log('[CookieBanner] DB data:', JSON.stringify(data));
+
   if (error || !data) return "free";
 
   const tier = data.subscription_tier as string;
+
+  console.log('[CookieBanner] subscription_tier raw:', JSON.stringify(tier));
+  console.log('[CookieBanner] → Plan zurückgegeben:', tier === "professional" ? "professional" : tier === "starter" ? "starter" : "free");
 
   if (tier === "professional") return "professional";
   if (tier === "starter")      return "starter";
