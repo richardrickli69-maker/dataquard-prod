@@ -9,10 +9,10 @@ import { supabase } from '@/lib/supabase';
 
 interface AuditEntry {
   id: string;
-  event_type: string;
-  version_from: number;
-  version_to: number;
-  event_data: { modules_added: string[]; modules_removed: string[] };
+  action: string;
+  resource: string | null;
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
   created_at: string;
 }
 
@@ -78,7 +78,7 @@ export default function DashboardPage() {
     if (policiesData) setPolicies(policiesData);
 
     const { data: auditData } = await supabase
-      .from('audit_log').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);
+      .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);
     if (auditData) setAuditLog(auditData);
 
     const { data: jobsData } = await supabase
@@ -144,10 +144,12 @@ export default function DashboardPage() {
     setTimeout(() => setBadgeCopied(false), 2000);
   };
 
-  const getEventLabel = (type: string) => ({
-    created: '✅ Erstellt', updated: '🔄 Aktualisiert',
-    law_update: '⚖️ Gesetzesupdate', rescan: '🔍 Re-Scan', viewed: '👁️ Angesehen',
-  }[type] || type);
+  const getEventLabel = (action: string) => ({
+    scan: '🔍 Website gescannt',
+    purchase: '💳 Kauf abgeschlossen',
+    policy_generated: '📄 Policy erstellt',
+    badge_created: '🏅 Badge erstellt',
+  }[action] || action);
 
   const getStatusColor = (status: string) => ({
     completed: 'text-green-400', processing: 'text-yellow-400',
@@ -246,7 +248,7 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   {auditLog.slice(0, 3).map((entry) => (
                     <div key={entry.id} className="flex justify-between items-center border-b border-indigo-800 pb-3">
-                      <span>{getEventLabel(entry.event_type)}</span>
+                      <span>{getEventLabel(entry.action)}</span>
                       <span className="text-gray-400 text-sm">{new Date(entry.created_at).toLocaleDateString('de-CH')}</span>
                     </div>
                   ))}
@@ -299,21 +301,18 @@ export default function DashboardPage() {
                 <thead className="border-b border-indigo-700">
                   <tr>
                     <th className="text-left py-3 px-4 text-gray-400">Ereignis</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Version</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Änderungen</th>
+                    <th className="text-left py-3 px-4 text-gray-400">Resource</th>
+                    <th className="text-left py-3 px-4 text-gray-400">Details</th>
                     <th className="text-left py-3 px-4 text-gray-400">Datum</th>
                   </tr>
                 </thead>
                 <tbody>
                   {auditLog.map((entry) => (
                     <tr key={entry.id} className="border-b border-indigo-900 hover:bg-indigo-900 hover:bg-opacity-30">
-                      <td className="py-3 px-4">{getEventLabel(entry.event_type)}</td>
-                      <td className="py-3 px-4 text-gray-400">
-                        {entry.version_from && entry.version_to ? `v${entry.version_from} → v${entry.version_to}` : '–'}
-                      </td>
-                      <td className="py-3 px-4 text-xs">
-                        {entry.event_data?.modules_added?.length > 0 && <span className="text-green-400">+{entry.event_data.modules_added.join(', ')} </span>}
-                        {entry.event_data?.modules_removed?.length > 0 && <span className="text-red-400">-{entry.event_data.modules_removed.join(', ')}</span>}
+                      <td className="py-3 px-4">{getEventLabel(entry.action)}</td>
+                      <td className="py-3 px-4 text-gray-400 text-xs truncate max-w-[160px]">{entry.resource ?? '–'}</td>
+                      <td className="py-3 px-4 text-gray-400 text-xs truncate max-w-[200px]">
+                        {entry.details ? JSON.stringify(entry.details).slice(0, 60) : '–'}
                       </td>
                       <td className="py-3 px-4 text-gray-400">{new Date(entry.created_at).toLocaleDateString('de-CH')}</td>
                     </tr>
