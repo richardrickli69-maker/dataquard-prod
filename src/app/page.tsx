@@ -271,7 +271,7 @@ export default function HomePage() {
               text: 'Empfehle Dataquard aktiv unseren KMU-Kunden. Einfach, günstig, rechtskonform.',
             },
           ].map((t) => (
-            <div key={t.name} className="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4">
+            <div key={t.name} className="rounded-2xl p-6 flex flex-col gap-4 text-white" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
                   {t.initials}

@@ -93,30 +93,33 @@ export default function CheckoutPage() {
             <div
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
-              className={`border-2 rounded-xl p-6 cursor-pointer transition ${
-                selectedPlan === plan.id
-                  ? 'border-indigo-500 bg-white md:bg-indigo-900 md:bg-opacity-50'
-                  : 'border-gray-200 md:border-indigo-700 bg-white md:bg-indigo-900 md:bg-opacity-20 hover:border-indigo-400'
-              }`}
+              className="cursor-pointer transition"
+              style={{
+                backgroundColor: 'white',
+                border: selectedPlan === plan.id ? '2px solid #6366f1' : '2px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '24px',
+                marginBottom: '8px',
+              }}
             >
               {plan.highlight && (
-                <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded mb-3">⭐ EMPFOHLEN</div>
+                <div style={{ display: 'inline-block', backgroundColor: '#16a34a', color: 'white', fontSize: '12px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', marginBottom: '12px' }}>⭐ EMPFOHLEN</div>
               )}
-              <h2 className="text-xl font-bold mb-1 text-gray-900 md:text-white">{plan.name}</h2>
-              <p className="text-gray-500 md:text-gray-400 text-sm mb-3">{plan.desc}</p>
-              <div className="text-3xl font-bold text-indigo-600 md:text-indigo-300 mb-1">CHF {plan.price}</div>
-              <div className="text-sm text-gray-500 md:text-gray-400 mb-4">{plan.interval}</div>
-              <ul className="space-y-2 mb-6">
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', marginBottom: '4px' }}>{plan.name}</h2>
+              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '12px' }}>{plan.desc}</p>
+              <div style={{ fontSize: '30px', fontWeight: 'bold', color: '#4338ca', marginBottom: '4px' }}>CHF {plan.price}</div>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>{plan.interval}</div>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '24px' }}>
                 {plan.features.map((f) => (
-                  <li key={f} className="text-gray-700 md:text-gray-300 text-sm flex gap-2">
-                    <span className="text-green-500 md:text-green-400">✓</span>{f}
+                  <li key={f} style={{ display: 'flex', gap: '8px', fontSize: '14px', color: '#374151', marginBottom: '8px' }}>
+                    <span style={{ color: '#16a34a' }}>✓</span>{f}
                   </li>
                 ))}
               </ul>
               <button
                 onClick={(e) => { e.stopPropagation(); handlePayment(plan.id); }}
                 disabled={loading}
-                className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition disabled:opacity-50 text-sm"
+                style={{ backgroundColor: '#dc2626', color: 'white', width: '100%', padding: '14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
               >
                 {loading && selectedPlan === plan.id ? '⏳ Weiterleitung…' : `Jetzt kaufen – CHF ${plan.price}`}
               </button>
