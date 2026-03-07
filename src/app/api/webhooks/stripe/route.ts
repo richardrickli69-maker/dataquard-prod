@@ -79,13 +79,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!resolvedUserId) {
-      console.error('[Webhook] User nicht gefunden – session:', session.id, 'email:', customerEmail);
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // Kein Auth-User gefunden (z.B. Gast-Checkout) – User in users-Tabelle anlegen
+      console.warn('[Webhook] Kein Auth-User gefunden – lege Eintrag via E-Mail an:', customerEmail);
     }
 
     // 1. Subscription in "subscriptions" Tabelle anlegen/aktualisieren
     await supabaseAdmin.from('subscriptions').upsert({
-      user_id: resolvedUserId,
+      ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
+      email: customerEmail ?? null,
       plan,
       status: 'active',
       stripe_session_id: session.id,
@@ -94,19 +95,28 @@ export async function POST(request: NextRequest) {
       currency,
       purchased_at: createdAt.toISOString(),
       created_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' });
+    }, { onConflict: resolvedUserId ? 'user_id' : 'email' });
 
-    // 2. subscription_tier in "users" Tabelle setzen – lowercase, konsistent mit
-    //    dem Check in cookie-banner-generator/page.tsx (tier === 'starter' etc.)
-    const { error: userUpdateError } = await supabaseAdmin
-      .from('users')
-      .update({ subscription_tier: plan })
-      .eq('id', resolvedUserId);
+    // 2. users-Tabelle: upsert (anlegen falls nicht vorhanden, sonst aktualisieren)
+    //    subscription_tier lowercase – konsistent mit cookie-banner-generator/page.tsx
+    const upsertPayload: Record<string, string> = {
+      subscription_tier: plan,
+      ...(customerEmail ? { email: customerEmail } : {}),
+    };
+    if (resolvedUserId) upsertPayload.id = resolvedUserId;
 
-    if (userUpdateError) {
-      console.warn('[Webhook] users-Update übersprungen:', userUpdateError.message);
+    const { error: userUpsertError } = resolvedUserId
+      ? await supabaseAdmin
+          .from('users')
+          .upsert({ id: resolvedUserId, email: customerEmail ?? '', subscription_tier: plan }, { onConflict: 'id' })
+      : await supabaseAdmin
+          .from('users')
+          .upsert({ email: customerEmail ?? '', subscription_tier: plan }, { onConflict: 'email' });
+
+    if (userUpsertError) {
+      console.warn('[Webhook] users-Upsert Fehler:', userUpsertError.message);
     } else {
-      console.log(`[Webhook] ✅ subscription_tier = '${plan}' für User ${resolvedUserId}`);
+      console.log(`[Webhook] ✅ subscription_tier = '${plan}' für ${resolvedUserId ?? customerEmail}`);
     }
 
     // 3. rescan_enabled = true für alle Scans des Users (nur bei paid plans)
