@@ -453,6 +453,12 @@ export default function ScannerPage() {
                 📄 Impressum generieren
               </Link>
               <Link
+                href={`/cookie-banner-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}&trackers=${result.findings.trackerCount > 0 ? 'google_analytics' : ''}`}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                🍪 Cookie-Banner generieren
+              </Link>
+              <Link
                 href="/checkout"
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
               >
