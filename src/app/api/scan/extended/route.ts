@@ -12,6 +12,7 @@ const RATE_LIMIT = 3;
 const WINDOW_MS = 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
+  console.log('[scan] Authorization header:', request.headers.get('authorization')?.substring(0, 30));
   // Rate limiting for unauthenticated requests
   const authHeader = request.headers.get('authorization');
   const isAuthenticated = authHeader?.startsWith('Bearer ');
