@@ -40,7 +40,9 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handlePayment = async () => {
+  const handlePayment = async (planId?: string) => {
+    const planToUse = planId ?? selectedPlan;
+    if (planId) setSelectedPlan(planId);
     setLoading(true);
     setError('');
 
@@ -50,7 +52,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product: selectedPlan,
+          product: planToUse,
           userId: session?.user?.id ?? null,
           userEmail: session?.user?.email ?? null,
         }),
@@ -91,29 +93,33 @@ export default function CheckoutPage() {
             <div
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
-              className={`border-2 rounded-lg p-6 cursor-pointer transition ${
+              className={`border-2 rounded-xl p-6 cursor-pointer transition ${
                 selectedPlan === plan.id
-                  ? 'border-indigo-500 bg-indigo-900 bg-opacity-50'
-                  : 'border-indigo-700 hover:border-indigo-400 bg-indigo-900 bg-opacity-20'
+                  ? 'border-indigo-500 bg-white md:bg-indigo-900 md:bg-opacity-50'
+                  : 'border-gray-200 md:border-indigo-700 bg-white md:bg-indigo-900 md:bg-opacity-20 hover:border-indigo-400'
               }`}
             >
               {plan.highlight && (
-                <div className="text-xs text-indigo-300 font-bold mb-2">⭐ EMPFOHLEN</div>
+                <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded mb-3">⭐ EMPFOHLEN</div>
               )}
-              <h2 className="text-xl font-bold mb-1">{plan.name}</h2>
-              <p className="text-gray-400 text-sm mb-3">{plan.desc}</p>
-              <div className="text-3xl font-bold text-indigo-300 mb-1">CHF {plan.price}</div>
-              <div className="text-sm text-gray-400 mb-4">{plan.interval}</div>
-              <ul className="space-y-2 mb-4">
+              <h2 className="text-xl font-bold mb-1 text-gray-900 md:text-white">{plan.name}</h2>
+              <p className="text-gray-500 md:text-gray-400 text-sm mb-3">{plan.desc}</p>
+              <div className="text-3xl font-bold text-indigo-600 md:text-indigo-300 mb-1">CHF {plan.price}</div>
+              <div className="text-sm text-gray-500 md:text-gray-400 mb-4">{plan.interval}</div>
+              <ul className="space-y-2 mb-6">
                 {plan.features.map((f) => (
-                  <li key={f} className="text-gray-300 text-sm flex gap-2">
-                    <span className="text-green-400">✓</span>{f}
+                  <li key={f} className="text-gray-700 md:text-gray-300 text-sm flex gap-2">
+                    <span className="text-green-500 md:text-green-400">✓</span>{f}
                   </li>
                 ))}
               </ul>
-              {selectedPlan === plan.id && (
-                <div className="text-indigo-400 font-bold text-sm">✓ Ausgewählt</div>
-              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); handlePayment(plan.id); }}
+                disabled={loading}
+                className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition disabled:opacity-50 text-sm"
+              >
+                {loading && selectedPlan === plan.id ? '⏳ Weiterleitung…' : `Jetzt kaufen – CHF ${plan.price}`}
+              </button>
             </div>
           ))}
         </div>
