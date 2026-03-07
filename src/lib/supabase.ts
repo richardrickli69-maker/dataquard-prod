@@ -3,7 +3,7 @@
  * Handles authentication and database operations
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Get environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,9 +14,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 /**
- * Supabase Client (for client-side)
+ * Supabase Client (singleton for client-side, cookie-based session)
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 /**
  * Get Current User
