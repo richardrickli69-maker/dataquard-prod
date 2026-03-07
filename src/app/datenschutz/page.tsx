@@ -1,213 +1,127 @@
 // src/app/datenschutz/page.tsx
-import Link from 'next/link';
+import Link from "next/link";
 
 export const metadata = {
-  title: 'Datenschutzerklärung – Dataquard',
-  description: 'Datenschutzerklärung von Dataquard gemäss nDSG und DSGVO',
+  title: "Datenschutzerklärung | Dataquard",
+  description: "Datenschutzerklärung von Dataquard – dataquard.ch",
 };
 
 export default function DatenschutzPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white">
-
-      {/* Header */}
-      <header className="border-b border-indigo-800 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-white hover:text-indigo-300 transition">
-            🛡️ Dataquard
-          </Link>
-          <Link href="/" className="text-indigo-400 hover:text-indigo-300 text-sm transition">
-            ← Zurück zur Startseite
-          </Link>
-        </div>
+    <div style={{ minHeight: "100vh", background: "#040c1c", fontFamily: "'DM Sans', sans-serif", color: "#e2eaf3" }}>
+      <header style={{ borderBottom: "1px solid rgba(0,230,118,0.15)", padding: "1rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M15 19l-7-7 7-7" stroke="#00e676" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ color: "#9ab0c8", fontSize: "0.85rem" }}>Zurück</span>
+        </Link>
+        <span style={{ fontWeight: 700 }}>
+          <span style={{ color: "#4d9fff" }}>Data</span>
+          <span style={{ color: "#c0392b" }}>guard</span>
+        </span>
+        <div style={{ width: "60px" }} />
       </header>
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold mb-2">Datenschutzerklärung</h1>
-        <p className="text-gray-400 mb-12 text-sm">
-          Gemäss Schweizer Datenschutzgesetz (nDSG) und DSGVO · Stand: März 2026
+      <main style={{ maxWidth: "760px", margin: "0 auto", padding: "3rem 2rem" }}>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem" }}>Datenschutzerklärung</h1>
+        <p style={{ color: "#6b8499", fontSize: "0.85rem", marginBottom: "2.5rem" }}>
+          Stand: März 2026 · Dataquard, Richard Rickli, Basel-Region
         </p>
 
-        {/* Verantwortlicher */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">1. Verantwortlicher</h2>
-          <div className="space-y-1 text-gray-300">
-            <p className="font-semibold text-white">Richard Rickli</p>
-            <p>Gstadstrasse 53, 4153 Reinach BL, Schweiz</p>
-            <p>
-              <a href="mailto:richard@dataquard.ch" className="text-indigo-400 hover:text-indigo-300 transition">
-                richard@dataquard.ch
-              </a>
-            </p>
-          </div>
-        </section>
+        <Section title="1. Verantwortlicher">
+          <p>Verantwortlicher im Sinne des Schweizer Datenschutzgesetzes (nDSG) sowie der EU-Datenschutz-Grundverordnung (DSGVO):</p>
+          <p><strong style={{ color: "#e2eaf3" }}>Richard Rickli</strong><br />
+          Dataquard<br />
+          Basel-Region, Schweiz<br />
+          E-Mail: info@dataquard.ch<br />
+          Website: dataquard.ch</p>
+        </Section>
 
-        {/* Erhobene Daten */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">2. Erhobene Daten</h2>
-          <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
-            <div>
-              <h3 className="font-semibold text-white mb-1">Website-Besuch</h3>
-              <p>IP-Adresse, Browsertyp, Betriebssystem, Referrer-URL, Datum und Uhrzeit des Zugriffs. Rechtsgrundlage: berechtigtes Interesse (Betrieb der Website).</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Registrierung & Konto</h3>
-              <p>E-Mail-Adresse und Passwort (verschlüsselt). Rechtsgrundlage: Vertragserfüllung.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Website-Scans</h3>
-              <p>Die von Ihnen eingegebene URL sowie die Scan-Ergebnisse (Tracker, Compliance-Score, Ampelstatus). Rechtsgrundlage: Vertragserfüllung.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Zahlungsabwicklung</h3>
-              <p>Zahlungsdaten werden direkt von Stripe verarbeitet. Dataquard erhält lediglich eine Bestätigung des Zahlungsstatus sowie eine Kunden-ID. Rechtsgrundlage: Vertragserfüllung.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">E-Mail-Kommunikation</h3>
-              <p>E-Mail-Adresse für transaktionale E-Mails (Willkommens-E-Mail, Scan-Änderungsbenachrichtigungen). Rechtsgrundlage: Vertragserfüllung bzw. Einwilligung.</p>
-            </div>
-          </div>
-        </section>
+        <Section title="2. Erhobene Daten">
+          <p>Wir erheben folgende Daten wenn Sie dataquard.ch nutzen:</p>
+          <ul>
+            <li><strong style={{ color: "#e2eaf3" }}>Konto-Daten:</strong> E-Mail-Adresse bei Registrierung (via Supabase Auth)</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Scan-Daten:</strong> Von Ihnen eingegebene URLs zur Website-Analyse</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Zahlungsdaten:</strong> Stripe verarbeitet Zahlungen – wir sehen nur Transaktions-IDs</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Technische Daten:</strong> IP-Adresse, Browser-Typ, Zugriffszeitpunkt (Vercel Logs)</li>
+          </ul>
+        </Section>
 
-        {/* Drittanbieter */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">3. Drittanbieter & Auftragsverarbeiter</h2>
-          <div className="space-y-4 text-sm">
-            {[
-              {
-                name: 'Vercel Inc.',
-                purpose: 'Hosting & Deployment',
-                location: 'USA (EU-Serverstandort verfügbar)',
-                link: 'https://vercel.com/legal/privacy-policy',
-              },
-              {
-                name: 'Supabase',
-                purpose: 'Datenbank & Authentifizierung',
-                location: 'Serverstandort: Zürich, Schweiz',
-                link: 'https://supabase.com/privacy',
-              },
-              {
-                name: 'Stripe Inc.',
-                purpose: 'Zahlungsabwicklung',
-                location: 'USA / Irland',
-                link: 'https://stripe.com/ch/privacy',
-              },
-              {
-                name: 'Resend',
-                purpose: 'Transaktionale E-Mails',
-                location: 'USA',
-                link: 'https://resend.com/privacy',
-              },
-              {
-                name: 'Anthropic (Claude API)',
-                purpose: 'KI-gestützte Analyse & Empfehlungen',
-                location: 'USA',
-                link: 'https://www.anthropic.com/privacy',
-              },
-            ].map((provider) => (
-              <div key={provider.name} className="border-b border-indigo-800 pb-4 last:border-0 last:pb-0">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="font-semibold text-white">{provider.name}</span>
-                  <span className="text-gray-400 text-xs">{provider.location}</span>
-                </div>
-                <p className="text-gray-300 mb-1">{provider.purpose}</p>
-                <a href={provider.link} target="_blank" rel="noopener noreferrer"
-                  className="text-indigo-400 hover:text-indigo-300 text-xs transition">
-                  Datenschutzerklärung →
-                </a>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Section title="3. Zweck der Datenverarbeitung">
+          <p>Wir verarbeiten Ihre Daten ausschliesslich zur:</p>
+          <ul>
+            <li>Bereitstellung des Website-Scan-Dienstes</li>
+            <li>Generierung von Compliance-Dokumenten</li>
+            <li>Zahlungsabwicklung via Stripe</li>
+            <li>Verbesserung unseres Dienstes (anonyme Analyse)</li>
+          </ul>
+        </Section>
 
-        {/* Cookies */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">4. Cookies</h2>
-          <p className="text-gray-300 text-sm leading-relaxed mb-3">
-            Dataquard verwendet ausschliesslich technisch notwendige Cookies. Es werden keine
-            Tracking- oder Marketing-Cookies eingesetzt.
-          </p>
-          <div className="bg-indigo-800 bg-opacity-40 rounded-lg p-4 text-sm">
-            <div className="flex justify-between text-gray-300 mb-1">
-              <span className="font-semibold text-white">Supabase Auth Session</span>
-              <span className="text-gray-400">Session-Cookie</span>
-            </div>
-            <p className="text-gray-400 text-xs">Speichert den Anmeldestatus. Wird nach Abmeldung oder Browser-Schliessen gelöscht.</p>
-          </div>
-        </section>
+        <Section title="4. Drittanbieter">
+          <p>Wir nutzen folgende Drittanbieter:</p>
+          <ul>
+            <li><strong style={{ color: "#e2eaf3" }}>Supabase</strong> – Datenbank und Authentifizierung (Server: Zürich, Schweiz)</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Vercel</strong> – Hosting (Daten können auf EU-Servern verarbeitet werden)</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Stripe</strong> – Zahlungsabwicklung (USA – Privacy Shield / SCCs)</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Anthropic Claude API</strong> – KI-Analyse (USA – SCCs)</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Resend</strong> – E-Mail-Versand (USA – SCCs)</li>
+          </ul>
+        </Section>
 
-        {/* Speicherdauer */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">5. Speicherdauer</h2>
-          <div className="space-y-2 text-sm text-gray-300">
-            <p>Kontodaten und Scan-Ergebnisse werden gespeichert, solange ein aktives Konto besteht.</p>
-            <p>Nach Kündigung oder Löschungsanfrage werden alle personenbezogenen Daten innerhalb von <span className="text-white font-semibold">30 Tagen</span> vollständig gelöscht.</p>
-            <p>Zahlungsbelege werden gemäss gesetzlicher Aufbewahrungspflicht (10 Jahre) aufbewahrt.</p>
-          </div>
-        </section>
+        <Section title="5. Datenspeicherung">
+          <p>Ihre Konto- und Scan-Daten werden auf <strong style={{ color: "#e2eaf3" }}>Schweizer Servern (Supabase Zürich, eu-central-2)</strong> gespeichert. Wir geben Ihre Daten nicht an Dritte weiter, ausser es ist zur Leistungserbringung erforderlich (Stripe, Vercel).</p>
+        </Section>
 
-        {/* Rechte */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">6. Ihre Rechte</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-            {[
-              { icon: '📋', right: 'Auskunft', desc: 'Welche Daten wir über Sie gespeichert haben' },
-              { icon: '✏️', right: 'Berichtigung', desc: 'Korrektur unrichtiger Daten' },
-              { icon: '🗑️', right: 'Löschung', desc: 'Löschung Ihrer personenbezogenen Daten' },
-              { icon: '📦', right: 'Übertragbarkeit', desc: 'Ihre Daten in maschinenlesbarem Format' },
-              { icon: '🚫', right: 'Widerspruch', desc: 'Widerspruch gegen die Datenverarbeitung' },
-              { icon: '⏸️', right: 'Einschränkung', desc: 'Einschränkung der Verarbeitung' },
-            ].map((item) => (
-              <div key={item.right} className="bg-indigo-800 bg-opacity-30 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span>{item.icon}</span>
-                  <span className="font-semibold text-white">{item.right}</span>
-                </div>
-                <p className="text-gray-400 text-xs">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-gray-400 text-sm mt-4">
-            Zur Ausübung Ihrer Rechte wenden Sie sich an:{' '}
-            <a href="mailto:richard@dataquard.ch" className="text-indigo-400 hover:text-indigo-300 transition">
-              richard@dataquard.ch
-            </a>
-          </p>
-        </section>
+        <Section title="6. Cookies">
+          <p>Wir verwenden folgende Cookies:</p>
+          <ul>
+            <li><strong style={{ color: "#e2eaf3" }}>Essenzielle Cookies:</strong> Session-Management, Sicherheit, Consent-Speicherung – immer aktiv</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Analyse-Cookies:</strong> Vercel Analytics (anonymisiert) – nur mit Ihrer Einwilligung</li>
+            <li><strong style={{ color: "#e2eaf3" }}>Marketing-Cookies:</strong> Stripe Checkout – nur mit Ihrer Einwilligung</li>
+          </ul>
+          <p>Sie können Ihre Cookie-Einstellungen jederzeit über den Banner am Seitenrand ändern.</p>
+        </Section>
 
-        {/* Beschwerde */}
-        <section className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-indigo-300 mb-4">7. Beschwerderecht</h2>
-          <p className="text-gray-300 text-sm leading-relaxed">
-            Sie haben das Recht, sich beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten
-            (EDÖB) zu beschweren, wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer personenbezogenen
-            Daten gegen das Datenschutzrecht verstösst.
-          </p>
-          <a href="https://www.edoeb.admin.ch" target="_blank" rel="noopener noreferrer"
-            className="inline-block mt-3 text-indigo-400 hover:text-indigo-300 text-sm transition">
-            www.edoeb.admin.ch →
-          </a>
-        </section>
+        <Section title="7. Ihre Rechte (nDSG / DSGVO)">
+          <p>Sie haben das Recht auf:</p>
+          <ul>
+            <li>Auskunft über Ihre gespeicherten Daten (Art. 25 nDSG / Art. 15 DSGVO)</li>
+            <li>Berichtigung unrichtiger Daten (Art. 32 nDSG / Art. 16 DSGVO)</li>
+            <li>Löschung Ihrer Daten (Art. 32 nDSG / Art. 17 DSGVO)</li>
+            <li>Widerspruch gegen die Verarbeitung (Art. 30 nDSG / Art. 21 DSGVO)</li>
+            <li>Datenübertragbarkeit (Art. 28 nDSG / Art. 20 DSGVO)</li>
+          </ul>
+          <p>Kontakt für Datenschutzanfragen: <a href="mailto:info@dataquard.ch" style={{ color: "#00e676" }}>info@dataquard.ch</a></p>
+        </Section>
 
-        {/* Stand */}
-        <p className="text-gray-500 text-xs text-center mt-8">
-          Stand: März 2026 · Dataquard, Richard Rickli, Reinach BL
-        </p>
-      </main>
+        <Section title="8. Aufbewahrungsdauer">
+          <p>Konto-Daten werden gelöscht sobald Sie Ihr Konto schliessen. Scan-Daten werden nach 12 Monaten automatisch gelöscht. Zahlungsbelege werden gemäss gesetzlicher Aufbewahrungspflicht (10 Jahre) gespeichert.</p>
+        </Section>
 
-      {/* Footer */}
-      <footer className="border-t border-indigo-800 px-6 py-8 mt-8">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
-          <p>© 2026 Dataquard · Richard Rickli · Reinach BL</p>
-          <div className="flex gap-6">
-            <Link href="/impressum" className="hover:text-indigo-300 transition">Impressum</Link>
-            <Link href="/datenschutz" className="text-indigo-400">Datenschutz</Link>
-            <Link href="/" className="hover:text-indigo-300 transition">Startseite</Link>
-          </div>
+        <Section title="9. Änderungen">
+          <p>Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen. Die aktuelle Version ist stets unter dataquard.ch/datenschutz abrufbar.</p>
+        </Section>
+
+        <div style={{ marginTop: "3rem", paddingTop: "1.5rem", borderTop: "1px solid rgba(154,176,200,0.1)", display: "flex", gap: "1rem" }}>
+          <Link href="/impressum-generator" style={{ color: "#9ab0c8", fontSize: "0.82rem", textDecoration: "none" }}>Impressum</Link>
+          <Link href="/agb" style={{ color: "#9ab0c8", fontSize: "0.82rem", textDecoration: "none" }}>AGB</Link>
+          <Link href="/" style={{ color: "#9ab0c8", fontSize: "0.82rem", textDecoration: "none" }}>Startseite</Link>
         </div>
-      </footer>
-
+      </main>
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section style={{ marginBottom: "2rem" }}>
+      <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#00e676", marginBottom: "0.75rem", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(0,230,118,0.15)" }}>
+        {title}
+      </h2>
+      <div style={{ color: "#9ab0c8", fontSize: "0.875rem", lineHeight: 1.75 }}>
+        {children}
+      </div>
+    </section>
   );
 }

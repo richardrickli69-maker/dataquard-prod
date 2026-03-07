@@ -14,6 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
+      <head>
+        <meta name="cookie-consent-present" content="true" />
+        <meta name="privacy-policy" content="/datenschutz" />
+      </head>
       <body>
         {children}
         <ChatBot />

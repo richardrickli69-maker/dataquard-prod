@@ -216,19 +216,55 @@ export async function detectComplianceIssues(
   domain: string
 ): Promise<{
   needsPrivacyPolicy: boolean;
+  hasCookieBanner: boolean;
   trackersFound: string[];
   missingElements: string[];
 }> {
+  let html = '';
+  try {
+    const url = domain.startsWith('http') ? domain : `https://${domain}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    html = await res.text();
+  } catch {
+    // Fallback: domain-heuristics
+    html = '';
+  }
+
+  const htmlLow = html.toLowerCase();
+
+  const hasCookieBanner =
+    html.includes('cookie-consent-present') ||
+    htmlLow.includes('cookiebot') ||
+    htmlLow.includes('usercentrics') ||
+    htmlLow.includes('borlabs') ||
+    htmlLow.includes('cookiehub') ||
+    htmlLow.includes('osano') ||
+    htmlLow.includes('cookie_consent') ||
+    (htmlLow.includes('cookie') && (htmlLow.includes('consent') || htmlLow.includes('banner') || htmlLow.includes('akzeptieren')));
+
+  const hasPrivacyPolicy =
+    html.includes('name="privacy-policy"') ||
+    htmlLow.includes('/datenschutz') ||
+    htmlLow.includes('/privacy') ||
+    htmlLow.includes('/datenschutzerklaerung') ||
+    htmlLow.includes('privacy-policy') ||
+    (htmlLow.includes('datenschutz') && htmlLow.includes('personenbezogen')) ||
+    htmlLow.includes('ndsg') ||
+    htmlLow.includes('dsgvo');
+
   const hasTrackers = !domain.includes('clean');
-  
+
   return {
-    needsPrivacyPolicy: hasTrackers,
-    trackersFound: hasTrackers
-      ? ['Google Analytics', 'Meta Pixel']
-      : [],
-    missingElements: !domain.includes('complete')
-      ? ['Privacy Policy', 'Cookie Banner']
-      : [],
+    needsPrivacyPolicy: !hasPrivacyPolicy,
+    hasCookieBanner,
+    trackersFound: hasTrackers ? ['Google Analytics', 'Meta Pixel'] : [],
+    missingElements: [
+      ...(!hasPrivacyPolicy ? ['Privacy Policy'] : []),
+      ...(!hasCookieBanner ? ['Cookie Banner'] : []),
+    ],
   };
 }
 
@@ -369,7 +405,11 @@ export async function performExtendedScan(
   const outdatedScripts = checkOutdatedScripts(domain);
   const mixedContent = checkMixedContent(domain);
 
-  const complianceScore = complianceCheck.needsPrivacyPolicy ? 40 : 85;
+  const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
+  const complianceScore =
+    hasPrivacyPolicy && complianceCheck.hasCookieBanner ? 85 :
+    hasPrivacyPolicy ? 65 :
+    complianceCheck.hasCookieBanner ? 50 : 40;
   const optimizationScore = Math.round(
     ((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100
   );
@@ -386,7 +426,7 @@ export async function performExtendedScan(
     complianceScore,
     optimizationScore,
     thirdPartyCheck.totalScripts,
-    !complianceCheck.needsPrivacyPolicy,
+    hasPrivacyPolicy,
     sslCheck.hasSSL,
     outdatedScripts.outdatedScripts,
     mixedContent.hasMixedContent
@@ -394,7 +434,7 @@ export async function performExtendedScan(
 
   const recommendations = generateRecommendations(
     thirdPartyCheck.totalScripts,
-    !complianceCheck.needsPrivacyPolicy,
+    hasPrivacyPolicy,
     performanceCheck.loadTime,
     impressumCheck.hasImpressum,
     sslCheck.hasSSL,
@@ -409,7 +449,7 @@ export async function performExtendedScan(
       ampel: complianceScore > 70 ? '🟢' : complianceScore > 50 ? '🟡' : '🔴',
       hasPrivacyPolicy: !complianceCheck.needsPrivacyPolicy,
       trackersFound: complianceCheck.trackersFound,
-      hasCookieBanner: complianceScore > 50,
+      hasCookieBanner: complianceCheck.hasCookieBanner,
     },
     optimization: {
       score: optimizationScore,

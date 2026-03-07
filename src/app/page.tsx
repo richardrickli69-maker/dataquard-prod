@@ -332,7 +332,7 @@ export default function HomePage() {
           <span className="mb-4 md:mb-0">© 2026 · Basel, Schweiz</span>
           <div className="flex gap-6 items-center">
             <Link href="/scanner" className="hover:text-white">Scanner</Link>
-            <Link href="/datenschutz-generator" className="hover:text-white">Datenschutz</Link>
+            <Link href="/datenschutz" className="hover:text-white">Datenschutz</Link>
             <Link href="/impressum-generator" className="hover:text-white">Impressum</Link>
             <Link href="#preise" className="hover:text-white">Preise</Link>
             <Link href="/agb" className="hover:text-white">AGB</Link>
