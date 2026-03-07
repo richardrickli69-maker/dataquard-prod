@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ActionPlan from '@/components/ActionPlan';
 import { supabase } from '@/lib/supabase';
-);
 
 interface AuditEntry {
   id: string;
