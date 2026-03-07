@@ -1,4 +1,5 @@
 import ChatBot from '@/components/ChatBot/ChatBot';
+import CookieBanner from "@/components/CookieBanner/CookieBanner";
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body>
         {children}
         <ChatBot />
+        <CookieBanner />
       </body>
     </html>
   );
