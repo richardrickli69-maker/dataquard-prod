@@ -9,12 +9,37 @@ import { useRouter } from 'next/navigation';
 export default function HomePage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const [heroUrl, setHeroUrl] = useState('');
+  const [heroScanning, setHeroScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState('');
+  const [scanProgress, setScanProgress] = useState(0);
   const router = useRouter();
 
-  const handleHeroScan = () => {
+  const handleHeroScan = async () => {
     if (!heroUrl.trim()) return;
     let url = heroUrl.trim();
     if (!url.startsWith('http')) url = 'https://' + url;
+
+    setHeroScanning(true);
+    setScanProgress(0);
+
+    const steps = [
+      { msg: 'Prüfe SSL & HTTPS…', progress: 20 },
+      { msg: 'Erkenne Drittanbieter & Tracker…', progress: 45 },
+      { msg: 'Analysiere Impressum & Datenschutz…', progress: 70 },
+      { msg: 'Berechne Compliance-Score…', progress: 90 },
+    ];
+
+    for (const step of steps) {
+      setScanStatus(step.msg);
+      setScanProgress(step.progress);
+      await new Promise(r => setTimeout(r, 600));
+    }
+
+    setScanProgress(100);
+    setScanStatus('Analyse abgeschlossen – leite weiter…');
+    await new Promise(r => setTimeout(r, 400));
+
+    setHeroScanning(false);
     router.push(`/scanner?url=${encodeURIComponent(url)}`);
   };
 
@@ -68,10 +93,32 @@ export default function HomePage() {
               Kostenlos scannen →
             </button>
           </div>
-          <p className="text-center text-white/50 text-xs mt-3">
-            🇨🇭 Schweizer Server · 🔒 SSL · Keine Anmeldung nötig
-          </p>
+          <div className="mt-3 flex flex-col items-center gap-1.5">
+            <p className="text-center text-white/50 text-xs">
+              🇨🇭 Schweizer Server · 🔒 SSL · Keine Anmeldung nötig
+            </p>
+            <p className="text-center text-white/40 text-xs">
+              ✓ Bereits von KMUs in der Region Basel genutzt
+            </p>
+          </div>
         </div>
+
+        {heroScanning && (
+          <div className="mt-6 max-w-xl mx-auto">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <span className="text-sm text-white/70">{scanStatus}</span>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-1.5">
+                <div
+                  className="bg-blue-400 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${scanProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         <p className="text-sm text-gray-400 mb-8">
           <Link href="#preise" className="text-indigo-400 hover:text-indigo-300 underline">Preise ansehen ↓</Link>
         </p>
@@ -263,7 +310,10 @@ export default function HomePage() {
       {/* CTA */}
       <section className="max-w-4xl mx-auto px-4 py-16 text-center border-t border-indigo-700">
         <h2 className="text-3xl font-bold mb-6">Ist Ihre Website wirklich rechtssicher?</h2>
-        <p className="text-xl text-gray-300 mb-8">Finden Sie es in 10 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
+        <p className="text-xl text-gray-300 mb-6">Finden Sie es in 10 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
+        <p className="text-sm text-amber-300/80 mb-6">
+          ⚖️ Das Schweizer nDSG ist seit 01.09.2023 in Kraft – ist Ihre Website konform?
+        </p>
         <div className="flex justify-center">
           <Link href="/scanner" className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition text-lg">Jetzt kostenlos scannen →</Link>
         </div>
@@ -271,7 +321,14 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-indigo-700 bg-black bg-opacity-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col items-center text-gray-400 text-sm">
+          <div className="flex flex-wrap justify-center gap-4 mb-4 text-xs text-slate-500">
+            <span>🇨🇭 Server in Zürich</span>
+            <span>🔒 SSL-verschlüsselt</span>
+            <span>⚖️ nDSG-konform</span>
+            <span>🛡️ Keine Datenweitergabe</span>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-center w-full text-gray-400 text-sm">
           <span className="mb-4 md:mb-0">© 2026 · Basel, Schweiz</span>
           <div className="flex gap-6 items-center">
             <Link href="/scanner" className="hover:text-white">Scanner</Link>
@@ -280,6 +337,7 @@ export default function HomePage() {
             <Link href="#preise" className="hover:text-white">Preise</Link>
             <Link href="/agb" className="hover:text-white">AGB</Link>
             <Link href="/auth" className="px-4 py-1.5 border border-indigo-700 text-indigo-400 rounded-lg hover:bg-indigo-900 hover:text-white transition">Anmelden</Link>
+          </div>
           </div>
         </div>
       </footer>
