@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
           { auth: { autoRefreshToken: false, persistSession: false } }
         );
         const { data: { user }, error: authError } = await supabaseVerify.auth.getUser(token);
+        console.log('[auth] getUser result:', user?.id ?? null, authError?.message ?? null);
         if (!authError && user?.id) {
           userId = user.id;
           // Rescan aktivieren wenn User aktive Subscription hat
