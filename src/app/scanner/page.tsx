@@ -147,6 +147,7 @@ export default function ScannerPage() {
       } catch {
         // Abgelaufener Token – User ist nicht eingeloggt, kein Problem
       }
+      console.log('[scanner] session user:', session?.user?.email, 'token:', session?.access_token?.substring(0, 20));
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
