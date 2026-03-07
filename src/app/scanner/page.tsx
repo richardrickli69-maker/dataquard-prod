@@ -290,7 +290,7 @@ export default function ScannerPage() {
               value={url}
               onChange={e => setUrl(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleScan()}
-              placeholder="https://beispiel.ch"
+              placeholder="https://ihre-website.ch"
               className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
             <button

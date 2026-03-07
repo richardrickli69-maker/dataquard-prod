@@ -26,7 +26,7 @@ const plans = [
     price: 79,
     interval: 'Einmalkauf',
     desc: 'Für Schweizer KMUs',
-    features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Analyse', '1 Domain'],
+    features: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain'],
     highlight: true,
   },
   {
@@ -84,7 +84,7 @@ export default function CheckoutPage() {
 
         <div className="flex justify-between items-center mb-12">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Checkout</h1>
+            <h1 className="text-4xl font-bold mb-2">Bestellung</h1>
             <p className="text-gray-300">Wählen Sie Ihren Plan</p>
           </div>
           <Link href="/" className="text-indigo-400 hover:text-indigo-300">← Zurück</Link>

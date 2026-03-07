@@ -223,7 +223,7 @@ export default function DashboardPage() {
             { key: 'policies', label: '📄 Policies' },
             { key: 'audit', label: '📋 Audit-Trail' },
             { key: 'jobs', label: '⚙️ Batch Jobs' },
-            { key: 'billing', label: '💳 Billing' },
+            { key: 'billing', label: '💳 Abrechnung' },
             { key: 'massnahmen', label: '🎯 Massnahmen' },
             { key: 'badge', label: '🛡️ Verified Badge' },
           ].map((tab) => (

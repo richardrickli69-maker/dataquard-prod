@@ -180,34 +180,68 @@ export async function analyzeThirdParty(domain: string): Promise<{
   };
 }
 
-export function checkOutdatedScripts(domain: string): {
+export async function checkOutdatedScripts(domain: string, html?: string): Promise<{
   outdatedScripts: string[];
   riskLevel: 'low' | 'medium' | 'high';
-} {
-  const hasOutdated = !domain.includes('modern');
-  
-  const outdated = hasOutdated ? ['jQuery 1.12.4', 'Bootstrap 3.3.7'] : [];
-  
+}> {
+  let pageHtml = html ?? '';
+  if (!pageHtml) {
+    try {
+      const url = domain.startsWith('http') ? domain : `https://${domain}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+        signal: AbortSignal.timeout(8000),
+      });
+      pageHtml = await res.text();
+    } catch {
+      return { outdatedScripts: [], riskLevel: 'low' };
+    }
+  }
+
+  const outdated: string[] = [];
+  const scriptTags = pageHtml.match(/<script[^>]+src=["'][^"']*["'][^>]*>/gi) ?? [];
+  const scriptSrcs = scriptTags.join(' ').toLowerCase();
+
+  if (scriptSrcs.match(/jquery[.\-](1\.|2\.)/)) outdated.push('jQuery 1.x/2.x');
+  if (scriptSrcs.match(/bootstrap[.\-]3\./)) outdated.push('Bootstrap 3.x');
+
   return {
     outdatedScripts: outdated,
     riskLevel: outdated.length > 0 ? 'high' : 'low',
   };
 }
 
-export function checkMixedContent(domain: string): {
+export async function checkMixedContent(domain: string, html?: string): Promise<{
   hasMixedContent: boolean;
   mixedContentWarnings: string[];
   riskLevel: 'low' | 'medium' | 'high';
-} {
-  const hasMixed = !domain.includes('secure');
-  
-  const warnings = hasMixed
-    ? ['Images loaded over HTTP', 'CSS from insecure source']
-    : [];
-  
+}> {
+  let pageHtml = html ?? '';
+  if (!pageHtml) {
+    try {
+      const url = domain.startsWith('http') ? domain : `https://${domain}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+        signal: AbortSignal.timeout(8000),
+      });
+      pageHtml = await res.text();
+    } catch {
+      return { hasMixedContent: false, mixedContentWarnings: [], riskLevel: 'low' };
+    }
+  }
+
+  const externalHttp = (pageHtml.match(/(?:src|href)=["']http:\/\/(?!localhost)[^"']+["']/gi) ?? [])
+    .filter(r =>
+      !r.includes('//schemas.') &&
+      !r.includes('//www.w3.org') &&
+      !r.includes('//purl.org') &&
+      !r.includes('//ogp.me')
+    );
+
+  const hasMixed = externalHttp.length > 0;
   return {
     hasMixedContent: hasMixed,
-    mixedContentWarnings: warnings,
+    mixedContentWarnings: hasMixed ? externalHttp.slice(0, 3) : [],
     riskLevel: hasMixed ? 'high' : 'low',
   };
 }
@@ -402,8 +436,10 @@ export async function performExtendedScan(
     detectComplianceIssues(domain),
   ]);
 
-  const outdatedScripts = checkOutdatedScripts(domain);
-  const mixedContent = checkMixedContent(domain);
+  const [outdatedScripts, mixedContent] = await Promise.all([
+    checkOutdatedScripts(domain),
+    checkMixedContent(domain),
+  ]);
 
   const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
   const complianceScore =

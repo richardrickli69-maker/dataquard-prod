@@ -51,7 +51,7 @@ function SuccessInner() {
         {/* Success Icon */}
         <div className="text-8xl mb-6 animate-bounce">✅</div>
 
-        <h1 className="text-4xl font-bold mb-4">Zahlung erfolgreich!</h1>
+        <h1 className="text-4xl font-bold mb-4">Vielen Dank für Ihren Kauf!</h1>
 
         <p className="text-gray-300 text-lg mb-8">
           {isImpressum

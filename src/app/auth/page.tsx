@@ -149,7 +149,7 @@ export default function AuthPage() {
               disabled={isLoading}
               className="w-full px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition disabled:opacity-50"
             >
-              {isLoading ? 'Lädt...' : isSignUp ? 'Registrieren' : 'Anmelden'}
+              {isLoading ? 'Wird geladen…' : isSignUp ? 'Registrieren' : 'Anmelden'}
             </button>
           </form>
 
