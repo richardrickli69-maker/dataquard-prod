@@ -13,6 +13,9 @@ import GeneratorPro     from "./GeneratorPro";
 async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
   const cookieStore = await cookies();
 
+  // Debug: alle vorhandenen Cookie-Namen loggen
+  console.log('[CookieBanner] cookies:', cookieStore.getAll().map(c => c.name));
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -25,21 +28,31 @@ async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
     }
   );
 
+  // Primär: getUser() (serverseitig verifiziert)
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
 
   console.log('[CookieBanner] authError:', authError?.message ?? null);
-  console.log('[CookieBanner] user.id:', user?.id ?? 'nicht eingeloggt');
+  console.log('[CookieBanner] user.id (getUser):', user?.id ?? 'nicht gefunden');
 
-  if (authError || !user) return "free";
+  // Fallback: getSession() falls getUser() keinen User liefert
+  let resolvedUser = user;
+  if (!resolvedUser) {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    console.log('[CookieBanner] sessionError:', sessionError?.message ?? null);
+    console.log('[CookieBanner] session.user.id (getSession):', sessionData?.session?.user?.id ?? 'keine Session');
+    resolvedUser = sessionData?.session?.user ?? null;
+  }
+
+  if (!resolvedUser) return "free";
 
   // subscription_tier aus users-Tabelle lesen
   const { data, error } = await supabase
     .from("users")
     .select("subscription_tier")
-    .eq("id", user.id)
+    .eq("id", resolvedUser.id)
     .single();
 
   console.log('[CookieBanner] DB error:', error?.message ?? null);
