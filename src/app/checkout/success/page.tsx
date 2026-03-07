@@ -21,7 +21,7 @@ function SuccessInner() {
           await fetch('/api/email/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'welcome', email: session.user.email }),
+            body: JSON.stringify({ type: 'welcome', email: session.user.email, name: session.user.user_metadata?.full_name ?? session.user.email }),
           });
         }
       } catch {}
