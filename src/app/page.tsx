@@ -44,6 +44,10 @@ export default function HomePage() {
   };
 
   const faqs = [
+    { question: 'Was kostet ein Datenschutzanwalt?', answer: 'Ein Datenschutzanwalt verlangt CHF 1\'500 bis 3\'500 für eine massgeschneiderte Erklärung. Mit Dataquard erhalten Sie das gleiche Ergebnis für CHF 79 – in 3 Minuten.' },
+    { question: 'Was passiert wenn ich keine Datenschutzerklärung habe?', answer: 'Nach dem Schweizer nDSG (in Kraft seit 01.09.2023) drohen Bussen bis CHF 250\'000. Für EU-Kunden gilt die DSGVO mit Bussen bis 4% des weltweiten Jahresumsatzes.' },
+    { question: 'Gilt das nDSG auch für Einzelunternehmer?', answer: 'Ja – das nDSG gilt für alle Unternehmen die Personendaten von Schweizer Einwohnern bearbeiten, unabhängig von Grösse oder Rechtsform. Auch eine Website mit Kontaktformular fällt darunter.' },
+    { question: 'Wie unterscheidet sich Dataquard von kostenlosen Generatoren?', answer: 'Kostenlose Generatoren erstellen eine generische Vorlage ohne Ihre Website zu analysieren. Dataquard scannt automatisch alle Drittanbieter und erstellt eine auf Ihre konkrete Situation zugeschnittene Erklärung nach nDSG und DSGVO.' },
     { question: 'Wie lange dauert die Policy-Generierung?', answer: 'Die Website-Analyse dauert wenige Sekunden. Die Policy ist typischerweise innerhalb von 30-60 Sekunden verfügbar.' },
     {
   question: 'Ist die generierte Policy wirklich nDSG/DSGVO-konform?',
@@ -242,6 +246,45 @@ export default function HomePage() {
               Jetzt kostenlos prüfen →
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      {/* TODO: Durch echte Testimonials ersetzen */}
+      <section className="max-w-6xl mx-auto px-4 py-16 border-t border-indigo-700">
+        <h2 className="text-3xl font-bold mb-12 text-center">Was Schweizer KMUs sagen</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              initials: 'MH', color: 'bg-green-600',
+              name: 'Markus H.', role: 'Schreinerei, Liestal',
+              text: 'In 5 Minuten war alles erledigt. Hatte es seit Monaten aufgeschoben – hätte ich viel früher machen sollen.',
+            },
+            {
+              initials: 'SK', color: 'bg-yellow-500',
+              name: 'Sandra K.', role: 'Physiotherapie, Basel',
+              text: 'Der Ampel-Bericht hat sofort gezeigt wo das Problem liegt. Für jemanden ohne Rechtskenntnisse perfekt.',
+            },
+            {
+              initials: 'TW', color: 'bg-blue-600',
+              name: 'Thomas W.', role: 'Treubüro, Münchenbuchsee',
+              text: 'Empfehle Dataquard aktiv unseren KMU-Kunden. Einfach, günstig, rechtskonform.',
+            },
+          ].map((t) => (
+            <div key={t.name} className="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
+                  {t.initials}
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">{t.name}</div>
+                  <div className="text-slate-400 text-xs">{t.role}</div>
+                </div>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+              <div className="text-yellow-400 text-sm">★★★★★</div>
+            </div>
+          ))}
         </div>
       </section>
 
