@@ -372,45 +372,45 @@ export function generateRecommendations(
   
   if (outdatedScripts.length > 0) {
     recommendations.push(
-      `1. 🔴 DRINGEND: Veraltete Skripte updaten (${outdatedScripts.join(', ')})`
+      `🔴 DRINGEND: Veraltete Skripte updaten (${outdatedScripts.join(', ')})`
     );
   }
   
   if (hasMixedContent) {
     recommendations.push(
-      '2. 🔴 DRINGEND: Alle Ressourcen auf HTTPS umstellen'
+      '🔴 DRINGEND: Alle Ressourcen auf HTTPS umstellen'
     );
   }
   
   if (!hasPrivacyPolicy && trackersCount > 0) {
     recommendations.push(
-      '3. 🔴 DRINGEND: Privacy Policy hinzufügen (Legal erforderlich)'
+      '🔴 DRINGEND: Privacy Policy hinzufügen (Legal erforderlich)'
     );
   }
   
   if (!hasImpressum) {
     recommendations.push(
-      '4. 🔴 DRINGEND: Impressum/Kontaktseite hinzufügen (Legal erforderlich)'
+      '🔴 DRINGEND: Impressum/Kontaktseite hinzufügen (Legal erforderlich)'
     );
   }
   
   if (!hasSSL) {
-    recommendations.push('5. 🔴 SSL Zertifikat einrichten (kostenlos mit Let\'s Encrypt)');
+    recommendations.push('🔴 SSL Zertifikat einrichten (kostenlos mit Let\'s Encrypt)');
   }
   
   if (trackersCount > 5) {
     recommendations.push(
-      `6. 🟡 Tracker reduzieren: Sie haben ${trackersCount}, ideal sind 3-4 max`
+      `🟡 Tracker reduzieren: Sie haben ${trackersCount}, ideal sind 3-4 max`
     );
   }
   
   if (loadTime > 3) {
     recommendations.push(
-      `7. 🟡 Ladezeit optimieren: ${loadTime.toFixed(1)}s ist zu lang (Ziel: < 3s)`
+      `🟡 Ladezeit optimieren: ${loadTime.toFixed(1)}s ist zu lang (Ziel: < 3s)`
     );
   }
   
-  recommendations.push('8. 📊 Verwenden Sie Dataquard um die Verbesserungen zu tracken');
+  recommendations.push('📊 Verwenden Sie Dataquard um die Verbesserungen zu tracken');
   
   return recommendations;
 }

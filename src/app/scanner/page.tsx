@@ -247,7 +247,7 @@ export default function ScannerPage() {
               onClick={() => router.back()}
               className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-xs sm:text-sm px-2 py-1 rounded-lg hover:bg-slate-800"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Zurück
@@ -255,7 +255,7 @@ export default function ScannerPage() {
             <span className="text-slate-700">|</span>
             <Link href="/" className="flex items-center gap-2">
               <span className="text-lg font-bold">
-                <span className="text-blue-400">Data</span><span className="text-red-500">guard</span>
+                <span className="text-blue-400">Data</span><span className="text-red-500">quard</span>
               </span>
             </Link>
           </div>
@@ -263,7 +263,7 @@ export default function ScannerPage() {
             href="/checkout"
             className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3 py-1.5 rounded-full font-medium transition-all"
           >
-            Upgrade → CHF 79/Jahr
+            Upgrade – CHF 79 Einmalkauf
           </Link>
         </div>
       </header>
@@ -462,7 +462,7 @@ export default function ScannerPage() {
                 href="/checkout"
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
               >
-                🔒 Datenschutzerklärung – CHF 79/Jahr
+                🔒 Datenschutzerklärung – CHF 79 Einmalkauf
               </Link>
             </div>
           </div>
