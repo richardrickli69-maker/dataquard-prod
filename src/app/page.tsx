@@ -125,27 +125,27 @@ export default function HomePage() {
       </section>
 
       {/* Trust Badges Strip */}
-      <div style={{ background: '#0D1B2A' }} className="border-y border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-5 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
-          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
-            <span className="text-2xl">🇨🇭</span>
+      <div className="bg-slate-950 border-t border-b border-slate-800">
+        <div className="max-w-4xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-0">
+          <div className="flex items-center justify-center gap-3 py-4 md:py-2 md:border-r md:border-slate-700">
+            <span className="text-3xl">🇨🇭</span>
             <div className="text-left">
               <div className="text-sm font-semibold text-white">Daten in der Schweiz</div>
-              <div className="text-xs text-gray-400">Sicher auf Schweizer Servern</div>
+              <div className="text-xs text-slate-400">Sicher auf Schweizer Servern</div>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
-            <span className="text-2xl">✅</span>
+          <div className="flex items-center justify-center gap-3 py-4 md:py-2 md:border-r md:border-slate-700">
+            <span className="text-3xl">✅</span>
             <div className="text-left">
               <div className="text-sm font-semibold text-white">EDÖB-konform</div>
-              <div className="text-xs text-gray-400">nDSG 2023 erfüllt</div>
+              <div className="text-xs text-slate-400">nDSG 2023 erfüllt</div>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-3 py-4 md:py-0">
-            <span className="text-2xl">🔒</span>
+          <div className="flex items-center justify-center gap-3 py-4 md:py-2">
+            <span className="text-3xl">🔒</span>
             <div className="text-left">
               <div className="text-sm font-semibold text-white">Keine Kreditkarte</div>
-              <div className="text-xs text-gray-400">Kostenlos starten</div>
+              <div className="text-xs text-slate-400">Kostenlos starten</div>
             </div>
           </div>
         </div>
