@@ -25,7 +25,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(request: NextRequest) {
-  console.log('[Webhook] Request received');
+  console.log('[Webhook] Step 1: Request received');
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
 
@@ -42,13 +42,15 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('[Webhook] Signatur-Verifikation fehlgeschlagen:', err instanceof Error ? err.message : err);
+    console.error('[Webhook] Step 2 ERROR: Signatur-Verifikation fehlgeschlagen:', err instanceof Error ? err.message : err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
+  console.log('[Webhook] Step 2: Event verified, type:', event.type);
 
   if (event.type !== 'checkout.session.completed') {
     return NextResponse.json({ received: true });
   }
+  console.log('[Webhook] Step 3: Processing checkout.session.completed');
 
   const session = event.data.object as Stripe.Checkout.Session;
 
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
     if (userUpsertError) {
       console.warn('[Webhook] users-Upsert Fehler:', userUpsertError.message);
     } else {
-      console.log(`[Webhook] ✅ subscription_tier = '${plan}' für ${resolvedUserId ?? customerEmail}`);
+      console.log(`[Webhook] Step 4: Supabase updated, user: ${resolvedUserId ?? customerEmail}, plan: ${plan}`);
     }
 
     // 3. rescan_enabled = true für alle Scans des Users (nur bei paid plans)
@@ -139,6 +141,7 @@ export async function POST(request: NextRequest) {
       });
 
       const planAmount = plan === 'professional' ? 149 : 79;
+      console.log('[Webhook] Step 5: Starting PDF generation');
       const pdfBuffer = await generateInvoicePdf({
         invoiceNumber,
         date: formattedDate,
@@ -147,6 +150,8 @@ export async function POST(request: NextRequest) {
         customerEmail,
       });
 
+      console.log('[Webhook] Step 6: PDF generated, size:', pdfBuffer.length);
+      console.log('[Webhook] Step 7: Sending email to:', customerEmail);
       const { error: emailError } = await resend.emails.send({
         from: 'Dataquard <noreply@dataquard.ch>',
         to: customerEmail,
@@ -161,9 +166,9 @@ export async function POST(request: NextRequest) {
       });
 
       if (emailError) {
-        console.error('[Webhook] Resend Fehler:', emailError);
+        console.error('[Webhook] Step 7 ERROR: Resend Fehler:', emailError);
       } else {
-        console.log(`[Webhook] ✅ Bestätigungs-E-Mail gesendet an ${customerEmail}`);
+        console.log('[Webhook] Step 8: Email sent successfully to:', customerEmail);
       }
     }
 
@@ -183,7 +188,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
 
   } catch (err) {
-    console.error('[Webhook] Fehler:', err instanceof Error ? err.message : err);
+    console.error('[Webhook] ERROR (outer catch):', err instanceof Error ? err.message : err);
+    console.error('[Webhook] ERROR stack:', err instanceof Error ? err.stack : 'no stack');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
