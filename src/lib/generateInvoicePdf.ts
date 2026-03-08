@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
 
 export async function generateInvoicePdf(params: {
   invoiceNumber: string
@@ -9,8 +9,12 @@ export async function generateInvoicePdf(params: {
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595, 842])
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const fontRes = await fetch('https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7A.ttf')
+  const boldRes = await fetch('https://fonts.gstatic.com/s/notosans/v36/o-0NIpQlx3QUlC5A4PNjXhFlY9aA5Wl6PQ.ttf')
+  const fontBytes = await fontRes.arrayBuffer()
+  const boldBytes = await boldRes.arrayBuffer()
+  const font = await pdfDoc.embedFont(fontBytes)
+  const bold = await pdfDoc.embedFont(boldBytes)
   const { width, height } = page.getSize()
 
   const navy = rgb(0.102, 0.137, 0.494)
@@ -43,7 +47,7 @@ export async function generateInvoicePdf(params: {
     page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
     page.drawText('guard', { x: 50 + font.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
   }
-  page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
+  page.drawText('DSGVO / DSG Compliance-Lösungen', { x: 50, y: height - 80, size: 9, font, color: gray })
 
   // Rechnung Label rechts
   page.drawText('RECHNUNG', { x: width - 200, y: height - 55, size: 11, font: bold, color: navy })
@@ -59,7 +63,7 @@ export async function generateInvoicePdf(params: {
   })
 
   // Empfaenger + Zahlungsart
-  page.drawText('RECHNUNGSEMPFAENGER', { x: 50, y: height - 150, size: 8, font: bold, color: gray })
+  page.drawText('RECHNUNGSEMPFÄNGER', { x: 50, y: height - 150, size: 8, font: bold, color: gray })
   page.drawText(params.customerEmail, { x: 50, y: height - 164, size: 11, font, color: black })
 
   page.drawText('ZAHLUNGSART', { x: 280, y: height - 150, size: 8, font: bold, color: gray })
@@ -75,7 +79,7 @@ export async function generateInvoicePdf(params: {
   // Tabellenzeile
   const rowY = tableY - 30
   page.drawText(params.product, { x: 55, y: rowY + 8, size: 12, font: bold, color: black })
-  page.drawText('Datenschutzerklaerung + Impressum + Cookie-Banner (1 Domain)', {
+  page.drawText('Datenschutzerklärung + Impressum + Cookie-Banner (1 Domain)', {
     x: 55, y: rowY - 6, size: 9, font, color: gray
   })
   page.drawText('1', { x: 398, y: rowY + 8, size: 12, font, color: black })
