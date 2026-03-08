@@ -8,6 +8,7 @@ import Stripe from 'stripe';
 import { Resend } from 'resend';
 import { logAudit } from '@/lib/audit';
 import { generateInvoicePdf } from '@/lib/generateInvoicePdf';
+import { generateInstallationPdf } from '@/lib/generateInstallationPdf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -124,15 +125,18 @@ export async function POST(request: NextRequest) {
       });
 
       console.log('[Webhook] Step 5: Starting PDF generation');
-      const pdfBuffer = await generateInvoicePdf({
-        invoiceNumber,
-        date: formattedDate,
-        product: `Dataquard ${planLabel}`,
-        amount: amountTotal,
-        customerEmail,
-      });
+      const [pdfBuffer, installationPdfBuffer] = await Promise.all([
+        generateInvoicePdf({
+          invoiceNumber,
+          date: formattedDate,
+          product: `Dataquard ${planLabel}`,
+          amount: amountTotal,
+          customerEmail,
+        }),
+        generateInstallationPdf({ planLabel, customerEmail }),
+      ]);
 
-      console.log('[Webhook] Step 6: PDF generated, size:', pdfBuffer.length);
+      console.log('[Webhook] Step 6: PDFs generated, invoice size:', pdfBuffer.length, 'installation size:', installationPdfBuffer.length);
       console.log('[Webhook] Step 7: Sending email to:', customerEmail);
 
       const { error: emailError } = await resend.emails.send({
@@ -144,6 +148,10 @@ export async function POST(request: NextRequest) {
           {
             filename: `Dataquard-Rechnung-${invoiceNumber}.pdf`,
             content: pdfBuffer,
+          },
+          {
+            filename: `Dataquard-Installationsanleitung.pdf`,
+            content: installationPdfBuffer,
           },
         ],
       });
@@ -243,7 +251,7 @@ function generateEmailHtml({
               </h1>
               <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
                 Ihr <strong style="color:#1a1a2e;">Dataquard ${planLabel}-Plan</strong> ist jetzt aktiv.<br/>
-                Die Rechnung finden Sie als PDF-Anhang in dieser E-Mail.
+                Die Rechnung sowie die Installationsanleitung finden Sie als PDF-Anhang in dieser E-Mail.
               </p>
             </td>
           </tr>
