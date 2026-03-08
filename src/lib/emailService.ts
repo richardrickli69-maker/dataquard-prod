@@ -43,7 +43,8 @@ export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId
 }
 
 export async function sendWelcomeEmail({ email, name }: WelcomeEmailParams) {
-  const greeting = name ? `Hallo ${name},` : 'Hallo,';
+  const safeDisplayName = name ? name.replace('@', '&#64;') : null;
+  const greeting = safeDisplayName ? `Hallo ${safeDisplayName},` : 'Hallo,';
   try {
     const result = await getResend().emails.send({
       from: 'noreply@dataquard.ch',
