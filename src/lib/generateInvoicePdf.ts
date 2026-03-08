@@ -1,7 +1,5 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
-import fs from 'fs'
-import path from 'path'
 
 export async function generateInvoicePdf(params: {
   invoiceNumber: string
@@ -13,8 +11,14 @@ export async function generateInvoicePdf(params: {
   const pdfDoc = await PDFDocument.create()
   pdfDoc.registerFontkit(fontkit)
   const page = pdfDoc.addPage([595, 842])
-  const fontBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Regular.ttf'))
-  const boldBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Bold.ttf'))
+
+  const [fontRes, boldRes] = await Promise.all([
+    fetch('https://dataquard.ch/fonts/NotoSans-Regular.ttf'),
+    fetch('https://dataquard.ch/fonts/NotoSans-Bold.ttf'),
+  ])
+  const fontBytes = Buffer.from(await fontRes.arrayBuffer())
+  const boldBytes = Buffer.from(await boldRes.arrayBuffer())
+
   const font = await pdfDoc.embedFont(fontBytes)
   const bold = await pdfDoc.embedFont(boldBytes)
   const { width, height } = page.getSize()
@@ -43,7 +47,6 @@ export async function generateInvoicePdf(params: {
       width: logoDims.width,
       height: logoDims.height,
     })
-    // Logo-Text rechts davon
     page.drawText('Dataguard', { x: 50 + logoDims.width + 10, y: height - 60, size: 20, font: bold, color: navy })
     page.drawText('guard', { x: 50 + logoDims.width + 10 + font.widthOfTextAtSize('Data', 20), y: height - 60, size: 20, font: bold, color: red })
   } catch {
