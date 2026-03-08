@@ -1,5 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib'
-import fontkit from '@pdf-lib/fontkit'
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
 export async function generateInvoicePdf(params: {
   invoiceNumber: string
@@ -9,18 +8,10 @@ export async function generateInvoicePdf(params: {
   customerEmail: string
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
-  pdfDoc.registerFontkit(fontkit)
   const page = pdfDoc.addPage([595, 842])
 
-  const [fontRes, boldRes] = await Promise.all([
-    fetch('https://dataquard.ch/fonts/NotoSans-Regular.ttf'),
-    fetch('https://dataquard.ch/fonts/NotoSans-Bold.ttf'),
-  ])
-  const fontBytes = Buffer.from(await fontRes.arrayBuffer())
-  const boldBytes = Buffer.from(await boldRes.arrayBuffer())
-
-  const font = await pdfDoc.embedFont(fontBytes)
-  const bold = await pdfDoc.embedFont(boldBytes)
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const { width, height } = page.getSize()
 
   const navy = rgb(0.102, 0.137, 0.494)
@@ -47,16 +38,16 @@ export async function generateInvoicePdf(params: {
       width: logoDims.width,
       height: logoDims.height,
     })
-    page.drawText('Dataguard', { x: 50 + logoDims.width + 10, y: height - 60, size: 20, font: bold, color: navy })
-    page.drawText('guard', { x: 50 + logoDims.width + 10 + font.widthOfTextAtSize('Data', 20), y: height - 60, size: 20, font: bold, color: red })
   } catch {
     // Fallback ohne Logo
-    page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
-    page.drawText('guard', { x: 50 + font.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
   } finally {
     clearTimeout(logoTimeout)
   }
-  page.drawText('DSGVO / DSG Compliance-Lösungen', { x: 50, y: height - 80, size: 9, font, color: gray })
+
+  // Logo Text
+  page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
+  page.drawText('guard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
+  page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
 
   // Rechnung Label rechts
   page.drawText('RECHNUNG', { x: width - 200, y: height - 55, size: 11, font: bold, color: navy })
@@ -67,16 +58,16 @@ export async function generateInvoicePdf(params: {
   page.drawLine({ start: { x: 50, y: height - 100 }, end: { x: width - 50, y: height - 100 }, thickness: 1, color: lightgray })
 
   // Absender
-  page.drawText('Richard Rickli  -  Gstadstrasse 53  -  4153 Reinach BL  -  Schweiz  -  richard@dataquard.ch', {
+  page.drawText('Richard Rickli - Gstadstrasse 53 - 4153 Reinach BL - Schweiz - richard@dataquard.ch', {
     x: 50, y: height - 120, size: 8.5, font, color: gray
   })
 
   // Empfaenger + Zahlungsart
-  page.drawText('RECHNUNGSEMPFÄNGER', { x: 50, y: height - 150, size: 8, font: bold, color: gray })
+  page.drawText('RECHNUNGSEMPFAENGER', { x: 50, y: height - 150, size: 8, font: bold, color: gray })
   page.drawText(params.customerEmail, { x: 50, y: height - 164, size: 11, font, color: black })
 
   page.drawText('ZAHLUNGSART', { x: 280, y: height - 150, size: 8, font: bold, color: gray })
-  page.drawText('Einmalkauf  -  Stripe', { x: 280, y: height - 164, size: 11, font, color: black })
+  page.drawText('Einmalkauf - Stripe', { x: 280, y: height - 164, size: 11, font, color: black })
 
   // Tabellen-Header
   const tableY = height - 210
@@ -88,7 +79,7 @@ export async function generateInvoicePdf(params: {
   // Tabellenzeile
   const rowY = tableY - 30
   page.drawText(params.product, { x: 55, y: rowY + 8, size: 12, font: bold, color: black })
-  page.drawText('Datenschutzerklärung + Impressum + Cookie-Banner (1 Domain)', {
+  page.drawText('Datenschutzerklaerung + Impressum + Cookie-Banner (1 Domain)', {
     x: 55, y: rowY - 6, size: 9, font, color: gray
   })
   page.drawText('1', { x: 398, y: rowY + 8, size: 12, font, color: black })
@@ -121,8 +112,8 @@ export async function generateInvoicePdf(params: {
 
   // Footer
   page.drawLine({ start: { x: 50, y: 55 }, end: { x: width - 50, y: 55 }, thickness: 0.5, color: lightgray })
-  page.drawText('dataquard.ch  -  richard@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
-  page.drawText('Einzelunternehmen  -  Reinach BL  -  Schweiz', { x: 320, y: 40, size: 8.5, font, color: gray })
+  page.drawText('dataquard.ch - richard@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
+  page.drawText('Einzelunternehmen - Reinach BL - Schweiz', { x: 320, y: 40, size: 8.5, font, color: gray })
 
   const pdfBytes = await pdfDoc.save()
   return Buffer.from(pdfBytes)
