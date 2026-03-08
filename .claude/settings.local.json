@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(code --install-extension ms-vscode.live-server)"
+      "Bash(code --install-extension ms-vscode.live-server)",
+      "Bash(npx tsc --noEmit)"
     ]
   }
 }
