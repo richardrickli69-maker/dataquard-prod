@@ -34,7 +34,7 @@ export async function generateInvoicePdf(params: {
     const logoDims = logoImage.scale(0.12)
     page.drawImage(logoImage, {
       x: 50,
-      y: height - 80,
+      y: height - 86,
       width: logoDims.width,
       height: logoDims.height,
     })
@@ -42,7 +42,7 @@ export async function generateInvoicePdf(params: {
     // Fallback: nur Text wenn Logo nicht ladbar
     page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
     page.drawText('guard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
-    page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
+    page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 86, size: 9, font, color: gray })
   } finally {
     clearTimeout(logoTimeout)
   }
