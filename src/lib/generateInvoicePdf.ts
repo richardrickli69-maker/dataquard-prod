@@ -1,4 +1,5 @@
 import { PDFDocument, rgb } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs'
 import path from 'path'
 
@@ -10,6 +11,7 @@ export async function generateInvoicePdf(params: {
   customerEmail: string
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
+  pdfDoc.registerFontkit(fontkit)
   const page = pdfDoc.addPage([595, 842])
   const fontBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Regular.ttf'))
   const boldBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Bold.ttf'))
