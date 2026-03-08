@@ -39,15 +39,13 @@ export async function generateInvoicePdf(params: {
       height: logoDims.height,
     })
   } catch {
-    // Fallback ohne Logo
+    // Fallback: nur Text wenn Logo nicht ladbar
+    page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
+    page.drawText('guard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
+    page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
   } finally {
     clearTimeout(logoTimeout)
   }
-
-  // Logo Text
-  page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
-  page.drawText('guard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
-  page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
 
   // Rechnung Label rechts
   page.drawText('RECHNUNG', { x: width - 200, y: height - 55, size: 11, font: bold, color: navy })
