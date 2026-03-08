@@ -1,4 +1,6 @@
 import { PDFDocument, rgb } from 'pdf-lib'
+import fs from 'fs'
+import path from 'path'
 
 export async function generateInvoicePdf(params: {
   invoiceNumber: string
@@ -9,10 +11,8 @@ export async function generateInvoicePdf(params: {
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595, 842])
-  const fontRes = await fetch('https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7A.ttf')
-  const boldRes = await fetch('https://fonts.gstatic.com/s/notosans/v36/o-0NIpQlx3QUlC5A4PNjXhFlY9aA5Wl6PQ.ttf')
-  const fontBytes = await fontRes.arrayBuffer()
-  const boldBytes = await boldRes.arrayBuffer()
+  const fontBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Regular.ttf'))
+  const boldBytes = fs.readFileSync(path.join(process.cwd(), 'public/fonts/NotoSans-Bold.ttf'))
   const font = await pdfDoc.embedFont(fontBytes)
   const bold = await pdfDoc.embedFont(boldBytes)
   const { width, height } = page.getSize()
@@ -28,8 +28,10 @@ export async function generateInvoicePdf(params: {
   page.drawRectangle({ x: 0, y: height - 4, width, height: 4, color: navy })
 
   // Logo einbetten
+  const logoController = new AbortController()
+  const logoTimeout = setTimeout(() => logoController.abort(), 5000)
   try {
-    const logoRes = await fetch('https://dataquard.ch/logo.png')
+    const logoRes = await fetch('https://dataquard.ch/logo.png', { signal: logoController.signal })
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
     const logoDims = logoImage.scale(0.12)
@@ -46,6 +48,8 @@ export async function generateInvoicePdf(params: {
     // Fallback ohne Logo
     page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
     page.drawText('guard', { x: 50 + font.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
+  } finally {
+    clearTimeout(logoTimeout)
   }
   page.drawText('DSGVO / DSG Compliance-Lösungen', { x: 50, y: height - 80, size: 9, font, color: gray })
 
