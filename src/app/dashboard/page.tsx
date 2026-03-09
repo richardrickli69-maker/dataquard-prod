@@ -6,6 +6,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ActionPlan from '@/components/ActionPlan';
 import { supabase } from '@/lib/supabase';
+import { PageWrapper } from '../components/PageWrapper';
+
+const G = {
+  green: '#22c55e',
+  greenBg: 'rgba(34,197,94,0.08)',
+  greenBorder: 'rgba(34,197,94,0.25)',
+  bgWhite: '#ffffff',
+  bgLight: '#f1f2f6',
+  border: '#e2e4ea',
+  text: '#1a1a2e',
+  textSec: '#555566',
+  textMuted: '#888899',
+  red: '#dc2626',
+  yellow: '#eab308',
+  blue: '#3b82f6',
+};
 
 interface AuditEntry {
   id: string;
@@ -90,22 +106,14 @@ export default function DashboardPage() {
       .eq('status', 'active').order('created_at', { ascending: false }).limit(1).single();
     if (subData) setSubscription(subData);
 
-    // Letzten Scan des Users laden für Massnahmenplan
     const { data: scanData } = await supabase
-      .from('scans')
-      .select('url, jurisdiction, ampel')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .from('scans').select('url, jurisdiction, ampel').eq('user_id', userId)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
     if (scanData) setLatestScan({ url: scanData.url, scan: null });
 
-    // Verified Badges laden
     const { data: badgeData } = await supabase
-      .from('verified_badges')
-      .select('id, website_url, issued_at, expires_at, is_active')
-      .eq('user_id', userId)
-      .order('issued_at', { ascending: false });
+      .from('verified_badges').select('id, website_url, issued_at, expires_at, is_active')
+      .eq('user_id', userId).order('issued_at', { ascending: false });
     if (badgeData) setBadges(badgeData);
   };
 
@@ -116,19 +124,14 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/badges/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
         body: JSON.stringify({ website_url: badgeUrl.trim() }),
       });
       const json = await res.json();
       if (json.badge_id) {
         const { data: badgeData } = await supabase
-          .from('verified_badges')
-          .select('id, website_url, issued_at, expires_at, is_active')
-          .eq('user_id', user?.id)
-          .order('issued_at', { ascending: false });
+          .from('verified_badges').select('id, website_url, issued_at, expires_at, is_active')
+          .eq('user_id', user?.id).order('issued_at', { ascending: false });
         if (badgeData) setBadges(badgeData);
         setBadgeUrl('');
       }
@@ -151,10 +154,10 @@ export default function DashboardPage() {
     badge_created: '🏅 Badge erstellt',
   }[action] || action);
 
-  const getStatusColor = (status: string) => ({
-    completed: 'text-green-400', processing: 'text-yellow-400',
-    pending: 'text-blue-400', failed: 'text-red-400', active: 'text-green-400',
-  }[status] || 'text-gray-400');
+  const getStatusColor = (status: string): string => ({
+    completed: G.green, processing: G.yellow,
+    pending: G.blue, failed: G.red, active: G.green,
+  }[status] || G.textMuted);
 
   const getPlanLabel = (plan: string) => ({
     starter: '🟢 Starter – CHF 79',
@@ -165,31 +168,37 @@ export default function DashboardPage() {
 
   const totalCostCents = batchJobs.reduce((sum, j) => sum + (j.cost_cents || 0), 0);
 
+  const card: React.CSSProperties = {
+    background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 12, padding: 24,
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <PageWrapper>
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 44, height: 44, border: `4px solid ${G.border}`, borderTopColor: G.green, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <PageWrapper>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 className="text-4xl font-bold mb-1">Dashboard</h1>
-            <p className="text-gray-400">{user?.email}</p>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 2 }}>Dashboard</h1>
+            <p style={{ color: G.textMuted, fontSize: 13 }}>{user?.email}</p>
           </div>
-          <div className="flex gap-3">
-            <Link href="/scanner" className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-sm font-bold">🔍 Scannen</Link>
-            <Link href="/analytics" className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-bold">📊 Analytics</Link>
-            <Link href="/checkout" className="px-4 py-2 border border-indigo-500 text-indigo-300 rounded-lg hover:bg-indigo-900 text-sm">📈 Upgrade</Link>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>🔍 Scannen</Link>
+            <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>📈 Upgrade</Link>
             <button
               onClick={async () => { await supabase.auth.signOut(); router.push('/auth'); }}
-              className="px-4 py-2 border border-red-700 text-red-400 rounded-lg hover:bg-red-900 hover:bg-opacity-30 text-sm"
+              style={{ padding: '8px 16px', border: `1px solid rgba(220,38,38,0.3)`, color: G.red, background: 'transparent', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}
             >
               Abmelden
             </button>
@@ -197,7 +206,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 28 }}>
           {[
             { label: 'Policies', value: policies.length, icon: '📄' },
             { label: 'Batch Jobs', value: batchJobs.length, icon: '⚙️' },
@@ -205,16 +214,16 @@ export default function DashboardPage() {
             { label: 'KI-Kosten', value: `CHF ${(totalCostCents / 100).toFixed(2)}`, icon: '🤖' },
             { label: 'Plan', value: subscription?.plan?.toUpperCase() || 'FREE', icon: '💳' },
           ].map((stat) => (
-            <div key={stat.label} className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-4 rounded-lg text-center">
-              <div className="text-2xl mb-1">{stat.icon}</div>
-              <div className="text-xl font-bold text-indigo-300">{stat.value}</div>
-              <div className="text-gray-400 text-xs mt-1">{stat.label}</div>
+            <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
+              <div style={{ fontSize: 22, marginBottom: 4 }}>{stat.icon}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: G.green }}>{stat.value}</div>
+              <div style={{ fontSize: 11, color: G.textMuted, marginTop: 2 }}>{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-indigo-700 pb-2 overflow-x-auto">
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: `1px solid ${G.border}`, paddingBottom: 0, overflowX: 'auto' }}>
           {[
             { key: 'overview', label: '🏠 Übersicht' },
             { key: 'policies', label: '📄 Policies' },
@@ -224,8 +233,15 @@ export default function DashboardPage() {
             { key: 'massnahmen', label: '🎯 Massnahmen' },
             { key: 'badge', label: '🛡️ Verified Badge' },
           ].map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-2 rounded-t-lg text-sm font-bold transition whitespace-nowrap ${activeTab === tab.key ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              style={{
+                padding: '10px 16px', border: 'none', background: activeTab === tab.key ? G.green : 'transparent',
+                color: activeTab === tab.key ? '#fff' : G.textSec, borderRadius: '8px 8px 0 0',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+              }}
+            >
               {tab.label}
             </button>
           ))}
@@ -233,23 +249,23 @@ export default function DashboardPage() {
 
         {/* Tab: Übersicht */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
-              <h2 className="text-xl font-bold mb-4">🚀 Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link href="/scanner" className="block px-6 py-4 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-center font-bold">🔍 Website scannen</Link>
-                <Link href="/datenschutz-generator" className="block px-6 py-4 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-center font-bold">📝 Datenschutz erstellen</Link>
-                <Link href="/impressum-generator" className="block px-6 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 text-center font-bold">📄 Impressum erstellen</Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={card}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>🚀 Quick Actions</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                <Link href="/scanner" style={{ display: 'block', padding: '14px', background: G.green, color: '#fff', borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>🔍 Website scannen</Link>
+                <Link href="/datenschutz-generator" style={{ display: 'block', padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>📝 Datenschutz erstellen</Link>
+                <Link href="/impressum-generator" style={{ display: 'block', padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>📄 Impressum erstellen</Link>
               </div>
             </div>
             {auditLog.length > 0 && (
-              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
-                <h2 className="text-xl font-bold mb-4">🕐 Letzte Aktivität</h2>
-                <div className="space-y-3">
-                  {auditLog.slice(0, 3).map((entry) => (
-                    <div key={entry.id} className="flex justify-between items-center border-b border-indigo-800 pb-3">
-                      <span>{getEventLabel(entry.action)}</span>
-                      <span className="text-gray-400 text-sm">{new Date(entry.created_at).toLocaleDateString('de-CH')}</span>
+              <div style={card}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>🕐 Letzte Aktivität</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {auditLog.slice(0, 3).map((entry, i) => (
+                    <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 2 ? `1px solid ${G.border}` : 'none' }}>
+                      <span style={{ color: G.textSec, fontSize: 14 }}>{getEventLabel(entry.action)}</span>
+                      <span style={{ color: G.textMuted, fontSize: 12 }}>{new Date(entry.created_at).toLocaleDateString('de-CH')}</span>
                     </div>
                   ))}
                 </div>
@@ -260,29 +276,28 @@ export default function DashboardPage() {
 
         {/* Tab: Policies */}
         {activeTab === 'policies' && (
-          <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg overflow-hidden">
+          <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
             {policies.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-gray-400 mb-4">Noch keine Policies erstellt.</p>
-                <Link href="/datenschutz-generator" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold">Erste Policy erstellen →</Link>
+              <div style={{ padding: 40, textAlign: 'center' }}>
+                <p style={{ color: G.textMuted, marginBottom: 16 }}>Noch keine Policies erstellt.</p>
+                <Link href="/datenschutz-generator" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Erste Policy erstellen →</Link>
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead className="border-b border-indigo-700">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-gray-400">Website</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Titel</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Status</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Erstellt</th>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${G.border}` }}>
+                    {['Website', 'Titel', 'Status', 'Erstellt'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: G.textMuted, fontWeight: 600, fontSize: 12 }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {policies.map((policy) => (
-                    <tr key={policy.id} className="border-b border-indigo-900 hover:bg-indigo-900 hover:bg-opacity-30">
-                      <td className="py-3 px-4 text-gray-300">{policy.website_url}</td>
-                      <td className="py-3 px-4">{policy.title}</td>
-                      <td className={`py-3 px-4 font-bold ${getStatusColor(policy.status)}`}>{policy.status}</td>
-                      <td className="py-3 px-4 text-gray-400">{new Date(policy.created_at).toLocaleDateString('de-CH')}</td>
+                    <tr key={policy.id} style={{ borderBottom: `1px solid ${G.border}` }}>
+                      <td style={{ padding: '12px 16px', color: G.textSec }}>{policy.website_url}</td>
+                      <td style={{ padding: '12px 16px', color: G.text }}>{policy.title}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 700, color: getStatusColor(policy.status) }}>{policy.status}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{new Date(policy.created_at).toLocaleDateString('de-CH')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -293,28 +308,27 @@ export default function DashboardPage() {
 
         {/* Tab: Audit-Trail */}
         {activeTab === 'audit' && (
-          <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg overflow-hidden">
+          <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
             {auditLog.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">Noch keine Audit-Einträge vorhanden.</div>
+              <div style={{ padding: 40, textAlign: 'center', color: G.textMuted }}>Noch keine Audit-Einträge vorhanden.</div>
             ) : (
-              <table className="w-full text-sm">
-                <thead className="border-b border-indigo-700">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-gray-400">Ereignis</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Resource</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Details</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Datum</th>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${G.border}` }}>
+                    {['Ereignis', 'Resource', 'Details', 'Datum'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: G.textMuted, fontWeight: 600, fontSize: 12 }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {auditLog.map((entry) => (
-                    <tr key={entry.id} className="border-b border-indigo-900 hover:bg-indigo-900 hover:bg-opacity-30">
-                      <td className="py-3 px-4">{getEventLabel(entry.action)}</td>
-                      <td className="py-3 px-4 text-gray-400 text-xs truncate max-w-[160px]">{entry.resource ?? '–'}</td>
-                      <td className="py-3 px-4 text-gray-400 text-xs truncate max-w-[200px]">
+                    <tr key={entry.id} style={{ borderBottom: `1px solid ${G.border}` }}>
+                      <td style={{ padding: '12px 16px', color: G.text }}>{getEventLabel(entry.action)}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.resource ?? '–'}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {entry.details ? JSON.stringify(entry.details).slice(0, 60) : '–'}
                       </td>
-                      <td className="py-3 px-4 text-gray-400">{new Date(entry.created_at).toLocaleDateString('de-CH')}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{new Date(entry.created_at).toLocaleDateString('de-CH')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -325,28 +339,26 @@ export default function DashboardPage() {
 
         {/* Tab: Batch Jobs */}
         {activeTab === 'jobs' && (
-          <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg overflow-hidden">
+          <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
             {batchJobs.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">Noch keine Batch Jobs vorhanden.</div>
+              <div style={{ padding: 40, textAlign: 'center', color: G.textMuted }}>Noch keine Batch Jobs vorhanden.</div>
             ) : (
-              <table className="w-full text-sm">
-                <thead className="border-b border-indigo-700">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-gray-400">Domain</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Jurisdiction</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Status</th>
-                    <th className="text-left py-3 px-4 text-gray-400">KI-Kosten</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Erstellt</th>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${G.border}` }}>
+                    {['Domain', 'Jurisdiction', 'Status', 'KI-Kosten', 'Erstellt'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: G.textMuted, fontWeight: 600, fontSize: 12 }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {batchJobs.map((job) => (
-                    <tr key={job.id} className="border-b border-indigo-900 hover:bg-indigo-900 hover:bg-opacity-30">
-                      <td className="py-3 px-4 text-gray-300">{job.domain}</td>
-                      <td className="py-3 px-4 text-gray-400">{job.jurisdiction}</td>
-                      <td className={`py-3 px-4 font-bold ${getStatusColor(job.status)}`}>{job.status}</td>
-                      <td className="py-3 px-4 text-gray-400">{job.cost_cents ? `CHF ${(job.cost_cents / 100).toFixed(4)}` : '–'}</td>
-                      <td className="py-3 px-4 text-gray-400">{new Date(job.created_at).toLocaleDateString('de-CH')}</td>
+                    <tr key={job.id} style={{ borderBottom: `1px solid ${G.border}` }}>
+                      <td style={{ padding: '12px 16px', color: G.text }}>{job.domain}</td>
+                      <td style={{ padding: '12px 16px', color: G.textSec }}>{job.jurisdiction}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 700, color: getStatusColor(job.status) }}>{job.status}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{job.cost_cents ? `CHF ${(job.cost_cents / 100).toFixed(4)}` : '–'}</td>
+                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{new Date(job.created_at).toLocaleDateString('de-CH')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -357,60 +369,50 @@ export default function DashboardPage() {
 
         {/* Tab: Billing */}
         {activeTab === 'billing' && (
-          <div className="space-y-6">
-            {/* Aktueller Plan */}
-            <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
-              <h2 className="text-xl font-bold mb-4">💳 Aktueller Plan</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={card}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>💳 Aktueller Plan</h2>
               {subscription ? (
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Plan</span>
-                    <span className="font-bold text-indigo-300">{getPlanLabel(subscription.plan)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Status</span>
-                    <span className={`font-bold ${getStatusColor(subscription.status)}`}>{subscription.status}</span>
-                  </div>
-                  {subscription.valid_until && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Gültig bis</span>
-                      <span className="text-white">{new Date(subscription.valid_until).toLocaleDateString('de-CH')}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[
+                    { label: 'Plan', value: getPlanLabel(subscription.plan), highlight: true },
+                    { label: 'Status', value: subscription.status, color: getStatusColor(subscription.status) },
+                    ...(subscription.valid_until ? [{ label: 'Gültig bis', value: new Date(subscription.valid_until).toLocaleDateString('de-CH') }] : []),
+                    { label: 'Kunde seit', value: new Date(subscription.created_at).toLocaleDateString('de-CH') },
+                  ].map(({ label, value, highlight, color }) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${G.border}`, paddingBottom: 12 }}>
+                      <span style={{ color: G.textMuted, fontSize: 14 }}>{label}</span>
+                      <span style={{ fontWeight: highlight ? 700 : 400, color: color || G.text, fontSize: 14 }}>{value}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Kunde seit</span>
-                    <span className="text-white">{new Date(subscription.created_at).toLocaleDateString('de-CH')}</span>
-                  </div>
+                  ))}
                 </div>
               ) : (
-                <div className="text-center py-4">
-                  <p className="text-gray-400 mb-4">Kein aktiver Zugang – Sie nutzen den Free-Plan.</p>
-                  <Link href="/checkout" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">Jetzt upgraden →</Link>
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <p style={{ color: G.textMuted, marginBottom: 16 }}>Kein aktiver Zugang – Sie nutzen den Free-Plan.</p>
+                  <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
                 </div>
               )}
             </div>
 
-            {/* KI-Kostenübersicht */}
-            <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
-              <h2 className="text-xl font-bold mb-4">🤖 KI-Kostenübersicht</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-indigo-800 bg-opacity-50 p-4 rounded-lg text-center">
-                  <div className="text-gray-400 text-sm mb-1">Gesamt KI-Kosten</div>
-                  <div className="text-2xl font-bold text-yellow-300">CHF {(totalCostCents / 100).toFixed(4)}</div>
+            <div style={card}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>🤖 KI-Kostenübersicht</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                <div style={{ background: G.bgLight, borderRadius: 10, padding: 16, textAlign: 'center' }}>
+                  <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 4 }}>Gesamt KI-Kosten</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: G.yellow }}>CHF {(totalCostCents / 100).toFixed(4)}</div>
                 </div>
-                <div className="bg-indigo-800 bg-opacity-50 p-4 rounded-lg text-center">
-                  <div className="text-gray-400 text-sm mb-1">Policy Jobs</div>
-                  <div className="text-2xl font-bold text-indigo-300">{batchJobs.length}</div>
+                <div style={{ background: G.bgLight, borderRadius: 10, padding: 16, textAlign: 'center' }}>
+                  <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 4 }}>Policy Jobs</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: G.green }}>{batchJobs.length}</div>
                 </div>
               </div>
             </div>
 
-            {/* Upgrade CTA */}
             {!subscription && (
-              <div className="bg-gradient-to-r from-indigo-800 to-purple-800 border border-indigo-500 p-6 rounded-lg text-center">
-                <h3 className="text-xl font-bold mb-2">Bereit für mehr?</h3>
-                <p className="text-gray-300 mb-4">Starter ab CHF 79 – vollständige Compliance für Ihre Website.</p>
-                <Link href="/checkout" className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-lg hover:bg-gray-100">Jetzt starten →</Link>
+              <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: 28, textAlign: 'center' }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: G.text, marginBottom: 8 }}>Bereit für mehr?</h3>
+                <p style={{ color: G.textSec, marginBottom: 20, fontSize: 14 }}>Starter ab CHF 79 – vollständige Compliance für Ihre Website.</p>
+                <Link href="/checkout" style={{ padding: '12px 32px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, fontSize: 15, textDecoration: 'none' }}>Jetzt starten →</Link>
               </div>
             )}
           </div>
@@ -430,9 +432,9 @@ export default function DashboardPage() {
                 url={latestScan.url}
               />
             ) : (
-              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-8 rounded-lg text-center">
-                <p className="text-gray-400 mb-4">Noch kein Scan vorhanden – scannen Sie zuerst Ihre Website.</p>
-                <Link href="/scanner" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">
+              <div style={{ ...card, textAlign: 'center', padding: 48 }}>
+                <p style={{ color: G.textMuted, marginBottom: 16 }}>Noch kein Scan vorhanden – scannen Sie zuerst Ihre Website.</p>
+                <Link href="/scanner" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
                   🔍 Website scannen →
                 </Link>
               </div>
@@ -442,109 +444,78 @@ export default function DashboardPage() {
 
         {/* Tab: Verified Badge */}
         {activeTab === 'badge' && (
-          <div className="space-y-6">
-
-            {/* Erklärung */}
-            <div className="bg-gradient-to-r from-green-900 to-emerald-900 bg-opacity-40 border border-green-700 p-6 rounded-lg">
-              <h2 className="text-xl font-bold text-green-300 mb-2">🛡️ Dataquard Verified Badge</h2>
-              <p className="text-gray-300 text-sm">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ background: G.greenBg, border: `1px solid ${G.greenBorder}`, borderRadius: 12, padding: 20 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.green, marginBottom: 6 }}>🛡️ Dataquard Verified Badge</h2>
+              <p style={{ color: G.textSec, fontSize: 13 }}>
                 Zeigen Sie Ihren Besuchern, dass Ihre Website auf DSGVO/nDSG-Compliance geprüft wurde.
                 Betten Sie das Badge auf Ihrer Website ein – es verlinkt auf eine öffentliche Verifikationsseite.
               </p>
             </div>
 
-            {/* Neuen Badge erstellen */}
             {subscription && subscription.plan !== 'impressum' ? (
-              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg">
-                <h3 className="text-lg font-bold mb-4">Badge generieren</h3>
-                <div className="flex gap-3">
+              <div style={card}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 14 }}>Badge generieren</h3>
+                <div style={{ display: 'flex', gap: 10 }}>
                   <input
-                    type="url"
-                    value={badgeUrl}
-                    onChange={(e) => setBadgeUrl(e.target.value)}
+                    type="url" value={badgeUrl} onChange={(e) => setBadgeUrl(e.target.value)}
                     placeholder="https://ihrewebsite.ch"
-                    className="flex-1 px-4 py-2 bg-indigo-800 bg-opacity-50 border border-indigo-600 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-400"
+                    style={{ flex: 1, background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px', fontSize: 14, color: G.text, outline: 'none' }}
                   />
                   <button
-                    onClick={generateBadge}
-                    disabled={badgeLoading || !badgeUrl.trim()}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 text-sm whitespace-nowrap"
+                    onClick={generateBadge} disabled={badgeLoading || !badgeUrl.trim()}
+                    style={{ padding: '10px 20px', background: G.green, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: badgeLoading ? 'not-allowed' : 'pointer', opacity: badgeLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}
                   >
                     {badgeLoading ? '⏳ Erstelle...' : '🛡️ Badge erstellen'}
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="bg-indigo-900 bg-opacity-30 border border-indigo-700 p-6 rounded-lg text-center">
-                <p className="text-gray-400 mb-4">Verified Badge erfordert einen Starter- oder Professional-Plan.</p>
-                <Link href="/checkout" className="px-6 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600">Jetzt upgraden →</Link>
+              <div style={{ ...card, textAlign: 'center', padding: 32 }}>
+                <p style={{ color: G.textMuted, marginBottom: 16 }}>Verified Badge erfordert einen Starter- oder Professional-Plan.</p>
+                <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
               </div>
             )}
 
-            {/* Badge-Liste */}
             {badges.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold">Deine Badges</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text }}>Deine Badges</h3>
                 {badges.map((badge) => {
                   const isExpired = badge.expires_at && new Date(badge.expires_at) < new Date();
                   const isValid = badge.is_active && !isExpired;
                   return (
-                    <div key={badge.id} className="bg-indigo-900 bg-opacity-30 border border-indigo-700 rounded-lg p-6">
-                      <div className="flex flex-col md:flex-row gap-6 items-start">
+                    <div key={badge.id} style={card}>
+                      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <img src={`/api/badges/${badge.id}/image`} alt="Verified Badge" width={200} height={120}
+                          style={{ borderRadius: 8, border: `1px solid ${G.border}`, flexShrink: 0 }} />
 
-                        {/* Badge Preview */}
-                        <div className="flex-shrink-0">
-                          <img
-                            src={`/api/badges/${badge.id}/image`}
-                            alt="Verified Badge"
-                            width={200}
-                            height={120}
-                            className="rounded-lg shadow-lg border border-indigo-700"
-                          />
-                        </div>
-
-                        {/* Badge Info */}
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-3">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${isValid ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                            <span style={{ background: isValid ? G.greenBg : 'rgba(220,38,38,0.08)', color: isValid ? G.green : G.red, border: `1px solid ${isValid ? G.greenBorder : 'rgba(220,38,38,0.2)'}`, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
                               {isValid ? '✓ Aktiv' : '✗ Inaktiv/Abgelaufen'}
                             </span>
                             <a href={badge.website_url} target="_blank" rel="noopener noreferrer"
-                              className="text-indigo-300 hover:text-indigo-200 font-semibold text-sm">
-                              {badge.website_url}
-                            </a>
+                              style={{ color: G.green, fontWeight: 600, fontSize: 13 }}>{badge.website_url}</a>
                           </div>
-                          <div className="text-xs text-gray-400 space-y-1">
-                            <p>Ausgestellt: {new Date(badge.issued_at).toLocaleDateString('de-CH')}</p>
-                            <p>Gültig bis: {badge.expires_at ? new Date(badge.expires_at).toLocaleDateString('de-CH') : '–'}</p>
-                            <p className="font-mono text-gray-500">ID: {badge.id}</p>
+                          <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <span>Ausgestellt: {new Date(badge.issued_at).toLocaleDateString('de-CH')}</span>
+                            <span>Gültig bis: {badge.expires_at ? new Date(badge.expires_at).toLocaleDateString('de-CH') : '–'}</span>
+                            <span style={{ fontFamily: 'monospace', color: G.border }}>ID: {badge.id}</span>
                           </div>
-
-                          {/* Verifikationslink */}
-                          <a
-                            href={`/verify/${badge.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block text-xs text-green-400 hover:text-green-300"
-                          >
+                          <a href={`/verify/${badge.id}`} target="_blank" rel="noopener noreferrer"
+                            style={{ color: G.green, fontSize: 12, display: 'block', marginBottom: 12 }}>
                             🔗 Verifikationsseite öffnen →
                           </a>
-
-                          {/* Embed Code */}
-                          <div>
-                            <p className="text-xs text-gray-400 mb-2">Embed-Code für Ihre Website:</p>
-                            <div className="bg-black bg-opacity-40 rounded-lg p-3 font-mono text-xs text-green-300 break-all">
-                              {`<a href="https://dataquard.ch/verify/${badge.id}" target="_blank" rel="noopener">`}<br />
-                              {`  <img src="https://dataquard.ch/api/badges/${badge.id}/image" alt="Dataquard Verified" width="200" height="120" />`}<br />
-                              {`</a>`}
-                            </div>
-                            <button
-                              onClick={() => copyEmbedCode(badge.id)}
-                              className="mt-2 px-4 py-1.5 bg-indigo-700 text-white rounded text-xs hover:bg-indigo-600 transition"
-                            >
-                              {badgeCopied ? '✅ Kopiert!' : '📋 Code kopieren'}
-                            </button>
+                          <p style={{ color: G.textMuted, fontSize: 12, marginBottom: 6 }}>Embed-Code für Ihre Website:</p>
+                          <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px', fontFamily: 'monospace', fontSize: 11, color: G.green, wordBreak: 'break-all', lineHeight: 1.6 }}>
+                            {`<a href="https://dataquard.ch/verify/${badge.id}" target="_blank" rel="noopener">`}<br />
+                            {`  <img src="https://dataquard.ch/api/badges/${badge.id}/image" alt="Dataquard Verified" width="200" height="120" />`}<br />
+                            {`</a>`}
                           </div>
+                          <button onClick={() => copyEmbedCode(badge.id)}
+                            style={{ marginTop: 8, padding: '6px 14px', background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 6, fontSize: 12, color: G.textSec, cursor: 'pointer' }}>
+                            {badgeCopied ? '✅ Kopiert!' : '📋 Code kopieren'}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -554,14 +525,14 @@ export default function DashboardPage() {
             )}
 
             {badges.length === 0 && subscription && subscription.plan !== 'impressum' && (
-              <div className="text-center text-gray-400 py-8">
-                Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf "Badge erstellen".
+              <div style={{ textAlign: 'center', color: G.textMuted, padding: 32 }}>
+                Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf &ldquo;Badge erstellen&rdquo;.
               </div>
             )}
           </div>
         )}
 
       </div>
-    </div>
+    </PageWrapper>
   );
 }

@@ -3,6 +3,18 @@
 import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { PageWrapper } from '../../components/PageWrapper';
+
+const G = {
+  green: '#22c55e',
+  greenBg: 'rgba(34,197,94,0.08)',
+  greenBorder: 'rgba(34,197,94,0.25)',
+  bgWhite: '#ffffff',
+  border: '#e2e4ea',
+  text: '#1a1a2e',
+  textSec: '#555566',
+  textMuted: '#888899',
+};
 
 function SuccessInner() {
   const searchParams = useSearchParams();
@@ -12,7 +24,6 @@ function SuccessInner() {
 
   useEffect(() => {
     if (!sessionId) return;
-
     let cleanup: (() => void) | undefined;
     const run = async () => {
       try {
@@ -40,73 +51,65 @@ function SuccessInner() {
   const isImpressum = product === 'impressum';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center">
+    <PageWrapper>
+      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+        <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 72, marginBottom: 24 }}>✅</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12, color: G.text }}>Vielen Dank für Ihren Kauf!</h1>
+          <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
+            {isImpressum
+              ? 'Ihr Impressum wird jetzt freigeschaltet. Sie werden in Kürze weitergeleitet...'
+              : 'Ihr Dataquard-Zugang ist aktiv. Sie werden zum Dashboard weitergeleitet...'}
+          </p>
 
-        {/* Success Icon */}
-        <div className="text-8xl mb-6 animate-bounce">✅</div>
+          <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, marginBottom: 28, textAlign: 'left', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+            <h2 style={{ fontWeight: 700, color: G.text, marginBottom: 12, fontSize: 16 }}>
+              {isImpressum ? '📄 Impressum' : product === 'starter' ? '⭐ Dataquard Starter' : '🚀 Dataquard Professional'}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: G.textSec }}>
+              {isImpressum ? (
+                <>
+                  <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>✓</span>Sofort-Download freigeschaltet</div>
+                  <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>✓</span>nDSG / TMG-konform</div>
+                  <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>✓</span>Für Schweiz &amp; Deutschland</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>✓</span>Datenschutzerklärung aktiviert</div>
+                  <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>✓</span>Dashboard-Zugang freigeschaltet</div>
+                </>
+              )}
+            </div>
+          </div>
 
-        <h1 className="text-4xl font-bold mb-4">Vielen Dank für Ihren Kauf!</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: G.textMuted, fontSize: 13 }}>
+            <svg style={{ width: 18, height: 18, animation: 'spin 1s linear infinite', flexShrink: 0, color: G.green }} fill="none" viewBox="0 0 24 24">
+              <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span>{isImpressum ? 'Weiterleitung zum Impressum Generator...' : 'Weiterleitung zum Dashboard...'}</span>
+          </div>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-        <p className="text-gray-300 text-lg mb-8">
-          {isImpressum
-            ? 'Ihr Impressum wird jetzt freigeschaltet. Sie werden in Kürze weitergeleitet...'
-            : 'Ihr Dataquard-Zugang ist aktiv. Sie werden zum Dashboard weitergeleitet...'}
-        </p>
-
-        {/* Product Info */}
-        <div className="bg-indigo-900 bg-opacity-50 border border-indigo-700 rounded-xl p-6 mb-8 text-left">
-          <h2 className="font-bold text-white mb-3">
-            {isImpressum ? '📄 Impressum' : product === 'starter' ? '⭐ Dataquard Starter' : '🚀 Dataquard Professional'}
-          </h2>
-          <ul className="space-y-2 text-sm text-gray-300">
-            {isImpressum ? (
-              <>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>Sofort-Download freigeschaltet</li>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>nDSG / TMG-konform</li>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>Für Schweiz & Deutschland</li>
-              </>
-            ) : (
-              <>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>Datenschutzerklärung aktiviert</li>
-                <li className="flex gap-2"><span className="text-green-400">✓</span>Dashboard-Zugang freigeschaltet</li>
-              </>
-            )}
-          </ul>
+          <div style={{ marginTop: 20 }}>
+            <a href={isImpressum ? '/impressum-generator' : '/dashboard'} style={{ color: G.green, fontSize: 13, textDecoration: 'underline' }}>
+              Nicht weitergeleitet? Hier klicken →
+            </a>
+          </div>
         </div>
-
-        {/* Loading Spinner */}
-        <div className="flex items-center justify-center gap-3 text-gray-400">
-          <svg className="animate-spin h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          <span className="text-sm">
-            {isImpressum ? 'Weiterleitung zum Impressum Generator...' : 'Weiterleitung zum Dashboard...'}
-          </span>
-        </div>
-
-        {/* Manual Link */}
-        <div className="mt-6">
-          <a
-            href={isImpressum ? '/impressum-generator' : '/dashboard'}
-            className="text-indigo-400 hover:text-indigo-300 text-sm underline"
-          >
-            Nicht weitergeleitet? Hier klicken →
-          </a>
-        </div>
-
       </div>
-    </div>
+    </PageWrapper>
   );
 }
 
 export default function SuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-black text-white flex items-center justify-center">
-        <div className="text-4xl animate-bounce">✅</div>
-      </div>
+      <PageWrapper>
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: 48 }}>✅</div>
+        </div>
+      </PageWrapper>
     }>
       <SuccessInner />
     </Suspense>

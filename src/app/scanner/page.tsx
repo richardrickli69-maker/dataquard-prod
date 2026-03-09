@@ -4,61 +4,50 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { PageWrapper } from '../components/PageWrapper';
+
+const G = {
+  green: '#22c55e',
+  greenBg: 'rgba(34,197,94,0.08)',
+  bgWhite: '#ffffff',
+  bgLight: '#f1f2f6',
+  border: '#e2e4ea',
+  text: '#1a1a2e',
+  textSec: '#555566',
+  textMuted: '#888899',
+  red: '#dc2626',
+  yellow: '#eab308',
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface ScanResult {
   url: string;
-  scores: {
-    compliance: number;
-    optimization: number;
-    trust: number;
-  };
+  scores: { compliance: number; optimization: number; trust: number; };
   findings: {
-    datenschutz: boolean;
-    cookieBanner: boolean;
-    trackerCount: number;
-    ssl: boolean;
-    mobile: boolean;
-    impressum: boolean;
-    impressumVollstaendig: boolean;
-    impressumPflichtangaben: string[];
+    datenschutz: boolean; cookieBanner: boolean; trackerCount: number;
+    ssl: boolean; mobile: boolean; impressum: boolean;
+    impressumVollstaendig: boolean; impressumPflichtangaben: string[];
   };
   jurisdiction: 'nDSG' | 'DSGVO' | 'BEIDES';
   insights: string[];
   recommendations: string[];
 }
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+interface ChatMessage { role: 'user' | 'assistant'; content: string; }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const jurisdictionColor = (j: string) => {
-  if (j === 'nDSG') return 'text-green-400 bg-green-400/10 border-green-400/30';
-  if (j === 'DSGVO') return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
-  return 'text-red-400 bg-red-400/10 border-red-400/30';
+const jurisdictionStyle = (j: string): React.CSSProperties => {
+  if (j === 'nDSG') return { color: '#22c55e', background: '#f0fdf4', border: '1px solid #bbf7d0' };
+  if (j === 'DSGVO') return { color: '#eab308', background: '#fefce8', border: '1px solid #fef08a' };
+  return { color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' };
 };
 
-const jurisdictionEmoji = (j: string) => {
-  if (j === 'nDSG') return '🟢';
-  if (j === 'DSGVO') return '🟡';
-  return '🔴';
-};
+const jurisdictionEmoji = (j: string) => j === 'nDSG' ? '🟢' : j === 'DSGVO' ? '🟡' : '🔴';
 
-const scoreColor = (score: number) => {
-  if (score >= 70) return '#22c55e';
-  if (score >= 40) return '#f59e0b';
-  return '#ef4444';
-};
-
-const scoreLabel = (score: number) => {
-  if (score >= 70) return 'Gut';
-  if (score >= 40) return 'Verbesserungsbedarf';
-  return 'Kritisch';
-};
+const scoreColor = (score: number) => score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
+const scoreLabel = (score: number) => score >= 70 ? 'Gut' : score >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
 
 // ─── Score Circle ─────────────────────────────────────────────────────────────
 
@@ -67,30 +56,22 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
-
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative w-12 h-12 sm:w-14 sm:h-14">
-        <svg className="w-12 h-12 sm:w-14 sm:h-14 -rotate-90" viewBox="0 0 52 52">
-          <circle cx="26" cy="26" r={r} fill="none" stroke="#1e293b" strokeWidth="5" />
-          <circle
-            cx="26" cy="26" r={r}
-            fill="none"
-            stroke={color}
-            strokeWidth="5"
-            strokeDasharray={circ}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s ease' }}
-          />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      <div style={{ position: 'relative', width: 56, height: 56 }}>
+        <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }} viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r={r} fill="none" stroke={G.border} strokeWidth="5" />
+          <circle cx="26" cy="26" r={r} fill="none" stroke={color} strokeWidth="5"
+            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1s ease' }} />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm leading-none">{icon}</span>
-          <span className="text-[10px] font-bold text-white leading-none mt-0.5">{score}%</span>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 14 }}>{icon}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>{score}%</span>
         </div>
       </div>
-      <span className="text-[11px] text-slate-400 font-medium leading-tight text-center">{label}</span>
-      <span className="text-[11px] font-semibold leading-tight" style={{ color }}>{scoreLabel(score)}</span>
+      <span style={{ fontSize: 11, color: G.textMuted, fontWeight: 500, textAlign: 'center' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 600, color }}>{scoreLabel(score)}</span>
     </div>
   );
 }
@@ -104,14 +85,11 @@ export default function ScannerPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
 
-  // Chat
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: 'Hallo! Ich bin der Dataquard Assistent. Ich helfe Ihnen bei Fragen zu DSGVO, nDSG und Website-Compliance. Was möchten Sie wissen?'
-    }
-  ]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([{
+    role: 'assistant',
+    content: 'Hallo! Ich bin der Dataquard Assistent. Ich helfe Ihnen bei Fragen zu DSGVO, nDSG und Website-Compliance. Was möchten Sie wissen?'
+  }]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -126,54 +104,29 @@ export default function ScannerPage() {
     if (urlParam) setUrl(urlParam);
   }, []);
 
-  // ── Scan ──────────────────────────────────────────────────────────────────
-
   const handleScan = async () => {
     if (!url.trim()) { setError('Bitte geben Sie eine URL ein.'); return; }
-    setError('');
-    setScanning(true);
-    setResult(null);
-
+    setError(''); setScanning(true); setResult(null);
     let scanUrl = url.trim();
-    if (!scanUrl.startsWith('http://') && !scanUrl.startsWith('https://')) {
-      scanUrl = 'https://' + scanUrl;
-    }
-
+    if (!scanUrl.startsWith('http://') && !scanUrl.startsWith('https://')) scanUrl = 'https://' + scanUrl;
     try {
       let session = null;
       try {
         const { data, error } = await supabase.auth.getSession();
         if (!error) session = data.session;
-      } catch {
-        // Abgelaufener Token – User ist nicht eingeloggt, kein Problem
-      }
-      console.log('[scanner] session user:', session?.user?.email, 'token:', session?.access_token?.substring(0, 20));
+      } catch {}
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
-
-      const res = await fetch('/api/scan/extended', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ url: scanUrl }),
-      });
-
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      const res = await fetch('/api/scan/extended', { method: 'POST', headers, body: JSON.stringify({ url: scanUrl }) });
       if (!res.ok) throw new Error(`Serverfehler: ${res.status}`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Scan fehlgeschlagen');
-
       const scan = data.data?.scan;
       const rawJurisdiction = scan?.compliance?.jurisdiction ?? 'nDSG';
       const jurisdiction = (rawJurisdiction === 'GDPR' ? 'DSGVO' : rawJurisdiction) as 'nDSG' | 'DSGVO' | 'BEIDES';
-
       setResult({
         url: scanUrl,
-        scores: {
-          compliance: scan?.compliance?.score ?? 0,
-          optimization: scan?.optimization?.score ?? 0,
-          trust: scan?.trust?.score ?? 0,
-        },
+        scores: { compliance: scan?.compliance?.score ?? 0, optimization: scan?.optimization?.score ?? 0, trust: scan?.trust?.score ?? 0 },
         findings: {
           datenschutz: scan?.compliance?.hasPrivacyPolicy ?? false,
           cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
@@ -190,139 +143,81 @@ export default function ScannerPage() {
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Scan fehlgeschlagen. Bitte versuchen Sie es erneut.');
-    } finally {
-      setScanning(false);
-    }
+    } finally { setScanning(false); }
   };
-
-  // ── Chat ──────────────────────────────────────────────────────────────────
 
   const handleChat = async () => {
     if (!chatInput.trim() || chatLoading) return;
-
     const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
     const updatedMessages = [...chatMessages, userMsg];
-    setChatMessages(updatedMessages);
-    setChatInput('');
-    setChatLoading(true);
-
+    setChatMessages(updatedMessages); setChatInput(''); setChatLoading(true);
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: updatedMessages,
-          context: result
-            ? `Website ${result.url} analysiert. Compliance: ${result.scores.compliance}%, Optimierung: ${result.scores.optimization}%, Vertrauen: ${result.scores.trust}%. Jurisdiktion: ${result.jurisdiction}.`
-            : undefined,
+          context: result ? `Website ${result.url} analysiert. Compliance: ${result.scores.compliance}%, Optimierung: ${result.scores.optimization}%, Vertrauen: ${result.scores.trust}%. Jurisdiktion: ${result.jurisdiction}.` : undefined,
         }),
       });
-
       if (!res.ok) throw new Error('Chat-Fehler');
       const data = await res.json();
-
-      setChatMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: data.message ?? 'Entschuldigung, keine Antwort erhalten.' }
-      ]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.message ?? 'Entschuldigung, keine Antwort erhalten.' }]);
     } catch {
-      setChatMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: 'Der Assistent ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut oder schreiben Sie an support@dataquard.ch.' }
-      ]);
-    } finally {
-      setChatLoading(false);
-    }
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Der Assistent ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut oder schreiben Sie an support@dataquard.ch.' }]);
+    } finally { setChatLoading(false); }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  const card: React.CSSProperties = { background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
+  const inputStyle: React.CSSProperties = { flex: 1, background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: '12px 16px', color: G.text, fontSize: 14, outline: 'none' };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white font-sans">
-
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-[#0a0f1e]/90 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-xs sm:text-sm px-2 py-1 rounded-lg hover:bg-slate-800"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Zurück
-            </button>
-            <span className="text-slate-700">|</span>
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-lg font-bold">
-                <span className="text-blue-400">Data</span><span className="text-red-500">quard</span>
-              </span>
-            </Link>
-          </div>
-          <Link
-            href="/checkout"
-            className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3 py-1.5 rounded-full font-medium transition-all"
-          >
+    <PageWrapper>
+      {/* Sub-nav */}
+      <div style={{ borderBottom: `1px solid ${G.border}`, background: G.bgWhite, padding: '8px 16px' }}>
+        <div style={{ maxWidth: 896, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button onClick={() => router.back()} style={{ color: G.textSec, fontSize: 13, cursor: 'pointer', background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            ← Zurück
+          </button>
+          <Link href="/checkout" style={{ background: G.green, color: '#fff', fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 20, textDecoration: 'none' }}>
             Upgrade – CHF 79 Einmalkauf
           </Link>
         </div>
-      </header>
+      </div>
 
-      {/* Hero */}
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-            Website-Analyse
-          </h1>
-          <p className="text-slate-400 text-base">
-            Compliance · Optimierung · Sicherheitsanalyse
-          </p>
+      <div style={{ maxWidth: 896, margin: '0 auto', padding: '40px 16px' }}>
+        {/* Title */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6, color: G.text }}>Website-Analyse</h1>
+          <p style={{ color: G.textSec, fontSize: 14 }}>Compliance · Optimierung · Sicherheitsanalyse</p>
         </div>
 
         {/* URL Input */}
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 mb-6 shadow-xl">
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Website-URL eingeben
-          </label>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleScan()}
-              placeholder="https://ihre-website.ch"
-              className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
-            <button
-              onClick={handleScan}
-              disabled={scanning}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
-            >
+        <div style={{ ...card, marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: G.textSec, marginBottom: 8 }}>Website-URL eingeben</label>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <input type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()}
+              placeholder="https://ihre-website.ch" style={inputStyle} />
+            <button onClick={handleScan} disabled={scanning} style={{ background: scanning ? G.bgLight : G.green, color: scanning ? G.textMuted : '#fff', padding: '12px 24px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: scanning ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
               {scanning ? (
                 <>
-                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <span style={{ width: 16, height: 16, border: `2px solid ${G.green}`, borderTop: '2px solid transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
                   Analyse läuft…
                 </>
-              ) : (
-                <>🚀 Analyse starten</>
-              )}
+              ) : '🚀 Analyse starten'}
             </button>
           </div>
-
-          {error && <p className="mt-3 text-red-400 text-sm">{error}</p>}
+          {error && <p style={{ marginTop: 10, color: G.red, fontSize: 13 }}>{error}</p>}
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
 
-        {/* Info box – no result yet */}
+        {/* Info box – no result */}
         {!result && !scanning && (
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
-            <h2 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-              <span className="text-blue-400">ℹ️</span> Was wir prüfen
+          <div style={card}>
+            <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ color: G.green }}>ℹ️</span> Was wir prüfen
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
               {[
                 { icon: '🔒', title: 'Compliance', desc: 'DSGVO/nDSG-Anforderungen, Tracker-Erkennung, Cookie Banner' },
                 { icon: '⚡', title: 'Optimierung', desc: 'Ladezeit, Performance, Mobile-Freundlichkeit, SSL' },
@@ -331,11 +226,11 @@ export default function ScannerPage() {
                 { icon: '📄', title: 'Impressum', desc: 'Vollständigkeit, Pflichtangaben nach nDSG/DSGVO' },
                 { icon: '🎯', title: 'Empfehlungen', desc: 'Konkrete Schritte zur Verbesserung' },
               ].map(item => (
-                <div key={item.title} className="flex gap-3 p-3 bg-slate-800/50 rounded-xl">
-                  <span className="text-lg flex-shrink-0">{item.icon}</span>
+                <div key={item.title} style={{ display: 'flex', gap: 12, padding: 12, background: G.bgLight, borderRadius: 10 }}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
                   <div>
-                    <p className="text-sm font-semibold text-white">{item.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 2 }}>{item.title}</p>
+                    <p style={{ fontSize: 12, color: G.textSec }}>{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -345,27 +240,25 @@ export default function ScannerPage() {
 
         {/* Loading */}
         {scanning && (
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-10 text-center shadow-xl">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            </div>
-            <p className="text-white font-semibold">Analyse läuft…</p>
-            <p className="text-slate-400 text-sm mt-1">Wir prüfen Compliance, Optimierung, Sicherheit und Impressum.</p>
+          <div style={{ ...card, textAlign: 'center', padding: 48 }}>
+            <div style={{ width: 48, height: 48, border: `4px solid ${G.green}`, borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <p style={{ fontWeight: 600, color: G.text }}>Analyse läuft…</p>
+            <p style={{ color: G.textSec, fontSize: 13, marginTop: 4 }}>Wir prüfen Compliance, Optimierung, Sicherheit und Impressum.</p>
           </div>
         )}
 
         {/* Results */}
         {result && (
-          <div className="space-y-5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${jurisdictionColor(result.jurisdiction)}`}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...jurisdictionStyle(result.jurisdiction) }}>
               {jurisdictionEmoji(result.jurisdiction)} Jurisdiktion: {result.jurisdiction}
             </div>
 
-            {/* Score circles */}
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
-              <h2 className="text-sm font-semibold text-slate-300 mb-5">Analyse-Ergebnis</h2>
-              <div className="flex justify-around flex-wrap gap-2 sm:gap-4">
+            {/* Scores */}
+            <div style={card}>
+              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 20 }}>Analyse-Ergebnis</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 16 }}>
                 <ScoreCircle score={result.scores.compliance} label="Compliance" icon="🔒" />
                 <ScoreCircle score={result.scores.optimization} label="Optimierung" icon="⚡" />
                 <ScoreCircle score={result.scores.trust} label="Vertrauen" icon="✅" />
@@ -373,34 +266,26 @@ export default function ScannerPage() {
             </div>
 
             {/* Findings */}
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
-              <h2 className="text-sm font-semibold text-slate-300 mb-4">📊 Befunde</h2>
-              <div className="space-y-2">
+            <div style={card}>
+              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>📊 Befunde</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {[
                   { label: 'Datenschutzerklärung', ok: result.findings.datenschutz, bad: '❌ Fehlt – Pflicht nach nDSG/DSGVO!', good: '✅ Vorhanden' },
                   { label: 'Cookie Banner', ok: result.findings.cookieBanner, bad: '❌ Fehlt', good: '✅ Vorhanden' },
                   { label: 'Tracker gefunden', ok: result.findings.trackerCount <= 4, bad: `⚠️ ${result.findings.trackerCount} Tracker – zu viele`, good: `✅ ${result.findings.trackerCount} Tracker (akzeptabel)` },
                   { label: 'SSL / HTTPS', ok: result.findings.ssl, bad: '❌ Kein SSL – Sicherheitsrisiko!', good: '✅ Sicher' },
                   { label: 'Mobile-Optimierung', ok: result.findings.mobile, bad: '⚠️ Nicht mobile-freundlich', good: '✅ Mobile-freundlich' },
-                  {
-                    label: 'Impressum',
-                    ok: result.findings.impressum,
-                    bad: '❌ Fehlt – gesetzlich verpflichtend!',
-                    good: result.findings.impressumVollstaendig ? '✅ Vollständig vorhanden' : '⚠️ Vorhanden, aber unvollständig'
-                  },
+                  { label: 'Impressum', ok: result.findings.impressum, bad: '❌ Fehlt – gesetzlich verpflichtend!', good: result.findings.impressumVollstaendig ? '✅ Vollständig vorhanden' : '⚠️ Vorhanden, aber unvollständig' },
                 ].map(row => (
-                  <div key={row.label} className="flex items-start gap-2 py-1.5 border-b border-slate-800 last:border-0">
-                    <span className="text-slate-400 text-sm w-48 flex-shrink-0">{row.label}:</span>
-                    <span className={`text-sm ${row.ok ? 'text-green-400' : 'text-red-400'}`}>
-                      {row.ok ? row.good : row.bad}
-                    </span>
+                  <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
+                    <span style={{ color: G.textMuted, fontSize: 13, width: 180, flexShrink: 0 }}>{row.label}:</span>
+                    <span style={{ fontSize: 13, color: row.ok ? G.green : G.red }}>{row.ok ? row.good : row.bad}</span>
                   </div>
                 ))}
-
                 {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
-                  <div className="mt-2 p-3 bg-yellow-400/5 border border-yellow-400/20 rounded-xl">
-                    <p className="text-yellow-400 text-xs font-semibold mb-1">Fehlende Pflichtangaben im Impressum:</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 space-y-0.5">
+                  <div style={{ marginTop: 12, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>
+                    <p style={{ color: G.yellow, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Fehlende Pflichtangaben im Impressum:</p>
+                    <ul style={{ paddingLeft: 16, fontSize: 12, color: G.textSec }}>
                       {result.findings.impressumPflichtangaben.map((a, i) => <li key={i}>{a}</li>)}
                     </ul>
                   </div>
@@ -410,13 +295,11 @@ export default function ScannerPage() {
 
             {/* Insights */}
             {result.insights.length > 0 && (
-              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
-                <h2 className="text-sm font-semibold text-slate-300 mb-4">💡 Erkenntnisse</h2>
-                <ul className="space-y-2">
+              <div style={card}>
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>💡 Erkenntnisse</h2>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.insights.map((insight, i) => (
-                    <li key={i} className="text-sm text-slate-300 pl-3 border-l border-slate-700">
-                      {insight}
-                    </li>
+                    <li key={i} style={{ fontSize: 13, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.border}` }}>{insight}</li>
                   ))}
                 </ul>
               </div>
@@ -424,14 +307,12 @@ export default function ScannerPage() {
 
             {/* Recommendations */}
             {result.recommendations.length > 0 && (
-              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl">
-                <h2 className="text-sm font-semibold text-slate-300 mb-4">🎯 Empfehlungen</h2>
-                <ol className="space-y-2">
+              <div style={card}>
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>🎯 Empfehlungen</h2>
+                <ol style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.recommendations.map((rec, i) => (
-                    <li key={i} className="text-sm text-slate-300 flex gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
-                        {i + 1}
-                      </span>
+                    <li key={i} style={{ fontSize: 13, color: G.textSec, display: 'flex', gap: 12 }}>
+                      <span style={{ flexShrink: 0, width: 20, height: 20, background: G.greenBg, color: G.green, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
                       <span>{rec.replace(/^\d+\.?\s*/, '')}</span>
                     </li>
                   ))}
@@ -440,113 +321,66 @@ export default function ScannerPage() {
             )}
 
             {/* Action buttons */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => { setResult(null); setUrl(''); }}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              >
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              <button onClick={() => { setResult(null); setUrl(''); }} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
                 ← Neue Analyse
               </button>
-              <Link
-                href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}`}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              >
+              <Link href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}`} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
                 📄 Impressum generieren
               </Link>
-              <Link
-                href={`/cookie-banner-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}&trackers=${result.findings.trackerCount > 0 ? 'google_analytics' : ''}`}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              >
+              <Link href={`/cookie-banner-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}&trackers=${result.findings.trackerCount > 0 ? 'google_analytics' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
                 🍪 Cookie-Banner generieren
               </Link>
-              <Link
-                href="/checkout"
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-              >
-                🔒 Datenschutzerklärung – CHF 79 Einmalkauf
+              <Link href="/checkout" style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.green, color: '#fff', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                🔒 Datenschutzerklärung – CHF 79
               </Link>
             </div>
           </div>
         )}
-      </main>
+      </div>
 
       {/* Chat window */}
       {chatOpen && (
-        <div className="fixed bottom-20 right-4 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-700 to-indigo-700">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🤖</span>
+        <div style={{ position: 'fixed', bottom: 80, right: 16, width: 340, background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', zIndex: 50, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: G.green }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>🤖</span>
               <div>
-                <p className="text-sm font-bold text-white">Dataquard Assistent</p>
-                <p className="text-xs text-blue-200">DSGVO & nDSG Hilfe</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Dataquard Assistent</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', margin: 0 }}>DSGVO &amp; nDSG Hilfe</p>
               </div>
             </div>
-            <button onClick={() => setChatOpen(false)} className="text-blue-200 hover:text-white transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <button onClick={() => setChatOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>✕</button>
           </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72">
+          <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 280 }}>
             {chatMessages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
+              <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: 12, fontSize: 13, lineHeight: 1.5, background: msg.role === 'user' ? G.green : G.bgLight, color: msg.role === 'user' ? '#fff' : G.text }}>
                   {msg.content}
                 </div>
               </div>
             ))}
             {chatLoading && (
-              <div className="flex justify-start">
-                <div className="bg-slate-800 px-3 py-2 rounded-2xl rounded-bl-sm">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ background: G.bgLight, padding: '8px 12px', borderRadius: 12, display: 'flex', gap: 4 }}>
+                  {[0, 150, 300].map(d => <span key={d} style={{ width: 6, height: 6, background: G.textMuted, borderRadius: '50%', animation: `bounce 1s ${d}ms infinite` }} />)}
                 </div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
-
-          <div className="px-3 py-3 border-t border-slate-700 flex gap-2">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={e => setChatInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleChat()}
-              placeholder="Ihre Frage…"
-              className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
-            <button
-              onClick={handleChat}
-              disabled={chatLoading || !chatInput.trim()}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-2 rounded-xl transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+          <div style={{ padding: '10px 12px', borderTop: `1px solid ${G.border}`, display: 'flex', gap: 8 }}>
+            <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} placeholder="Ihre Frage…" style={{ flex: 1, background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: '8px 12px', fontSize: 13, color: G.text, outline: 'none' }} />
+            <button onClick={handleChat} disabled={chatLoading || !chatInput.trim()} style={{ background: G.green, border: 'none', color: '#fff', padding: '8px 12px', borderRadius: 10, cursor: 'pointer', opacity: chatLoading || !chatInput.trim() ? 0.4 : 1 }}>→</button>
           </div>
+          <style>{`@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }`}</style>
         </div>
       )}
 
-      {/* Chat toggle button */}
-      <button
-        onClick={() => setChatOpen(prev => !prev)}
-        className="fixed bottom-4 right-4 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center z-50 transition-all hover:scale-105"
-        title="Dataquard Assistent öffnen"
-      >
-        {chatOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <span className="text-2xl">🤖</span>
-        )}
+      {/* Chat toggle */}
+      <button onClick={() => setChatOpen(prev => !prev)} style={{ position: 'fixed', bottom: 16, right: 16, width: 52, height: 52, background: G.green, color: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 4px 16px rgba(34,197,94,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 50, fontSize: 22 }} title="Dataquard Assistent öffnen">
+        {chatOpen ? '✕' : '🤖'}
       </button>
-
-    </div>
+    </PageWrapper>
   );
 }

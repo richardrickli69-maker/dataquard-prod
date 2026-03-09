@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Navbar } from './components/Navbar';
+import { PageWrapper } from './components/PageWrapper';
 
 /* Farb-System: Helles Grau + Giftgrün */
 const G = {
@@ -77,10 +77,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: G.bg, color: G.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
-
-      {/* ═══ 1. NAV ═══ */}
-      <Navbar />
+    <PageWrapper>
 
       {/* ═══ 2. HERO ═══ */}
       <section style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
@@ -454,28 +451,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 16. FOOTER ═══ */}
-      <footer style={{ borderTop: `1px solid ${G.border}`, background: G.bgWhite, padding: '20px 28px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 14, fontSize: 11, color: G.textMuted }}>
-            <span>🇨🇭 Server in Zürich</span><span>🔒 SSL-verschlüsselt</span><span>⚖️ nDSG-konform</span><span>🛡️ Keine Datenweitergabe</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: G.textMuted }}>
-              <span style={{ fontWeight: 800 }}><span style={{ color: G.green }}>Data</span><span style={{ color: G.text }}>quard</span></span>{' '}© 2026 · Basel, Schweiz
-            </span>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center', fontSize: 12 }}>
-              {[
-                { l: 'Scanner', h: '/scanner' }, { l: 'Datenschutz', h: '/datenschutz' },
-                { l: 'Impressum', h: '/impressum-generator' }, { l: 'Preise', h: '#preise' }, { l: 'AGB', h: '/agb' },
-              ].map(n => (
-                <Link key={n.l} href={n.h} style={{ color: G.textMuted, textDecoration: 'none' }}>{n.l}</Link>
-              ))}
-              <Link href="/auth" style={{ padding: '5px 14px', border: `2px solid ${G.green}`, color: G.green, borderRadius: 6, fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>Anmelden</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PageWrapper>
   );
 }
