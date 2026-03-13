@@ -69,7 +69,7 @@ export async function generateInvoicePdf(params: {
   page.drawText(params.customerEmail, { x: 50, y: height - 164, size: 11, font, color: black })
 
   page.drawText('ZAHLUNGSART', { x: 280, y: height - 150, size: 8, font: bold, color: gray })
-  page.drawText('Einmalkauf - Stripe', { x: 280, y: height - 164, size: 11, font, color: black })
+  page.drawText('Jahres-Abo - Stripe / TWINT', { x: 280, y: height - 164, size: 11, font, color: black })
 
   // Tabellen-Header – green statt navy
   const tableY = height - 210
@@ -81,7 +81,7 @@ export async function generateInvoicePdf(params: {
   // Tabellenzeile
   const rowY = tableY - 30
   page.drawText(params.product, { x: 55, y: rowY + 8, size: 12, font: bold, color: black })
-  page.drawText('Datenschutzerklaerung + Impressum + Cookie-Banner (1 Domain)', {
+  page.drawText('Datenschutzerklarung + Impressum + Cookie-Banner + Deepfake-Check + KI-Compliance (EU AI Act Art. 50)', {
     x: 55, y: rowY - 6, size: 9, font, color: gray
   })
   page.drawText('1', { x: 398, y: rowY + 8, size: 12, font, color: black })

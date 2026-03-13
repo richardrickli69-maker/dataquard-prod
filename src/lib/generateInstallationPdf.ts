@@ -70,14 +70,14 @@ export async function generateInstallationPdf(params: {
   page.drawLine({ start: { x: 50, y: height - 116 }, end: { x: width - 50, y: height - 116 }, thickness: 1, color: lightgray })
 
   // Titel
-  page.drawText('So installieren Sie Ihre Dokumente', { x: 50, y: height - 150, size: 16, font: bold, color: green })
-  page.drawText('Folgen Sie diesen Schritten um Ihre Website rechtssicher einzurichten.', {
+  page.drawText('So nutzen Sie Dataquard – Schritt fur Schritt', { x: 50, y: height - 150, size: 16, font: bold, color: green })
+  page.drawText('Datenschutz, KI-Compliance und Installationsanleitung fur Schweizer KMU.', {
     x: 50, y: height - 170, size: 10, font, color: gray
   })
 
   // Hinweis-Box – leicht grüner Hintergrund statt gelb
   page.drawRectangle({ x: 50, y: height - 210, width: width - 100, height: 28, color: rgb(0.93, 0.99, 0.95) })
-  page.drawText('Tipp: Speichern Sie alle Dokumente in einem Ordner "Dataquard – [Ihre Domain]" auf Ihrem Computer.', {
+  page.drawText('Neu: KI-Compliance nach EU AI Act Art. 50 – Deepfake-Check und KI-Klausel werden automatisch eingefugt.', {
     x: 58, y: height - 198, size: 9, font, color: darkGreen
   })
 
@@ -137,10 +137,29 @@ export async function generateInstallationPdf(params: {
     y -= 16
   }
 
+
+  // Schritt 4: KI-Compliance
+  y -= 20
+  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: green })
+  page.drawText('4', { x: 58, y: y + 5, size: 11, font: bold, color: white })
+  page.drawText('KI-Compliance (EU AI Act Art. 50)', { x: 80, y: y + 5, size: 12, font: bold, color: black })
+  y -= 22
+  const step4 = [
+    '1. Dataquard scannt automatisch alle Bilder auf KI-Generierung (Deepfake-Check)',
+    '2. Falls KI-Inhalte erkannt werden, wird die EU AI Act Art. 50 Klausel',
+    '   automatisch in Ihre Datenschutzerklarung eingefugt',
+    '3. Kein manueller Aufwand – das System erledigt alles im Hintergrund',
+    '4. RAM-only Verarbeitung: Keine Bildspeicherung, voller Datenschutz',
+  ]
+  for (const line of step4) {
+    page.drawText(line, { x: 80, y, size: 9.5, font, color: rgb(0.25, 0.25, 0.25) })
+    y -= 16
+  }
+
   // Abschluss-Box
   y -= 20
   page.drawRectangle({ x: 50, y: y - 10, width: width - 100, height: 36, color: lightGreenBg })
-  page.drawText('Fertig! Ihre Website ist jetzt rechtssicher nach nDSG / DSGVO.', {
+  page.drawText('Fertig! Ihre Website ist jetzt rechtssicher nach nDSG, DSGVO und EU AI Act Art. 50.', {
     x: 60, y: y + 12, size: 10, font: bold, color: darkGreen
   })
   page.drawText('Bei Fragen: info@dataquard.ch', { x: 60, y: y - 2, size: 9, font, color: darkGreen })
