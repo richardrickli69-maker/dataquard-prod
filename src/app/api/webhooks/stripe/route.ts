@@ -92,26 +92,59 @@ export async function POST(request: NextRequest) {
 
         const stripeSubscriptionId = typeof session.subscription === 'string'
           ? session.subscription
-          : null;
+          : (session.subscription as Stripe.Subscription | null)?.id ?? null;
 
-        const aiTrustExpiresAt = new Date(createdAt);
-        aiTrustExpiresAt.setFullYear(aiTrustExpiresAt.getFullYear() + 1);
+        // current_period_end von Stripe holen (korrekte Ablaufzeit)
+        let aiTrustExpiresAt: Date;
+        if (stripeSubscriptionId) {
+          const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId) as unknown as { current_period_end: number };
+          aiTrustExpiresAt = new Date(stripeSub.current_period_end * 1000);
+          console.log('[Webhook] AI-Trust current_period_end:', aiTrustExpiresAt.toISOString());
+        } else {
+          // Fallback: +1 Jahr
+          aiTrustExpiresAt = new Date(createdAt);
+          aiTrustExpiresAt.setFullYear(aiTrustExpiresAt.getFullYear() + 1);
+          console.warn('[Webhook] Kein stripeSubscriptionId – Fallback +1 Jahr');
+        }
 
-        await supabaseAdmin.from('subscriptions').upsert({
-          ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
-          email: customerEmail ?? null,
-          plan,
-          status: 'active',
-          stripe_session_id: session.id,
-          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+        const aiTrustFields = {
           ai_trust_active: true,
           ai_trust_expires_at: aiTrustExpiresAt.toISOString(),
           ai_trust_stripe_subscription_id: stripeSubscriptionId,
-          amount: amountTotal,
-          currency,
-          purchased_at: createdAt.toISOString(),
-          created_at: new Date().toISOString(),
-        }, { onConflict: resolvedUserId ? 'user_id' : 'email' });
+          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+        };
+
+        // Prüfen ob User bereits eine Subscription-Zeile hat
+        const existingQuery = resolvedUserId
+          ? supabaseAdmin.from('subscriptions').select('id').eq('user_id', resolvedUserId).maybeSingle()
+          : customerEmail
+            ? supabaseAdmin.from('subscriptions').select('id').eq('email', customerEmail).maybeSingle()
+            : Promise.resolve({ data: null });
+        const { data: existingSub } = await existingQuery;
+
+        if (existingSub) {
+          // Nur AI-Trust Felder ergänzen – bestehenden Plan NICHT überschreiben
+          const { error: updateErr } = await supabaseAdmin
+            .from('subscriptions')
+            .update(aiTrustFields)
+            .eq('id', (existingSub as { id: string }).id);
+          if (updateErr) console.error('[Webhook] AI-Trust update error:', updateErr.message);
+        } else {
+          // Neue Zeile für reines AI-Trust Abo
+          const { error: insertErr } = await supabaseAdmin.from('subscriptions').insert({
+            ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
+            email: customerEmail ?? null,
+            plan: 'ai-trust',
+            status: 'active',
+            stripe_session_id: session.id,
+            amount: amountTotal,
+            currency,
+            purchased_at: createdAt.toISOString(),
+            created_at: new Date().toISOString(),
+            ...aiTrustFields,
+          });
+          if (insertErr) console.error('[Webhook] AI-Trust insert error:', insertErr.message);
+        }
 
         if (customerEmail) {
           const invoiceNumber = `DQ-${createdAt.getFullYear()}-${session.id.slice(-6).toUpperCase()}`;
@@ -226,13 +259,13 @@ export async function POST(request: NextRequest) {
 
     // ─── customer.subscription.updated ─────────────────────────────────────
     if (event.type === 'customer.subscription.updated') {
-      const sub = event.data.object as Stripe.Subscription;
+      const sub = event.data.object as unknown as { id: string; customer: string | null; status: string; current_period_end: number };
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
-      const isActive = sub.status === 'active';
-      const currentPeriodEnd = new Date((sub as unknown as { current_period_end: number }).current_period_end * 1000);
+      const isActive = sub.status === 'active' || sub.status === 'trialing';
+      const currentPeriodEnd = new Date(sub.current_period_end * 1000);
 
       if (customerId) {
-        await supabaseAdmin.from('subscriptions')
+        const { error: updErr } = await supabaseAdmin.from('subscriptions')
           .update({
             ai_trust_active: isActive,
             ai_trust_expires_at: currentPeriodEnd.toISOString(),
@@ -240,6 +273,7 @@ export async function POST(request: NextRequest) {
           })
           .eq('stripe_customer_id', customerId);
 
+        if (updErr) console.error('[Webhook] subscription.updated DB error:', updErr.message);
         console.log(`[Webhook] AI-Trust updated: customer=${customerId}, active=${isActive}, expires=${currentPeriodEnd.toISOString()}`);
       }
       return NextResponse.json({ received: true });
@@ -247,14 +281,15 @@ export async function POST(request: NextRequest) {
 
     // ─── customer.subscription.deleted ─────────────────────────────────────
     if (event.type === 'customer.subscription.deleted') {
-      const sub = event.data.object as Stripe.Subscription;
+      const sub = event.data.object as unknown as { customer: string | null };
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
 
       if (customerId) {
-        await supabaseAdmin.from('subscriptions')
-          .update({ ai_trust_active: false })
+        const { error: delErr } = await supabaseAdmin.from('subscriptions')
+          .update({ ai_trust_active: false, ai_trust_expires_at: new Date().toISOString() })
           .eq('stripe_customer_id', customerId);
 
+        if (delErr) console.error('[Webhook] subscription.deleted DB error:', delErr.message);
         console.log(`[Webhook] AI-Trust deaktiviert: customer=${customerId}`);
       }
       return NextResponse.json({ received: true });
