@@ -95,15 +95,19 @@ export async function POST(request: NextRequest) {
           : (session.subscription as Stripe.Subscription | null)?.id ?? null;
 
         // current_period_end von Stripe holen (korrekte Ablaufzeit)
-        let aiTrustExpiresAt: Date;
+        const fallbackExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        let aiTrustExpiresAt: Date = fallbackExpiry;
         if (stripeSubscriptionId) {
-          const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId) as unknown as { current_period_end: number };
-          aiTrustExpiresAt = new Date(stripeSub.current_period_end * 1000);
-          console.log('[Webhook] AI-Trust current_period_end:', aiTrustExpiresAt.toISOString());
+          const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId) as unknown as { current_period_end?: number | null };
+          const ts = stripeSub.current_period_end;
+          if (ts && ts > 0) {
+            const parsed = new Date(ts * 1000);
+            aiTrustExpiresAt = isNaN(parsed.getTime()) ? fallbackExpiry : parsed;
+            console.log('[Webhook] AI-Trust current_period_end:', aiTrustExpiresAt.toISOString());
+          } else {
+            console.warn('[Webhook] current_period_end fehlt oder 0 – Fallback +1 Jahr');
+          }
         } else {
-          // Fallback: +1 Jahr
-          aiTrustExpiresAt = new Date(createdAt);
-          aiTrustExpiresAt.setFullYear(aiTrustExpiresAt.getFullYear() + 1);
           console.warn('[Webhook] Kein stripeSubscriptionId – Fallback +1 Jahr');
         }
 
@@ -259,10 +263,14 @@ export async function POST(request: NextRequest) {
 
     // ─── customer.subscription.updated ─────────────────────────────────────
     if (event.type === 'customer.subscription.updated') {
-      const sub = event.data.object as unknown as { id: string; customer: string | null; status: string; current_period_end: number };
+      const sub = event.data.object as unknown as { id: string; customer: string | null; status: string; current_period_end?: number | null };
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
       const isActive = sub.status === 'active' || sub.status === 'trialing';
-      const currentPeriodEnd = new Date(sub.current_period_end * 1000);
+      const cpeTs = sub.current_period_end;
+      const cpeRaw = cpeTs && cpeTs > 0 ? new Date(cpeTs * 1000) : null;
+      const currentPeriodEnd = (cpeRaw && !isNaN(cpeRaw.getTime()))
+        ? cpeRaw
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
       if (customerId) {
         const { error: updErr } = await supabaseAdmin.from('subscriptions')
