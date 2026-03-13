@@ -11,8 +11,8 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
       <footer style={{ borderTop: '1px solid #e2e4ea', background: '#ffffff', padding: '20px 28px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
-          {/* Oben: Startseite links, Anmelden rechts */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+          {/* Oben: Startseite + Anmelden zentriert */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
             <Link href="/" style={{ padding: '6px 20px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 7, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: '#f8f9fb' }}>
               🏠 Startseite
             </Link>

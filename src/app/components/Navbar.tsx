@@ -7,9 +7,9 @@ import Image from 'next/image';
 export function Navbar() {
   return (
     <nav className="w-full sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-28 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-28 flex items-center">
 
-        {/* Links: Logo + Schriftzug nebeneinander */}
+        {/* Logo + Schriftzug */}
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14 }}>
           <Image
             src="/logo-dataquard.png"
@@ -27,26 +27,6 @@ export function Navbar() {
             style={{ height: 34, width: 'auto', objectFit: 'contain' }}
             priority
           />
-        </Link>
-
-        {/* Rechts: Anmelden */}
-        <Link
-          href="/auth"
-          style={{
-            padding: '8px 22px',
-            border: '2px solid #22c55e',
-            color: '#22c55e',
-            fontWeight: 700,
-            borderRadius: 8,
-            fontSize: 13,
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            display: 'inline-flex',
-            alignItems: 'center',
-            minHeight: 40,
-          }}
-        >
-          Anmelden
         </Link>
 
       </div>
