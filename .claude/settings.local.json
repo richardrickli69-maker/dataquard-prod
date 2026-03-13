@@ -4,7 +4,8 @@
       "Bash(code --install-extension ms-vscode.live-server)",
       "Bash(npx tsc --noEmit)",
       "Bash(mv \"Neues Logo Dataquard.PNG\" \"logo-dataquard.png\")",
-      "Bash(mv \"Schriftzug Dataquard.PNG\" \"schriftzug-dataquard.png\")"
+      "Bash(mv \"Schriftzug Dataquard.PNG\" \"schriftzug-dataquard.png\")",
+      "Bash(npx vercel:*)"
     ],
     "deny": [
       "Read(.env)",

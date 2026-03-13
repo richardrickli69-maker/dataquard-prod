@@ -74,6 +74,8 @@ export interface PolicyGeneratorInput {
   step1: Step1Data;
   step2: Step2Data;
   step3: Step3Data;
+  /** Optional: Ergebnis der KI-Inhaltsanalyse (visualAiService) */
+  aiAudit?: { requiresDisclosure: boolean; deepfakeRisk: string; summary: string };
 }
 
 /** KI-generierte individuelle Passage */
@@ -307,10 +309,38 @@ function appendCustomPassages(policy: string, passages: CustomPassage[]): string
 // HAUPT-FUNKTION
 // ---------------------------------------------------------------------------
 
+/** EU AI Act Art. 50 Klausel – automatisch eingefügt wenn KI-Inhalte erkannt */
+function generateAiActClause(lang: string, deepfakeRisk: string): string {
+  const riskLabel = deepfakeRisk === 'high' ? 'erhöhtes' : deepfakeRisk === 'medium' ? 'mittleres' : 'geringes';
+  if (lang === 'de') {
+    return `
+## Einsatz von KI und Deepfake-Analyse (Art. 50 EU AI Act)
+
+Diese Website verwendet und/oder stellt KI-generierte Inhalte bereit. Gemäss **Art. 50 des EU AI Act** (Transparenzpflichten für bestimmte KI-Systeme) informieren wir Sie hiermit:
+
+**Erkanntes Risiko:** ${riskLabel}
+
+**Was wird analysiert?**
+Beim Aufruf dieser Website werden Metadaten und öffentlich zugängliche Inhaltssignale flüchtig analysiert, um KI-generierte oder synthetische Medieninhalte (Text, Bild, Audio, Video) zu erkennen. Diese Analyse erfolgt ausschliesslich im Arbeitsspeicher – es werden **keine Inhalte gespeichert**.
+
+**Ihre Rechte:**
+- Auskunftsrecht über den Einsatz von KI-Systemen (Art. 22 DSGVO / Art. 25 nDSG)
+- Widerspruchsrecht gegen automatisierte Einzelentscheidungen
+
+**Technische Grundlage:** C2PA Content Credentials, XMP-Metadaten, Heuristische Musteranalyse
+
+Verantwortlich für den Einsatz dieser Analysefunktion ist der Betreiber dieser Website.`;
+  }
+  return `
+## Use of AI and Deepfake Analysis (Art. 50 EU AI Act)
+
+This website uses and/or provides AI-generated content. In accordance with **Art. 50 of the EU AI Act** (transparency obligations for certain AI systems), we inform you that content may be AI-generated or synthetic. Analysis is performed transiently in RAM – no content is stored.`;
+}
+
 export async function generateDocuments(
   input: PolicyGeneratorInput
 ): Promise<GeneratedDocuments> {
-  const { step1, step2, step3 } = input;
+  const { step1, step2, step3, aiAudit } = input;
 
   // Professional/Enterprise = Custom Passagen verfuegbar
   const isPremium = step1.plan === 'professional' || step1.plan === 'enterprise';
@@ -379,7 +409,14 @@ export async function generateDocuments(
     }
   }
 
-  const hasAiContent = customPassages.length > 0;
+  // SCHRITT D: EU AI Act Art. 50 – automatisch wenn KI-Inhalte erkannt
+  if (aiAudit?.requiresDisclosure) {
+    const clause = generateAiActClause(step1.language, aiAudit.deepfakeRisk);
+    privacyPolicy += clause;
+    console.log(`[Dataquard] EU AI Act Art. 50 Klausel eingefügt (Risiko: ${aiAudit.deepfakeRisk})`);
+  }
+
+  const hasAiContent = customPassages.length > 0 || (aiAudit?.requiresDisclosure ?? false);
 
   return {
     id:            `dq_${Date.now()}`,

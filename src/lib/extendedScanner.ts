@@ -1,8 +1,9 @@
 /**
- * Extended Scanner v2.0
- * Compliance + Optimization + Security Analysis
+ * Extended Scanner v2.1
+ * Compliance + Optimization + Security + AI Content Analysis
  */
 import { isValidUrl } from '@/lib/scanner';
+import { analyzeForAiContent, type AiAuditResult } from '@/lib/visualAiService';
 
 export interface ExtendedScanResult {
   compliance: {
@@ -35,6 +36,8 @@ export interface ExtendedScanResult {
   };
   insights: string[];
   recommendations: string[];
+  /** KI-Inhaltsanalyse (EU AI Act Art. 50) */
+  aiAudit: AiAuditResult;
 }
 
 export async function checkSSL(domain: string): Promise<{
@@ -426,6 +429,7 @@ export async function performExtendedScan(
     metaTagsCheck,
     thirdPartyCheck,
     complianceCheck,
+    aiAudit,
   ] = await Promise.all([
     checkSSL(domain),
     checkPerformance(domain),
@@ -434,6 +438,7 @@ export async function performExtendedScan(
     checkMetaTags(domain),
     analyzeThirdParty(domain),
     detectComplianceIssues(domain),
+    analyzeForAiContent(domain.startsWith('http') ? domain : `https://${domain}`),
   ]);
 
   const [outdatedScripts, mixedContent] = await Promise.all([
@@ -509,5 +514,6 @@ export async function performExtendedScan(
     },
     insights,
     recommendations,
+    aiAudit,
   };
 }
