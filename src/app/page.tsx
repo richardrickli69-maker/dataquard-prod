@@ -102,6 +102,12 @@ export default function HomePage() {
 
       {/* ═══ 2. HERO ═══ */}
       <section style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+            NEU: KI-Compliance (EU AI Act Art. 50)
+          </div>
+        </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.redBg, border: `1px solid ${G.redBorder}`, fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 20, marginBottom: 28, color: G.red }}>
           ⚠ nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000
         </div>
@@ -112,7 +118,7 @@ export default function HomePage() {
           <span style={{ fontSize: 34, fontWeight: 700, color: G.textSec }}>Wir ändern das — in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 620, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Der einzige Schweizer Website-Check, der <strong style={{ color: G.text }}>Compliance, Performance und Security</strong> gleichzeitig prüft — und direkt behebt. Kein Cookie-Banner nötig.
+          Der einzige Schweizer Website-Check, der <strong style={{ color: G.text }}>Compliance, Performance und Security</strong> gleichzeitig prüft — und direkt behebt. Jetzt mit automatischer <strong style={{ color: G.text }}>KI-Inhaltsprüfung nach EU AI Act Art. 50</strong> — kein Mehraufwand, kein Cookie-Banner nötig.
         </p>
         <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           <input type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
@@ -138,13 +144,14 @@ export default function HomePage() {
 
       {/* ═══ 3. TRUST STRIP ═══ */}
       <div style={{ background: G.bgWhite, borderTop: `1px solid ${G.border}`, borderBottom: `1px solid ${G.border}` }}>
-        <div className="grid-trust" style={{ maxWidth: 750, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', padding: '18px 0' }}>
+        <div className="grid-trust" style={{ maxWidth: 750, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', padding: '18px 0' }}>
           {[
             { i: '🇨🇭', t: 'Daten in der Schweiz', s: 'Sicher auf Schweizer Servern' },
             { i: '✅', t: 'EDÖB-konform', s: 'nDSG 2023 erfüllt' },
             { i: '🔒', t: 'Keine Kreditkarte', s: 'Kostenlos starten' },
+            { i: '🤖', t: 'KI-Compliance', s: 'EU AI Act Art. 50' },
           ].map((b, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '8px 16px', borderRight: idx < 2 ? `1px solid ${G.border}` : 'none' }}>
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '8px 16px', borderRight: idx < 3 ? `1px solid ${G.border}` : 'none' }}>
               <span style={{ fontSize: 26 }}>{b.i}</span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: G.text }}>{b.t}</div>

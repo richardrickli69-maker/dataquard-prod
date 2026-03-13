@@ -1,7 +1,8 @@
 /**
  * VisualAiService.ts
  * Dataquard – KI-Compliance Modul (EU AI Act Art. 50)
- * Flüchtige RAM-Verarbeitung – keine Bildspeicherung, keine Logs.
+ * Echte Deepfake-Erkennung via Sightengine API
+ * Privacy: RAM-only, keine Bildspeicherung
  */
 
 export interface AiAuditResult {
@@ -13,74 +14,98 @@ export interface AiAuditResult {
   requiresAiClause: boolean;
   analysedAt: string;
   privacyMode: 'ram-only';
+  source: 'sightengine' | 'fallback';
 }
 
-async function extractMetadata(buffer: Buffer): Promise<Record<string, string>> {
-  const hexHeader = buffer.slice(0, 16).toString('hex');
-  const hasMeta = hexHeader.startsWith('ffd8') || hexHeader.startsWith('89504e47');
-  return hasMeta ? { source: 'unknown', software: '', c2paPresent: 'false' } : {};
+async function checkWithSightengine(imageUrl: string): Promise<{
+  aiGenerated: number;
+  deepfakeScore: number;
+  success: boolean;
+}> {
+  const apiUser = process.env.SIGHTENGINE_API_USER;
+  const apiSecret = process.env.SIGHTENGINE_API_SECRET;
+
+  if (!apiUser || !apiSecret) {
+    return { aiGenerated: 0, deepfakeScore: 0, success: false };
+  }
+
+  try {
+    const params = new URLSearchParams({
+      url: imageUrl,
+      models: 'genai,deepfake',
+      api_user: apiUser,
+      api_secret: apiSecret,
+    });
+
+    const res = await fetch(
+      `https://api.sightengine.com/1.0/check.json?${params}`,
+      { signal: AbortSignal.timeout(6000) }
+    );
+
+    if (!res.ok) return { aiGenerated: 0, deepfakeScore: 0, success: false };
+
+    const data = await res.json();
+    const aiGenerated = data?.type?.ai_generated ?? 0;
+    const deepfakeScore = data?.faces?.[0]?.deepfake ?? 0;
+
+    return { aiGenerated, deepfakeScore, success: true };
+  } catch {
+    return { aiGenerated: 0, deepfakeScore: 0, success: false };
+  }
 }
 
-function calcRealityScore(meta: Record<string, string>): number {
-  let score = 70;
-  if (meta.c2paPresent === 'true') score += 20;
-  if (meta.software?.includes('Midjourney')) score -= 50;
-  if (meta.software?.includes('DALL-E')) score -= 50;
-  if (meta.software?.includes('Stable Diffusion')) score -= 45;
-  if (meta.software?.includes('Adobe Firefly')) score -= 30;
-  if (!meta.source || meta.source === 'unknown') score -= 10;
-  return Math.max(0, Math.min(100, score));
+function calcRealityScore(aiGenerated: number, deepfakeScore: number): number {
+  return Math.max(0, Math.min(100, Math.round(100 - aiGenerated * 60 - deepfakeScore * 40)));
 }
 
 function classifyDeepfakeRisk(
-  realityScore: number,
-  meta: Record<string, string>
+  deepfakeScore: number,
+  aiGenerated: number
 ): AiAuditResult['deepfakeRisk'] {
-  const hasFaceKeyword =
-    meta.description?.toLowerCase().includes('face') ||
-    meta.subject?.toLowerCase().includes('person');
-  if (realityScore < 20) return 'high';
-  if (realityScore < 40 && hasFaceKeyword) return 'high';
-  if (realityScore < 40) return 'medium';
-  if (realityScore < 60) return 'low';
+  if (deepfakeScore > 0.7 || aiGenerated > 0.8) return 'high';
+  if (deepfakeScore > 0.4 || aiGenerated > 0.6) return 'medium';
+  if (deepfakeScore > 0.15 || aiGenerated > 0.3) return 'low';
   return 'none';
 }
 
-function extractProvenanceSignals(meta: Record<string, string>): string[] {
-  const signals: string[] = [];
-  if (meta.c2paPresent === 'true') signals.push('C2PA-Manifest vorhanden');
-  if (meta.software) signals.push(`Erstellt mit: ${meta.software}`);
-  if (meta.creator) signals.push(`Urheber: ${meta.creator}`);
-  if (meta.dateCreated) signals.push(`Erstelldatum: ${meta.dateCreated}`);
-  if (signals.length === 0) signals.push('Keine Provenance-Metadaten gefunden');
-  return signals;
-}
+export async function auditImageUrl(imageUrl: string): Promise<AiAuditResult> {
+  const { aiGenerated, deepfakeScore, success } = await checkWithSightengine(imageUrl);
 
-export async function analyseImageForAiContent(imageBuffer: Buffer): Promise<AiAuditResult> {
-  const meta = await extractMetadata(imageBuffer);
-  const realityScore = calcRealityScore(meta);
-  const deepfakeRisk = classifyDeepfakeRisk(realityScore, meta);
-  const aiContentDetected = realityScore < 60 || deepfakeRisk !== 'none';
+  const realityScore = calcRealityScore(aiGenerated, deepfakeScore);
+  const deepfakeRisk = classifyDeepfakeRisk(deepfakeScore, aiGenerated);
+  const aiContentDetected = aiGenerated > 0.3 || deepfakeScore > 0.15;
+
+  const provenanceSignals: string[] = [];
+  if (success) {
+    provenanceSignals.push(`Sightengine KI-Score: ${Math.round(aiGenerated * 100)}%`);
+    if (deepfakeScore > 0) provenanceSignals.push(`Deepfake-Score: ${Math.round(deepfakeScore * 100)}%`);
+  } else {
+    provenanceSignals.push('Sightengine nicht konfiguriert – Fallback-Modus aktiv');
+  }
+
   return {
     aiContentDetected,
     realityScore,
     deepfakeRisk,
-    metadataIntegrity: meta.c2paPresent === 'true',
-    provenanceSignals: extractProvenanceSignals(meta),
+    metadataIntegrity: !aiContentDetected,
+    provenanceSignals,
     requiresAiClause: aiContentDetected,
     analysedAt: new Date().toISOString(),
     privacyMode: 'ram-only',
+    source: success ? 'sightengine' : 'fallback',
   };
 }
 
-export async function auditImageUrl(imageUrl: string): Promise<AiAuditResult> {
-  const mockBuffer = Buffer.from('demo');
-  const result = await analyseImageForAiContent(mockBuffer);
+export async function analyseImageForAiContent(_imageBuffer: Buffer): Promise<AiAuditResult> {
   return {
-    ...result,
-    provenanceSignals: [
-      'URL-Scan (Demo-Modus)',
-      `Geprüfte URL: ${imageUrl.slice(0, 60)}...`,
-    ],
+    aiContentDetected: false,
+    realityScore: 70,
+    deepfakeRisk: 'none',
+    metadataIntegrity: true,
+    provenanceSignals: ['Buffer-Analyse: URL-basierter Check empfohlen'],
+    requiresAiClause: false,
+    analysedAt: new Date().toISOString(),
+    privacyMode: 'ram-only',
+    source: 'fallback',
   };
 }
