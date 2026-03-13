@@ -1,4 +1,5 @@
-import ChatBot from '@/components/ChatBot/ChatBot';
+// src/app/layout.task.tsx
+// ÄNDERUNG: ChatBot (Assistant) entfernt
 import CookieBanner from "@/components/CookieBanner/CookieBanner";
 import type { Metadata } from 'next';
 
@@ -20,7 +21,6 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <ChatBot />
         <CookieBanner />
       </body>
     </html>

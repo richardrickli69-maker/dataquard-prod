@@ -1,3 +1,8 @@
+// src/lib/generateInstallationPdf.task.ts
+// ÄNDERUNGEN:
+// 1. Logo y-Position: height - 86 → height - 100 (5mm tiefer, verhindert Abschneiden)
+//    Separator-Linie entsprechend auf height - 116 verschoben
+// 2. Navy-Akzentfarbe → #22c55e Green
 import { PDFDocument, rgb } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 
@@ -28,19 +33,19 @@ export async function generateInstallationPdf(params: {
   const { font, bold } = await loadFonts(pdfDoc)
   const { width, height } = page.getSize()
 
-  const navy = rgb(0.102, 0.137, 0.494)
-  const red = rgb(0.753, 0.224, 0.169)
+  // Farbpalette: Navy → Green (#22c55e)
+  const green = rgb(0.133, 0.773, 0.369)    // #22c55e
+  const darkGreen = rgb(0.086, 0.529, 0.255) // dunkleres Grün
   const gray = rgb(0.6, 0.6, 0.6)
   const lightgray = rgb(0.93, 0.93, 0.93)
   const black = rgb(0.1, 0.1, 0.1)
-  const green = rgb(0.18, 0.49, 0.2)
-  const lightgreen = rgb(0.91, 0.96, 0.91)
+  const lightGreenBg = rgb(0.91, 0.98, 0.93)
   const white = rgb(1, 1, 1)
 
   // Accent bar top
-  page.drawRectangle({ x: 0, y: height - 4, width, height: 4, color: navy })
+  page.drawRectangle({ x: 0, y: height - 4, width, height: 4, color: green })
 
-  // Logo
+  // Logo – y: height - 100 statt height - 86 (5mm tiefer, verhindert Abschneiden)
   const logoController = new AbortController()
   const logoTimeout = setTimeout(() => logoController.abort(), 5000)
   try {
@@ -48,37 +53,37 @@ export async function generateInstallationPdf(params: {
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
     const logoDims = logoImage.scale(0.12)
-    page.drawImage(logoImage, { x: 50, y: height - 86, width: logoDims.width, height: logoDims.height })
+    page.drawImage(logoImage, { x: 50, y: height - 100, width: logoDims.width, height: logoDims.height })
   } catch {
-    page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
-    page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
-    page.drawText('DSGVO / DSG Compliance-Lösungen', { x: 50, y: height - 80, size: 9, font, color: gray })
+    page.drawText('Data', { x: 50, y: height - 70, size: 22, font: bold, color: green })
+    page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 70, size: 22, font: bold, color: darkGreen })
+    page.drawText('DSGVO / DSG Compliance-Lösungen', { x: 50, y: height - 90, size: 9, font, color: gray })
   } finally {
     clearTimeout(logoTimeout)
   }
 
-  // Titel rechts
-  page.drawText('INSTALLATIONSANLEITUNG', { x: width - 230, y: height - 55, size: 10, font: bold, color: navy })
+  // Titel rechts – green statt navy
+  page.drawText('INSTALLATIONSANLEITUNG', { x: width - 230, y: height - 55, size: 10, font: bold, color: green })
   page.drawText(`Dataquard ${params.planLabel}`, { x: width - 230, y: height - 70, size: 9, font, color: gray })
 
-  // Trennlinie
-  page.drawLine({ start: { x: 50, y: height - 100 }, end: { x: width - 50, y: height - 100 }, thickness: 1, color: lightgray })
+  // Trennlinie – nach unten verschoben (war height - 100, jetzt height - 116)
+  page.drawLine({ start: { x: 50, y: height - 116 }, end: { x: width - 50, y: height - 116 }, thickness: 1, color: lightgray })
 
   // Titel
-  page.drawText('So installieren Sie Ihre Dokumente', { x: 50, y: height - 135, size: 16, font: bold, color: navy })
+  page.drawText('So installieren Sie Ihre Dokumente', { x: 50, y: height - 150, size: 16, font: bold, color: green })
   page.drawText('Folgen Sie diesen Schritten um Ihre Website rechtssicher einzurichten.', {
-    x: 50, y: height - 155, size: 10, font, color: gray
+    x: 50, y: height - 170, size: 10, font, color: gray
   })
 
-  // Hinweis-Box
-  page.drawRectangle({ x: 50, y: height - 195, width: width - 100, height: 28, color: rgb(0.99, 0.97, 0.88) })
+  // Hinweis-Box – leicht grüner Hintergrund statt gelb
+  page.drawRectangle({ x: 50, y: height - 210, width: width - 100, height: 28, color: rgb(0.93, 0.99, 0.95) })
   page.drawText('Tipp: Speichern Sie alle Dokumente in einem Ordner "Dataquard – [Ihre Domain]" auf Ihrem Computer.', {
-    x: 58, y: height - 183, size: 9, font, color: rgb(0.57, 0.39, 0.06)
+    x: 58, y: height - 198, size: 9, font, color: darkGreen
   })
 
   // Schritt 1
-  let y = height - 230
-  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: navy })
+  let y = height - 245
+  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: green })
   page.drawText('1', { x: 58, y: y + 5, size: 11, font: bold, color: white })
   page.drawText('Datenschutzerklärung einbinden', { x: 80, y: y + 5, size: 12, font: bold, color: black })
   y -= 22
@@ -97,7 +102,7 @@ export async function generateInstallationPdf(params: {
 
   // Schritt 2
   y -= 14
-  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: navy })
+  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: green })
   page.drawText('2', { x: 58, y: y + 5, size: 11, font: bold, color: white })
   page.drawText('Impressum einbinden', { x: 80, y: y + 5, size: 12, font: bold, color: black })
   y -= 22
@@ -115,7 +120,7 @@ export async function generateInstallationPdf(params: {
 
   // Schritt 3
   y -= 14
-  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: navy })
+  page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: green })
   page.drawText('3', { x: 58, y: y + 5, size: 11, font: bold, color: white })
   page.drawText('Cookie-Banner installieren', { x: 80, y: y + 5, size: 12, font: bold, color: black })
   y -= 22
@@ -134,11 +139,11 @@ export async function generateInstallationPdf(params: {
 
   // Abschluss-Box
   y -= 20
-  page.drawRectangle({ x: 50, y: y - 10, width: width - 100, height: 36, color: lightgreen })
+  page.drawRectangle({ x: 50, y: y - 10, width: width - 100, height: 36, color: lightGreenBg })
   page.drawText('Fertig! Ihre Website ist jetzt rechtssicher nach nDSG / DSGVO.', {
-    x: 60, y: y + 12, size: 10, font: bold, color: green
+    x: 60, y: y + 12, size: 10, font: bold, color: darkGreen
   })
-  page.drawText('Bei Fragen: info@dataquard.ch', { x: 60, y: y - 2, size: 9, font, color: green })
+  page.drawText('Bei Fragen: info@dataquard.ch', { x: 60, y: y - 2, size: 9, font, color: darkGreen })
 
   // Footer
   page.drawLine({ start: { x: 50, y: 55 }, end: { x: width - 50, y: 55 }, thickness: 0.5, color: lightgray })

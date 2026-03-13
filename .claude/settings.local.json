@@ -3,6 +3,12 @@
     "allow": [
       "Bash(code --install-extension ms-vscode.live-server)",
       "Bash(npx tsc --noEmit)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
     ]
   }
 }

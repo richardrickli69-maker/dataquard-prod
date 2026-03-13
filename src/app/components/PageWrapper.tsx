@@ -1,4 +1,5 @@
-// src/app/components/PageWrapper.tsx
+// src/app/components/PageWrapper.task.tsx
+// ÄNDERUNGEN: Footer-Top: nur Login + Homebutton. Footer-Bottom: Scanner entfernt, nur Rechtliches.
 import Link from 'next/link';
 import { Navbar } from './Navbar';
 
@@ -9,13 +10,19 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
       <main>{children}</main>
       <footer style={{ borderTop: '1px solid #e2e4ea', background: '#ffffff', padding: '20px 28px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 14, fontSize: 11, color: '#888899', flexWrap: 'wrap' }}>
-            <span>🇨🇭 Server in Zürich</span>
-            <span>🔒 SSL-verschlüsselt</span>
-            <span>⚖️ nDSG-konform</span>
-            <span>🛡️ Keine Datenweitergabe</span>
+
+          {/* Oben: Login + Homebutton */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+            <Link href="/" style={{ padding: '6px 20px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 7, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: '#f8f9fb' }}>
+              🏠 Startseite
+            </Link>
+            <Link href="/auth" style={{ padding: '6px 20px', border: '2px solid #22c55e', color: '#22c55e', borderRadius: 7, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+              Anmelden
+            </Link>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+
+          {/* Unten: Copyright + Rechtliches (Scanner entfernt) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, paddingTop: 14, borderTop: '1px solid #e2e4ea' }}>
             <span style={{ fontSize: 12, color: '#888899' }}>
               <span style={{ fontWeight: 800 }}>
                 <span style={{ color: '#22c55e' }}>Data</span>
@@ -25,17 +32,15 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
             </span>
             <div style={{ display: 'flex', gap: 16, alignItems: 'center', fontSize: 12, flexWrap: 'wrap' }}>
               {[
-                { l: 'Scanner', h: '/scanner' },
                 { l: 'Datenschutz', h: '/datenschutz' },
-                { l: 'Impressum', h: '/impressum-generator' },
-                { l: 'Preise', h: '/#preise' },
+                { l: 'Impressum', h: '/impressum' },
                 { l: 'AGB', h: '/agb' },
               ].map(n => (
                 <Link key={n.l} href={n.h} style={{ color: '#888899', textDecoration: 'none' }}>{n.l}</Link>
               ))}
-              <Link href="/auth" style={{ padding: '5px 14px', border: '2px solid #22c55e', color: '#22c55e', borderRadius: 6, fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>Anmelden</Link>
             </div>
           </div>
+
         </div>
       </footer>
     </div>

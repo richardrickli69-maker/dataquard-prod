@@ -1,3 +1,5 @@
+// src/app/dashboard/analytics/page.task.tsx
+// ÄNDERUNG: Blue-Akzente → #22c55e Green
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -23,43 +25,47 @@ interface AnalyticsData {
 
 function AmpelDot({ ampel }: { ampel: string }) {
   const color =
-    ampel === 'gruen' ? 'bg-green-500' :
-    ampel === 'gelb'  ? 'bg-yellow-400' :
-    'bg-red-500';
-  return <span className={`inline-block w-3 h-3 rounded-full ${color}`} />;
+    ampel === 'gruen' ? '#22c55e' :
+    ampel === 'gelb'  ? '#eab308' :
+    '#ef4444';
+  return <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: color }} />;
 }
 
-function StatCard({ label, value, sub, color = 'blue' }: {
+function StatCard({ label, value, sub, color = 'green' }: {
   label: string; value: string | number; sub?: string; color?: string;
 }) {
-  const accent =
-    color === 'green'  ? 'border-green-500 text-green-600' :
-    color === 'yellow' ? 'border-yellow-400 text-yellow-600' :
-    color === 'purple' ? 'border-purple-500 text-purple-600' :
-    'border-blue-600 text-blue-700';
+  const borderColor =
+    color === 'green'  ? '#22c55e' :
+    color === 'yellow' ? '#eab308' :
+    color === 'red'    ? '#ef4444' :
+    '#22c55e';
+  const textColor =
+    color === 'green'  ? '#16a34a' :
+    color === 'yellow' ? '#ca8a04' :
+    color === 'red'    ? '#dc2626' :
+    '#16a34a';
   return (
-    <div className={`bg-white rounded-xl border-l-4 ${accent} shadow-sm p-5`}>
-      <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-3xl font-bold ${accent.split(' ')[1]}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+    <div style={{ background: '#ffffff', borderRadius: 12, borderLeft: `4px solid ${borderColor}`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: 20 }}>
+      <p style={{ fontSize: 11, color: '#888899', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{label}</p>
+      <p style={{ fontSize: 28, fontWeight: 700, color: textColor }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: '#aaaabc', marginTop: 4 }}>{sub}</p>}
     </div>
   );
 }
 
 function BarChart({ data }: { data: Record<string, number> }) {
   const entries = Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]));
-  if (entries.length === 0) return <p className="text-gray-400 text-sm">Keine Daten</p>;
+  if (entries.length === 0) return <p style={{ color: '#888899', fontSize: 13 }}>Keine Daten</p>;
   const max = Math.max(...entries.map(e => e[1]), 1);
   return (
-    <div className="flex items-end gap-1 h-24 w-full">
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 96, width: '100%' }}>
       {entries.map(([day, count]) => (
-        <div key={day} className="flex-1 flex flex-col items-center gap-1">
+        <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
           <div
-            className="w-full bg-blue-600 rounded-t opacity-80 hover:opacity-100 transition-opacity"
-            style={{ height: `${(count / max) * 80}px` }}
+            style={{ width: '100%', background: '#22c55e', borderRadius: '3px 3px 0 0', opacity: 0.8, height: `${(count / max) * 80}px`, transition: 'height 0.3s' }}
             title={`${day}: ${count} Scans`}
           />
-          <span className="text-gray-400 text-[9px] rotate-45 origin-left hidden sm:block">
+          <span style={{ color: '#aaaabc', fontSize: 9, transform: 'rotate(45deg)', transformOrigin: 'left', display: 'none' }}>
             {day.slice(5)}
           </span>
         </div>
@@ -83,7 +89,7 @@ export default function AnalyticsDashboard() {
       const json: AnalyticsData = await res.json();
       setData(json);
       setLastUpdated(new Date().toLocaleTimeString('de-CH'));
-    } catch (err) {
+    } catch {
       setError('Daten konnten nicht geladen werden. Prüfe SUPABASE_SERVICE_ROLE_KEY.');
     } finally {
       setLoading(false);
@@ -92,79 +98,78 @@ export default function AnalyticsDashboard() {
 
   useEffect(() => { loadData(); }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Lade Analytics...</p>
-        </div>
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: '#f8f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 40, height: 40, border: '4px solid #22c55e', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+        <p style={{ color: '#888899' }}>Lade Analytics...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (error || !data) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md text-center">
-          <p className="text-red-700 font-semibold mb-2">Fehler</p>
-          <p className="text-red-600 text-sm mb-4">{error}</p>
-          <button onClick={loadData} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">
-            Erneut versuchen
-          </button>
-        </div>
+  if (error || !data) return (
+    <div style={{ minHeight: '100vh', background: '#f8f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: 24, maxWidth: 400, textAlign: 'center' }}>
+        <p style={{ color: '#dc2626', fontWeight: 600, marginBottom: 8 }}>Fehler</p>
+        <p style={{ color: '#dc2626', fontSize: 13, marginBottom: 16 }}>{error}</p>
+        <button onClick={loadData} style={{ background: '#dc2626', color: '#fff', padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13 }}>
+          Erneut versuchen
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
   const totalAmpel = data.ampelCount.gruen + data.ampelCount.gelb + data.ampelCount.rot;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div style={{ minHeight: '100vh', background: '#f8f9fb' }}>
+      {/* Header */}
+      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e4ea', padding: '16px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">🛡 Dataquard – Analytics</h1>
-            <p className="text-sm text-gray-500">Letzte Aktualisierung: {lastUpdated}</p>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e' }}>🛡 Dataquard – Analytics</h1>
+            <p style={{ fontSize: 12, color: '#888899', marginTop: 2 }}>Letzte Aktualisierung: {lastUpdated}</p>
           </div>
-          <button onClick={loadData} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+          <button onClick={loadData} style={{ background: '#22c55e', color: '#fff', padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
             ↻ Aktualisieren
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px' }}>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Scans Total" value={data.totalScans} sub="alle Zeit" color="blue" />
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
+          <StatCard label="Scans Total" value={data.totalScans} sub="alle Zeit" color="green" />
           <StatCard label="Policies generiert" value={data.totalPolicies} sub={`${data.conversionRate}% Conversion`} color="green" />
-          <StatCard label="Unique Users" value={data.uniqueUsers} sub="registrierte Nutzer" color="purple" />
+          <StatCard label="Unique Users" value={data.uniqueUsers} sub="registrierte Nutzer" color="yellow" />
           <StatCard label="Conversion Rate" value={`${data.conversionRate}%`} sub="Scan → Policy" color="yellow" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Scans letzte 30 Tage</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Scans letzte 30 Tage</h2>
             <BarChart data={data.scansPerDay} />
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Ampel-Verteilung</h2>
-            <div className="space-y-3">
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Ampel-Verteilung</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { key: 'gruen', label: 'Grün – Compliant',      color: 'bg-green-500' },
-                { key: 'gelb',  label: 'Gelb – Teilweise',      color: 'bg-yellow-400' },
-                { key: 'rot',   label: 'Rot – Nicht compliant', color: 'bg-red-500' },
+                { key: 'gruen', label: 'Grün – Compliant',      color: '#22c55e' },
+                { key: 'gelb',  label: 'Gelb – Teilweise',      color: '#eab308' },
+                { key: 'rot',   label: 'Rot – Nicht compliant', color: '#ef4444' },
               ].map(({ key, label, color }) => {
                 const count = data.ampelCount[key as keyof typeof data.ampelCount];
                 const pct = totalAmpel > 0 ? Math.round((count / totalAmpel) * 100) : 0;
                 return (
                   <div key={key}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">{label}</span>
-                      <span className="font-semibold text-gray-800">{count} ({pct}%)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                      <span style={{ color: '#555566' }}>{label}</span>
+                      <span style={{ fontWeight: 600, color: '#1a1a2e' }}>{count} ({pct}%)</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div className={`${color} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                    <div style={{ width: '100%', background: '#f1f2f6', borderRadius: 4, height: 6 }}>
+                      <div style={{ background: color, height: 6, borderRadius: 4, width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -173,23 +178,23 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Top 10 Domains</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Top 10 Domains</h2>
             {data.topDomains.length === 0 ? (
-              <p className="text-gray-400 text-sm">Noch keine Daten</p>
+              <p style={{ color: '#888899', fontSize: 13 }}>Noch keine Daten</p>
             ) : (
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {data.topDomains.map(([domain, count], i) => {
                   const pct = Math.round((count / data.topDomains[0][1]) * 100);
                   return (
                     <div key={domain}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-700 font-mono text-xs truncate max-w-[200px]">{i + 1}. {domain}</span>
-                        <span className="text-gray-500 text-xs">{count}x</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
+                        <span style={{ color: '#555566', fontFamily: 'monospace' }}>{i + 1}. {domain}</span>
+                        <span style={{ color: '#888899' }}>{count}x</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                        <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                      <div style={{ width: '100%', background: '#f1f2f6', borderRadius: 4, height: 5 }}>
+                        <div style={{ background: '#22c55e', height: 5, borderRadius: 4, width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -198,22 +203,22 @@ export default function AnalyticsDashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Jurisdiktionen</h2>
-            <div className="space-y-3">
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Jurisdiktionen</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {Object.entries(data.jurisdictionCount)
                 .sort((a, b) => b[1] - a[1])
                 .map(([j, count]) => {
                   const pct = data.totalScans > 0 ? Math.round((count / data.totalScans) * 100) : 0;
-                  const colorMap: Record<string, string> = { nDSG: 'bg-red-500', GDPR: 'bg-blue-500', Both: 'bg-purple-500' };
+                  const colorMap: Record<string, string> = { nDSG: '#ef4444', GDPR: '#3b82f6', Both: '#22c55e' };
                   return (
                     <div key={j}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-semibold text-gray-700">{j}</span>
-                        <span className="text-gray-500">{count} ({pct}%)</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 600, color: '#1a1a2e' }}>{j}</span>
+                        <span style={{ color: '#888899' }}>{count} ({pct}%)</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div className={`${colorMap[j] ?? 'bg-gray-400'} h-2 rounded-full`} style={{ width: `${pct}%` }} />
+                      <div style={{ width: '100%', background: '#f1f2f6', borderRadius: 4, height: 6 }}>
+                        <div style={{ background: colorMap[j] ?? '#888899', height: 6, borderRadius: 4, width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -222,39 +227,37 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Letzte 20 Scans</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        {/* Letzte Scans */}
+        <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+          <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Letzte 20 Scans</h2>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 520 }}>
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left text-gray-500 font-medium pb-3 pr-4">Domain</th>
-                  <th className="text-left text-gray-500 font-medium pb-3 pr-4">Jurisdiktion</th>
-                  <th className="text-left text-gray-500 font-medium pb-3 pr-4">Ampel</th>
-                  <th className="text-left text-gray-500 font-medium pb-3 pr-4">Confidence</th>
-                  <th className="text-left text-gray-500 font-medium pb-3">Datum</th>
+                <tr style={{ borderBottom: '1px solid #e2e4ea' }}>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Domain</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Jurisdiktion</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Ampel</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Confidence</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0' }}>Datum</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recentScans.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center text-gray-400 py-8">Noch keine Scans vorhanden</td></tr>
+                  <tr><td colSpan={5} style={{ textAlign: 'center', color: '#888899', padding: '32px 0', fontSize: 13 }}>Noch keine Scans vorhanden</td></tr>
                 ) : (
                   data.recentScans.map(scan => (
-                    <tr key={scan.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="py-2 pr-4 font-mono text-xs text-gray-700">{scan.domain}</td>
-                      <td className="py-2 pr-4 text-gray-600">{scan.jurisdiction}</td>
-                      <td className="py-2 pr-4">
-                        <div className="flex items-center gap-2">
+                    <tr key={scan.id} style={{ borderBottom: '1px solid #f1f2f6' }}>
+                      <td style={{ padding: '8px 16px 8px 0', fontFamily: 'monospace', fontSize: 12, color: '#555566' }}>{scan.domain}</td>
+                      <td style={{ padding: '8px 16px 8px 0', color: '#555566' }}>{scan.jurisdiction}</td>
+                      <td style={{ padding: '8px 16px 8px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <AmpelDot ampel={scan.ampel} />
-                          <span className="text-gray-600 capitalize">{scan.ampel}</span>
+                          <span style={{ color: '#555566', textTransform: 'capitalize' }}>{scan.ampel}</span>
                         </div>
                       </td>
-                      <td className="py-2 pr-4 text-gray-600">{(scan.confidence * 100).toFixed(0)}%</td>
-                      <td className="py-2 text-gray-400 text-xs">
-                        {new Date(scan.created_at).toLocaleDateString('de-CH', {
-                          day: '2-digit', month: '2-digit', year: 'numeric',
-                          hour: '2-digit', minute: '2-digit',
-                        })}
+                      <td style={{ padding: '8px 16px 8px 0', color: '#555566' }}>{(scan.confidence * 100).toFixed(0)}%</td>
+                      <td style={{ padding: '8px 0', color: '#888899', fontSize: 12 }}>
+                        {new Date(scan.created_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </td>
                     </tr>
                   ))

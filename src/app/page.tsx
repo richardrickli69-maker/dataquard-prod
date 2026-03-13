@@ -1,5 +1,10 @@
-// src/app/page.tsx
-// Dataquard Homepage – V3 Final (Heller Hintergrund + Giftgrün)
+// src/app/page.task.tsx
+// ÄNDERUNGEN:
+// - Impressum-Plan aus Preise entfernt (4 → 3 Pläne, grid repeat(3,1fr))
+// - 'Dataquard vs. andere Tools' Heading → 'Impressum fehlt auf Ihrer Website? – Vergleich'
+// - AGB-Sektion VOR FAQ verschoben
+// - Mobile responsive: grid-Klassen + <style> Media Queries
+// - "Assistant"-ChatBot wird via layout.task.tsx entfernt (nicht hier)
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +12,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageWrapper } from './components/PageWrapper';
 
-/* Farb-System: Helles Grau + Giftgrün */
 const G = {
   green: '#22c55e',
   greenBright: '#39FF14',
@@ -78,6 +82,23 @@ export default function HomePage() {
 
   return (
     <PageWrapper>
+      {/* Mobile Responsive Styles */}
+      <style>{`
+        @media (max-width: 768px) {
+          .grid-3col { grid-template-columns: 1fr !important; }
+          .grid-2col { grid-template-columns: 1fr !important; }
+          .grid-4col { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-trust { grid-template-columns: 1fr !important; }
+          .grid-trust > div { border-right: none !important; border-bottom: 1px solid #e2e4ea; }
+          .grid-trust > div:last-child { border-bottom: none; }
+          .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .table-scroll table { min-width: 520px; }
+          .hero-input-row { flex-direction: column !important; }
+          .hero-input-row button { border-radius: 0 0 12px 12px !important; }
+          .impressum-cta-inner { flex-direction: column !important; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
 
       {/* ═══ 2. HERO ═══ */}
       <section style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
@@ -93,7 +114,7 @@ export default function HomePage() {
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 620, margin: '0 auto 28px', lineHeight: 1.7 }}>
           Der einzige Schweizer Website-Check, der <strong style={{ color: G.text }}>Compliance, Performance und Security</strong> gleichzeitig prüft — und direkt behebt. Kein Cookie-Banner nötig.
         </p>
-        <div style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+        <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           <input type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
           <button onClick={handleHeroScan} style={{ padding: '15px 24px', background: G.green, color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 13 }}>Jetzt kostenlos prüfen →</button>
         </div>
@@ -108,17 +129,16 @@ export default function HomePage() {
                 <div style={{ background: G.green, height: 4, borderRadius: 8, transition: 'width 0.5s', width: `${scanProgress}%` }} />
               </div>
             </div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
           </div>
         )}
-        <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted }}>
+        <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted, flexWrap: 'wrap' }}>
           <span>🇨🇭 Schweizer Produkt</span><span>🔒 Daten in Zürich</span><span>⚖️ nDSG/DSGVO</span><span>⏱ Ergebnis in 60 Sek.</span>
         </div>
       </section>
 
       {/* ═══ 3. TRUST STRIP ═══ */}
       <div style={{ background: G.bgWhite, borderTop: `1px solid ${G.border}`, borderBottom: `1px solid ${G.border}` }}>
-        <div style={{ maxWidth: 750, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', padding: '18px 0' }}>
+        <div className="grid-trust" style={{ maxWidth: 750, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', padding: '18px 0' }}>
           {[
             { i: '🇨🇭', t: 'Daten in der Schweiz', s: 'Sicher auf Schweizer Servern' },
             { i: '✅', t: 'EDÖB-konform', s: 'nDSG 2023 erfüllt' },
@@ -144,7 +164,7 @@ export default function HomePage() {
         </div>
         <div style={{ maxWidth: 480, margin: '0 auto', background: G.bgWhite, borderRadius: 20, padding: '32px 28px', border: `1px solid ${G.border}`, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', fontSize: 13, color: G.textMuted, marginBottom: 20 }}>beispiel-kmu.ch</div>
-          <div style={{ display: 'flex', gap: 28, justifyContent: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: 28, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
             {[
               { label: 'Compliance', score: 'A', color: '#22c55e' },
               { label: 'Performance', score: 'B', color: '#eab308' },
@@ -174,7 +194,7 @@ export default function HomePage() {
           <h2 style={{ fontSize: 30, fontWeight: 800, marginTop: 6 }}>Mehr als nur ein Compliance-Check</h2>
           <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>73% der Schweizer KMU-Websites sind nicht nDSG-konform. Wir prüfen alles — gleichzeitig.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {[
             { ic: '⚖️', tag: 'RECHTSSICHERHEIT', t: 'Compliance-Check', s: 'nDSG + DSGVO', d: 'Automatische Prüfung aller rechtlichen Anforderungen. Ampel-System zeigt sofort, wo Handlungsbedarf besteht.', ch: ['Datenschutzerklärung vorhanden', 'Cookie-Banner konform', 'Tracker erkannt & dokumentiert', 'Impressum vollständig'] },
             { ic: '⚡', tag: 'GESCHWINDIGKEIT', t: 'Performance-Scan', s: 'Speed & Technik', d: 'Ladezeit, externe Scripts, Google Fonts — alles was bremst und rechtlich riskant ist.', ch: ['Ladezeit < 3 Sekunden', 'Mobile-freundlich', 'SSL aktiv & gültig', 'Keine veralteten Scripts'] },
@@ -197,7 +217,7 @@ export default function HomePage() {
 
       {/* ═══ 6. SCAN PREVIEW ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px', borderTop: `1px solid ${G.border}` }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'center' }}>
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'center' }}>
           <div style={{ background: '#1a1a2e', border: '1px solid #2a2a44', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
             <div style={{ background: '#22223a', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #2a2a44' }}>
               <div style={{ display: 'flex', gap: 5 }}>
@@ -258,7 +278,7 @@ export default function HomePage() {
           <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Kundenstimmen</span>
           <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: 6 }}>Was Schweizer KMUs sagen</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
           {[
             { init: 'MH', bg: '#22c55e', name: 'Markus H.', role: 'Schreinerei, Liestal', text: 'In 5 Minuten war alles erledigt. Hatte es seit Monaten aufgeschoben – hätte ich viel früher machen sollen.' },
             { init: 'SK', bg: '#eab308', name: 'Sandra K.', role: 'Physiotherapie, Basel', text: 'Der Ampel-Bericht hat sofort gezeigt wo das Problem liegt. Für jemanden ohne Rechtskenntnisse perfekt.' },
@@ -282,14 +302,14 @@ export default function HomePage() {
 
       {/* ═══ 8. IMPRESSUM CTA ═══ */}
       <section style={{ maxWidth: 800, margin: '0 auto', padding: '20px 24px' }}>
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: '28px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="impressum-cta-inner" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: '28px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <span style={{ fontSize: 24 }}>📄</span>
               <h3 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>Impressum fehlt auf Ihrer Website?</h3>
             </div>
             <p style={{ fontSize: 13, color: '#991b1b' }}>Ein fehlendes Impressum ist eine Ordnungswidrigkeit – bis CHF 50&apos;000 Bussgeld möglich.</p>
-            <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12, color: G.textSec }}>
+            <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12, color: G.textSec, flexWrap: 'wrap' }}>
               <span>✓ Schweiz (nDSG)</span><span>✓ Deutschland (DSGVO)</span><span>✓ Sofort einsatzbereit</span>
             </div>
           </div>
@@ -303,7 +323,7 @@ export default function HomePage() {
 
       {/* ═══ 9. STATS ═══ */}
       <section style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, textAlign: 'center' }}>
+        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, textAlign: 'center' }}>
           {[
             { ic: '📊', n: "4\u2019800+", l: 'Schweizer KMUs betroffen von nDSG-Pflichten' },
             { ic: '⚠️', n: '73%', l: 'der Schweizer Websites ohne korrekte DSE' },
@@ -323,7 +343,7 @@ export default function HomePage() {
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2 }}>SO EINFACH GEHT&apos;S</span>
           <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: 6, marginBottom: 36 }}>In 3 Schritten zu Ihrer Datenschutzerklärung</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+          <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
             {[
               { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben – kostenlos, ohne Anmeldung. Wir erkennen automatisch alle Drittanbieter.' },
               { n: '2', ic: '📊', t: 'Report erhalten', d: 'Compliance-Score, Jurisdiktion (nDSG/DSGVO) und konkrete Handlungsempfehlungen.' },
@@ -340,36 +360,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 11. AGB ═══ */}
-      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px' }}>
-        <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 18, padding: '40px 32px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>📋 Allgemeine Geschäftsbedingungen</h2>
-          <p style={{ color: G.textSec, fontSize: 13, maxWidth: 500, margin: '0 auto 28px' }}>Transparenz ist uns wichtig. Unsere AGB regeln die Nutzung klar und fair – ohne Kleingedrucktes.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24, textAlign: 'left' }}>
-            {[
-              { ic: '🔒', t: 'Datenschutz', d: 'Daten auf Schweizer Servern. Nie an Dritte.' },
-              { ic: '💳', t: 'Zahlung', d: 'Einmalkauf. Keine Verlängerung.' },
-              { ic: '↩️', t: '30 Tage Garantie', d: 'Geld zurück ohne Angabe von Gründen.' },
-              { ic: '⚖️', t: 'Haftung', d: 'Keine Rechtsberatung. Anwalt empfohlen.' },
-            ].map(a => (
-              <div key={a.t} style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 22, marginBottom: 6 }}>{a.ic}</div>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{a.t}</div>
-                <div style={{ fontSize: 11, color: G.textSec, lineHeight: 1.5 }}>{a.d}</div>
-              </div>
-            ))}
-          </div>
-          <Link href="/agb" style={{ display: 'inline-block', padding: '10px 24px', border: `2px solid ${G.green}`, color: G.green, borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>Vollständige AGB lesen →</Link>
-        </div>
-      </section>
-
-      {/* ═══ 12. PREISE ═══ */}
-      <section style={{ maxWidth: 960, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
+      {/* ═══ 11. PREISE ═══ (Impressum-Plan entfernt, 3 Pläne) */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
         <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Transparent. Fair. Schweizer Qualität.</h2>
         <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Einmalkauf · Keine versteckten Kosten</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {[
-            { n: 'Impressum', p: 'CHF 19', s: 'Einmalkauf', d: 'Nur das Impressum', f: ['Impressum Generator', 'Schweiz + Deutschland', 'Sofort downloadbar'], m: [], c: 'Impressum erstellen', l: '/impressum-generator' },
             { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], m: ['Datenschutzerklärung', 'Impressum'], c: 'Kostenlos scannen', l: '/scanner' },
             { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
             { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support'], m: [], c: 'Professional wählen', l: '/checkout' },
@@ -389,10 +385,10 @@ export default function HomePage() {
         <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>Alle Preise in CHF inkl. MwSt. · Einmalkauf · Keine versteckten Kosten</p>
       </section>
 
-      {/* ═══ 13. VERGLEICH ═══ */}
+      {/* ═══ 12. VERGLEICH ═══ (Heading umbenannt) */}
       <section style={{ maxWidth: 750, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 24 }}>Dataquard vs. andere Tools</h2>
-        <div style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${G.border}` }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 24 }}>Impressum fehlt auf Ihrer Website? – So hilft Dataquard</h2>
+        <div className="table-scroll" style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${G.border}` }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead><tr style={{ background: G.bgLight }}>
               <th style={{ padding: '12px 14px', textAlign: 'left', color: G.textMuted, fontWeight: 600 }}>Feature</th>
@@ -416,6 +412,29 @@ export default function HomePage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* ═══ 13. AGB ═══ (VOR FAQ verschoben) */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
+        <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 18, padding: '40px 32px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>📋 Allgemeine Geschäftsbedingungen</h2>
+          <p style={{ color: G.textSec, fontSize: 13, maxWidth: 500, margin: '0 auto 28px' }}>Transparenz ist uns wichtig. Unsere AGB regeln die Nutzung klar und fair – ohne Kleingedrucktes.</p>
+          <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24, textAlign: 'left' }}>
+            {[
+              { ic: '🔒', t: 'Datenschutz', d: 'Daten auf Schweizer Servern. Nie an Dritte.' },
+              { ic: '💳', t: 'Zahlung', d: 'Einmalkauf. Keine Verlängerung.' },
+              { ic: '↩️', t: '30 Tage Garantie', d: 'Geld zurück ohne Angabe von Gründen.' },
+              { ic: '⚖️', t: 'Haftung', d: 'Keine Rechtsberatung. Anwalt empfohlen.' },
+            ].map(a => (
+              <div key={a.t} style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: 16 }}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>{a.ic}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{a.t}</div>
+                <div style={{ fontSize: 11, color: G.textSec, lineHeight: 1.5 }}>{a.d}</div>
+              </div>
+            ))}
+          </div>
+          <Link href="/agb" style={{ display: 'inline-block', padding: '10px 24px', border: `2px solid ${G.green}`, color: G.green, borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>Vollständige AGB lesen →</Link>
         </div>
       </section>
 

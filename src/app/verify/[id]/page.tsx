@@ -1,4 +1,6 @@
-// src/app/verify/[id]/page.tsx
+// src/app/verify/[id]/page.task.tsx
+// ÄNDERUNG: Dunkler Indigo/Purple-Hintergrund → #f8f9fb (Light)
+// Karten bleiben weiß – nur outer background geändert
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
@@ -39,113 +41,90 @@ export default async function VerifyPage({ params }: Props) {
   const isValid = badge?.is_active && !isExpired;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
+    <div style={{ minHeight: '100vh', background: '#f8f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
 
         {!badge ? (
-          /* Badge nicht gefunden */
-          <div className="bg-white rounded-2xl shadow-2xl p-8 text-center border-4 border-red-400">
-            <img src="/logo.png" alt="Dataquard" className="mx-auto mb-4" style={{ maxWidth: '120px' }} />
-            <p className="text-red-500 text-xl font-bold mb-2">❌ Badge nicht gefunden</p>
-            <p className="text-gray-500 text-sm mb-6">
+          <div style={{ background: '#ffffff', borderRadius: 20, padding: 32, textAlign: 'center', border: '3px solid #dc2626', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+            <img src="/logo.png" alt="Dataquard" style={{ maxWidth: 120, margin: '0 auto 16px', display: 'block' }} />
+            <p style={{ color: '#dc2626', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>❌ Badge nicht gefunden</p>
+            <p style={{ color: '#555566', fontSize: 13, marginBottom: 20 }}>
               Dieser Verifizierungs-Link ist ungültig oder wurde widerrufen.
             </p>
-            <Link href="/" className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition">
+            <Link href="/" style={{ color: '#22c55e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
               ← Zur Startseite
             </Link>
           </div>
         ) : (
-          /* Badge gefunden */
-          <div className={`bg-white rounded-2xl shadow-2xl border-4 ${isValid ? 'border-green-400' : 'border-gray-300'} overflow-hidden`}>
+          <div style={{ background: '#ffffff', borderRadius: 20, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', border: `3px solid ${isValid ? '#22c55e' : '#e2e4ea'}`, overflow: 'hidden' }}>
 
             {/* Top bar */}
-            <div className={`h-2 w-full ${isValid ? 'bg-green-400' : 'bg-gray-300'}`} />
+            <div style={{ height: 4, width: '100%', background: isValid ? '#22c55e' : '#e2e4ea' }} />
 
-            <div className="p-8 text-center">
+            <div style={{ padding: 32, textAlign: 'center' }}>
 
-              {/* Logo */}
+              {/* Logo – margin-top erhöht damit Logo nicht abgeschnitten */}
               <img
                 src="/logo.png"
                 alt="Dataquard"
-                className="mx-auto mb-4 object-contain"
-                style={{ maxWidth: '150px', height: 'auto' }}
+                style={{ maxWidth: 140, height: 'auto', margin: '8px auto 16px', display: 'block', objectFit: 'contain' }}
               />
 
-              {/* Status */}
-              <p className={`text-xl font-bold mb-1 ${isValid ? 'text-green-600' : 'text-gray-400'}`}>
+              <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: isValid ? '#22c55e' : '#888899' }}>
                 {isValid ? '✓ Verified Badge' : '✗ Badge abgelaufen'}
               </p>
-              <p className="text-gray-500 text-xs mb-6">
+              <p style={{ color: '#888899', fontSize: 12, marginBottom: 20 }}>
                 {isValid
                   ? 'Diese Website wurde auf DSGVO/nDSG-Compliance geprüft'
                   : 'Die Verifikation ist nicht mehr gültig'}
               </p>
 
-              {/* Divider */}
-              <div className={`h-px w-full mb-6 ${isValid ? 'bg-green-100' : 'bg-gray-100'}`} />
+              <div style={{ height: 1, background: isValid ? 'rgba(34,197,94,0.15)' : '#e2e4ea', marginBottom: 20 }} />
 
-              {/* Badge-Infos */}
-              <div className="space-y-3 text-sm">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, textAlign: 'left' }}>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Website</span>
-                  <a
-                    href={badge.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 font-semibold hover:text-indigo-800 transition truncate ml-4 max-w-[220px]"
-                    title={badge.website_url}
-                  >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#888899', fontWeight: 500 }}>Website</span>
+                  <a href={badge.website_url} target="_blank" rel="noopener noreferrer"
+                    style={{ color: '#22c55e', fontWeight: 600, textDecoration: 'none', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    title={badge.website_url}>
                     {badge.website_url.replace(/^https?:\/\//, '')}
                   </a>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Ausgestellt am</span>
-                  <span className="text-gray-700 font-semibold">
-                    {new Date(badge.issued_at).toLocaleDateString('de-CH', {
-                      day: '2-digit', month: '2-digit', year: 'numeric'
-                    })}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#888899', fontWeight: 500 }}>Ausgestellt am</span>
+                  <span style={{ color: '#1a1a2e', fontWeight: 600 }}>
+                    {new Date(badge.issued_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Gültig bis</span>
-                  <span className={`font-semibold ${isExpired ? 'text-red-500' : 'text-gray-700'}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#888899', fontWeight: 500 }}>Gültig bis</span>
+                  <span style={{ fontWeight: 600, color: isExpired ? '#dc2626' : '#1a1a2e' }}>
                     {badge.expires_at
-                      ? new Date(badge.expires_at).toLocaleDateString('de-CH', {
-                          day: '2-digit', month: '2-digit', year: 'numeric'
-                        })
+                      ? new Date(badge.expires_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
                       : 'Unbegrenzt'}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Status</span>
-                  <span className={`px-3 py-0.5 rounded-full text-xs font-bold ${
-                    isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
-                  }`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#888899', fontWeight: 500 }}>Status</span>
+                  <span style={{ padding: '3px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: isValid ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.08)', color: isValid ? '#22c55e' : '#dc2626' }}>
                     {isValid ? '● Aktiv' : '● Inaktiv'}
                   </span>
                 </div>
 
               </div>
 
-              {/* Divider */}
-              <div className="h-px w-full my-6 bg-gray-100" />
+              <div style={{ height: 1, background: '#e2e4ea', margin: '20px 0' }} />
 
-              {/* Footer */}
-              <p className="text-gray-400 text-xs mb-3">Verifiziert durch</p>
-              <Link
-                href="/"
-                className="text-indigo-600 hover:text-indigo-800 font-bold text-sm transition"
-              >
+              <p style={{ color: '#888899', fontSize: 11, marginBottom: 8 }}>Verifiziert durch</p>
+              <Link href="/" style={{ color: '#22c55e', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
                 🛡️ dataquard.ch
               </Link>
-              <p className="mt-4">
-                <Link href="/" className="text-gray-400 hover:text-gray-600 text-xs transition">
-                  ← Zur Startseite
-                </Link>
+              <p style={{ marginTop: 12 }}>
+                <Link href="/" style={{ color: '#888899', fontSize: 12, textDecoration: 'none' }}>← Zur Startseite</Link>
               </p>
 
             </div>

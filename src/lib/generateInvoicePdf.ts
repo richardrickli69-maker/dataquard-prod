@@ -1,3 +1,5 @@
+// src/lib/generateInvoicePdf.task.ts
+// ÄNDERUNG: Navy-Akzentfarbe → #22c55e Green (rgb 0.133, 0.773, 0.369)
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
 export async function generateInvoicePdf(params: {
@@ -14,15 +16,17 @@ export async function generateInvoicePdf(params: {
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const { width, height } = page.getSize()
 
-  const navy = rgb(0.102, 0.137, 0.494)
-  const red = rgb(0.753, 0.224, 0.169)
+  // Farbpalette: Navy → Green (#22c55e)
+  const green = rgb(0.133, 0.773, 0.369)   // #22c55e
+  const darkGreen = rgb(0.086, 0.529, 0.255) // dunkleres Grün für Text
   const gray = rgb(0.6, 0.6, 0.6)
   const lightgray = rgb(0.93, 0.93, 0.93)
   const black = rgb(0.1, 0.1, 0.1)
   const white = rgb(1, 1, 1)
+  const lightGreenBg = rgb(0.91, 0.98, 0.93)
 
-  // Accent bar top
-  page.drawRectangle({ x: 0, y: height - 4, width, height: 4, color: navy })
+  // Accent bar top – green statt navy
+  page.drawRectangle({ x: 0, y: height - 4, width, height: 4, color: green })
 
   // Logo einbetten
   const logoController = new AbortController()
@@ -39,16 +43,16 @@ export async function generateInvoicePdf(params: {
       height: logoDims.height,
     })
   } catch {
-    // Fallback: nur Text wenn Logo nicht ladbar
-    page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: navy })
-    page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: red })
+    // Fallback Text
+    page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: green })
+    page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: darkGreen })
     page.drawText('DSGVO / DSG Compliance-Loesungen', { x: 50, y: height - 80, size: 9, font, color: gray })
   } finally {
     clearTimeout(logoTimeout)
   }
 
-  // Rechnung Label rechts
-  page.drawText('RECHNUNG', { x: width - 200, y: height - 55, size: 11, font: bold, color: navy })
+  // Rechnung Label rechts – green statt navy
+  page.drawText('RECHNUNG', { x: width - 200, y: height - 55, size: 11, font: bold, color: green })
   page.drawText(`Nr. ${params.invoiceNumber}`, { x: width - 200, y: height - 72, size: 10, font, color: rgb(0.35, 0.35, 0.35) })
   page.drawText(params.date, { x: width - 200, y: height - 86, size: 10, font, color: rgb(0.35, 0.35, 0.35) })
 
@@ -67,12 +71,12 @@ export async function generateInvoicePdf(params: {
   page.drawText('ZAHLUNGSART', { x: 280, y: height - 150, size: 8, font: bold, color: gray })
   page.drawText('Einmalkauf - Stripe', { x: 280, y: height - 164, size: 11, font, color: black })
 
-  // Tabellen-Header
+  // Tabellen-Header – green statt navy
   const tableY = height - 210
-  page.drawRectangle({ x: 50, y: tableY - 4, width: width - 100, height: 22, color: rgb(0.95, 0.96, 0.98) })
-  page.drawText('BESCHREIBUNG', { x: 55, y: tableY + 4, size: 8.5, font: bold, color: navy })
-  page.drawText('MENGE', { x: 390, y: tableY + 4, size: 8.5, font: bold, color: navy })
-  page.drawText('BETRAG', { x: 460, y: tableY + 4, size: 8.5, font: bold, color: navy })
+  page.drawRectangle({ x: 50, y: tableY - 4, width: width - 100, height: 22, color: rgb(0.93, 0.99, 0.95) })
+  page.drawText('BESCHREIBUNG', { x: 55, y: tableY + 4, size: 8.5, font: bold, color: green })
+  page.drawText('MENGE', { x: 390, y: tableY + 4, size: 8.5, font: bold, color: green })
+  page.drawText('BETRAG', { x: 460, y: tableY + 4, size: 8.5, font: bold, color: green })
 
   // Tabellenzeile
   const rowY = tableY - 30
@@ -86,7 +90,7 @@ export async function generateInvoicePdf(params: {
   // Trennlinie
   page.drawLine({ start: { x: 50, y: rowY - 22 }, end: { x: width - 50, y: rowY - 22 }, thickness: 0.5, color: lightgray })
 
-  // MwSt. Berechnung (8.1%)
+  // MwSt.
   const mwstRate = 0.081
   const netto = params.amount / (1 + mwstRate)
   const mwst = params.amount - netto
@@ -98,15 +102,15 @@ export async function generateInvoicePdf(params: {
   page.drawText('MwSt. 8.1%', { x: 360, y: t1Y - 18, size: 10, font, color: gray })
   page.drawText(`CHF ${mwst.toFixed(2)}`, { x: 455, y: t1Y - 18, size: 10, font, color: black })
 
-  // Total Box
+  // Total Box – green statt navy
   const totalY = t1Y - 55
-  page.drawRectangle({ x: 50, y: totalY - 8, width: width - 100, height: 38, color: navy })
+  page.drawRectangle({ x: 50, y: totalY - 8, width: width - 100, height: 38, color: green })
   page.drawText('Total inkl. MwSt.', { x: 60, y: totalY + 14, size: 12, font: bold, color: white })
   page.drawText(`CHF ${params.amount.toFixed(2)}`, { x: 430, y: totalY + 14, size: 16, font: bold, color: white })
 
   // Bezahlt Badge
-  page.drawRectangle({ x: 50, y: totalY - 35, width: 80, height: 18, color: rgb(0.91, 0.96, 0.91) })
-  page.drawText('Bezahlt', { x: 62, y: totalY - 27, size: 9, font: bold, color: rgb(0.18, 0.49, 0.2) })
+  page.drawRectangle({ x: 50, y: totalY - 35, width: 80, height: 18, color: lightGreenBg })
+  page.drawText('Bezahlt', { x: 62, y: totalY - 27, size: 9, font: bold, color: darkGreen })
 
   // Footer
   page.drawLine({ start: { x: 50, y: 55 }, end: { x: width - 50, y: 55 }, thickness: 0.5, color: lightgray })

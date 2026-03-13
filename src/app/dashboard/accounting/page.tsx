@@ -1,3 +1,5 @@
+// src/app/dashboard/accounting/page.task.tsx
+// ÄNDERUNG: Button- und Akzentfarben → #22c55e, Purple-Akzente entfernt
 'use client';
 import { useEffect, useState } from 'react';
 
@@ -10,13 +12,14 @@ interface AccountingData {
   error?: string;
 }
 
-function StatCard({ label, value, sub, color = 'blue' }: { label: string; value: string; sub?: string; color?: string; }) {
-  const accent = color === 'green' ? 'border-green-500 text-green-600' : color === 'purple' ? 'border-purple-500 text-purple-600' : color === 'orange' ? 'border-orange-500 text-orange-600' : 'border-blue-600 text-blue-700';
+function StatCard({ label, value, sub, color = 'green' }: { label: string; value: string; sub?: string; color?: string; }) {
+  const borderColor = color === 'orange' ? '#f97316' : color === 'yellow' ? '#eab308' : '#22c55e';
+  const textColor   = color === 'orange' ? '#ea580c'  : color === 'yellow' ? '#ca8a04' : '#16a34a';
   return (
-    <div className={`bg-white rounded-xl border-l-4 ${accent} shadow-sm p-5`}>
-      <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-3xl font-bold ${accent.split(' ')[1]}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+    <div style={{ background: '#ffffff', borderRadius: 12, borderLeft: `4px solid ${borderColor}`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: 20 }}>
+      <p style={{ fontSize: 11, color: '#888899', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{label}</p>
+      <p style={{ fontSize: 28, fontWeight: 700, color: textColor }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: '#aaaabc', marginTop: 4 }}>{sub}</p>}
     </div>
   );
 }
@@ -38,17 +41,18 @@ export default function AccountingDashboard() {
   useEffect(() => { loadData(); }, []);
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">Lade Accounting...</p>
+    <div style={{ minHeight: '100vh', background: '#f8f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 40, height: 40, border: '4px solid #22c55e', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+        <p style={{ color: '#888899' }}>Lade Accounting...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     </div>
   );
 
   if (!data) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <button onClick={loadData} className="bg-red-600 text-white px-4 py-2 rounded-lg">Erneut versuchen</button>
+    <div style={{ minHeight: '100vh', background: '#f8f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <button onClick={loadData} style={{ background: '#dc2626', color: '#fff', padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>Erneut versuchen</button>
     </div>
   );
 
@@ -57,48 +61,49 @@ export default function AccountingDashboard() {
   const totalPlans = Object.values(data.planCount).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div style={{ minHeight: '100vh', background: '#f8f9fb' }}>
+      {/* Header */}
+      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e4ea', padding: '16px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">💰 Dataquard – Accounting</h1>
-            <p className="text-sm text-gray-500">Letzte Aktualisierung: {lastUpdated}</p>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e' }}>💰 Dataquard – Accounting</h1>
+            <p style={{ fontSize: 12, color: '#888899', marginTop: 2 }}>Letzte Aktualisierung: {lastUpdated}</p>
           </div>
-          <button onClick={loadData} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">↻ Aktualisieren</button>
+          <button onClick={loadData} style={{ background: '#22c55e', color: '#fff', padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>↻ Aktualisieren</button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px' }}>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
           <StatCard label="Umsatz Total" value={`CHF ${data.totalRevenue.toFixed(2)}`} sub="alle Zeit" color="green" />
-          <StatCard label="MRR" value={`CHF ${data.mrr.toFixed(2)}`} sub="monatlich wiederkehrend" color="blue" />
-          <StatCard label="Aktive Abos" value={String(data.activeSubscriptions)} sub={`${data.totalPayments} Zahlungen total`} color="purple" />
+          <StatCard label="MRR" value={`CHF ${data.mrr.toFixed(2)}`} sub="monatlich wiederkehrend" color="green" />
+          <StatCard label="Aktive Abos" value={String(data.activeSubscriptions)} sub={`${data.totalPayments} Zahlungen total`} color="yellow" />
           <StatCard label="Dieser Monat" value={`CHF ${thisMonthRevenue.toFixed(2)}`} sub={currentMonth} color="orange" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Plan-Verteilung</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Plan-Verteilung</h2>
             {totalPlans === 0 ? (
-              <div className="flex items-center justify-center h-24 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                <p className="text-gray-400 text-sm">Noch keine Abos</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 96, background: '#f8f9fb', borderRadius: 8, border: '2px dashed #e2e4ea' }}>
+                <p style={{ color: '#888899', fontSize: 13 }}>Noch keine Abos</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  { plan: 'FREE',         color: 'bg-gray-400',   count: data.planCount.FREE },
-                  { plan: 'STARTER',      color: 'bg-blue-500',   count: data.planCount.STARTER },
-                  { plan: 'PROFESSIONAL', color: 'bg-purple-500', count: data.planCount.PROFESSIONAL },
-                  { plan: 'ENTERPRISE',   color: 'bg-orange-500', count: data.planCount.ENTERPRISE },
+                  { plan: 'FREE',         color: '#888899', count: data.planCount.FREE },
+                  { plan: 'STARTER',      color: '#22c55e', count: data.planCount.STARTER },
+                  { plan: 'PROFESSIONAL', color: '#3b82f6', count: data.planCount.PROFESSIONAL },
+                  { plan: 'ENTERPRISE',   color: '#f97316', count: data.planCount.ENTERPRISE },
                 ].map(({ plan, color, count }) => (
                   <div key={plan}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-gray-700">{plan}</span>
-                      <span className="text-gray-500">{count} ({totalPlans > 0 ? Math.round(count/totalPlans*100) : 0}%)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                      <span style={{ fontWeight: 500, color: '#555566' }}>{plan}</span>
+                      <span style={{ color: '#888899' }}>{count} ({totalPlans > 0 ? Math.round(count/totalPlans*100) : 0}%)</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                      <div className={`${color} h-2.5 rounded-full`} style={{ width: `${totalPlans > 0 ? count/totalPlans*100 : 0}%` }} />
+                    <div style={{ width: '100%', background: '#f1f2f6', borderRadius: 4, height: 8 }}>
+                      <div style={{ background: color, height: 8, borderRadius: 4, width: `${totalPlans > 0 ? count/totalPlans*100 : 0}%` }} />
                     </div>
                   </div>
                 ))}
@@ -106,49 +111,49 @@ export default function AccountingDashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-800 mb-4">Umsatz letzte 12 Monate (CHF)</h2>
-            <div className="flex items-center justify-center h-24 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-              <div className="text-center">
-                <p className="text-gray-400 text-sm">Erscheint sobald Zahlungen eingehen</p>
-              </div>
+          <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24 }}>
+            <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Umsatz letzte 12 Monate (CHF)</h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 96, background: '#f8f9fb', borderRadius: 8, border: '2px dashed #e2e4ea' }}>
+              <p style={{ color: '#888899', fontSize: 13 }}>Erscheint sobald Zahlungen eingehen</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Letzte 10 Zahlungen</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left text-gray-500 font-medium pb-3 pr-4">Stripe ID</th>
-                <th className="text-left text-gray-500 font-medium pb-3 pr-4">Betrag</th>
-                <th className="text-left text-gray-500 font-medium pb-3 pr-4">E-Mail</th>
-                <th className="text-left text-gray-500 font-medium pb-3">Datum</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.recentPayments.length === 0 ? (
-                <tr><td colSpan={4} className="text-center text-gray-400 py-10">
-                  <p className="text-2xl mb-2">💳</p>
-                  <p>Noch keine Zahlungen vorhanden</p>
-                  <p className="text-xs text-gray-300 mt-1">Erscheint sobald erste Stripe-Zahlung eingeht</p>
-                </td></tr>
-              ) : data.recentPayments.map(p => (
-                <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="py-2 pr-4 font-mono text-xs text-gray-400">{p.id.slice(0,16)}...</td>
-                  <td className="py-2 pr-4 font-semibold text-green-600">{p.currency} {p.amount.toFixed(2)}</td>
-                  <td className="py-2 pr-4 text-gray-600 text-xs">{p.email}</td>
-                  <td className="py-2 text-gray-400 text-xs">{new Date(p.date).toLocaleDateString('de-CH', { day:'2-digit', month:'2-digit', year:'numeric' })}</td>
+        <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e4ea', padding: 24, marginBottom: 16 }}>
+          <h2 style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 16, fontSize: 15 }}>Letzte 10 Zahlungen</h2>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 480 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e2e4ea' }}>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Stripe ID</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>Betrag</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0', paddingRight: 16 }}>E-Mail</th>
+                  <th style={{ textAlign: 'left', color: '#888899', fontWeight: 500, padding: '8px 0' }}>Datum</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.recentPayments.length === 0 ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: '40px 0' }}>
+                    <p style={{ fontSize: 24, marginBottom: 8 }}>💳</p>
+                    <p style={{ color: '#888899', fontSize: 13 }}>Noch keine Zahlungen vorhanden</p>
+                    <p style={{ color: '#aaaabc', fontSize: 11, marginTop: 4 }}>Erscheint sobald erste Stripe-Zahlung eingeht</p>
+                  </td></tr>
+                ) : data.recentPayments.map(p => (
+                  <tr key={p.id} style={{ borderBottom: '1px solid #f1f2f6' }}>
+                    <td style={{ padding: '8px 16px 8px 0', fontFamily: 'monospace', fontSize: 11, color: '#aaaabc' }}>{p.id.slice(0,16)}...</td>
+                    <td style={{ padding: '8px 16px 8px 0', fontWeight: 600, color: '#22c55e' }}>{p.currency} {p.amount.toFixed(2)}</td>
+                    <td style={{ padding: '8px 16px 8px 0', color: '#555566', fontSize: 12 }}>{p.email}</td>
+                    <td style={{ padding: '8px 0', color: '#888899', fontSize: 12 }}>{new Date(p.date).toLocaleDateString('de-CH', { day:'2-digit', month:'2-digit', year:'numeric' })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-blue-800 text-sm font-semibold mb-1">📋 Steuer-Hinweis</p>
-          <p className="text-blue-700 text-sm">Alle Beträge CHF exkl. MWST. Für Buchhaltung: Stripe Dashboard → <strong>Reports → Financial reports</strong>. Schweizer MWST-Satz: 8.1%</p>
+        <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, padding: 16 }}>
+          <p style={{ color: '#15803d', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>📋 Steuer-Hinweis</p>
+          <p style={{ color: '#166534', fontSize: 13 }}>Alle Beträge CHF exkl. MWST. Für Buchhaltung: Stripe Dashboard → <strong>Reports → Financial reports</strong>. Schweizer MWST-Satz: 8.1%</p>
         </div>
 
       </div>
