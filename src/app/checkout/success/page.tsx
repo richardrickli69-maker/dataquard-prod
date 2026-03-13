@@ -9,6 +9,9 @@ const G = {
   green: '#22c55e',
   greenBg: 'rgba(34,197,94,0.08)',
   greenBorder: 'rgba(34,197,94,0.25)',
+  violet: '#8B5CF6',
+  violetBg: 'rgba(139,92,246,0.08)',
+  violetBorder: 'rgba(139,92,246,0.25)',
   bgWhite: '#ffffff',
   border: '#e2e4ea',
   text: '#1a1a2e',
@@ -21,6 +24,9 @@ function SuccessInner() {
   const router = useRouter();
   const product = searchParams.get('product');
   const sessionId = searchParams.get('session_id');
+
+  const isImpressum = product === 'impressum';
+  const isAiTrust = product === 'ai-trust';
 
   useEffect(() => {
     if (!sessionId) return;
@@ -36,7 +42,7 @@ function SuccessInner() {
           });
         }
       } catch {}
-      if (product === 'impressum') {
+      if (isImpressum) {
         const t = setTimeout(() => router.push('/impressum-generator'), 2500);
         cleanup = () => clearTimeout(t);
       } else {
@@ -46,10 +52,53 @@ function SuccessInner() {
     };
     run();
     return () => cleanup?.();
-  }, [sessionId, product, router]);
+  }, [sessionId, isImpressum, router]);
 
-  const isImpressum = product === 'impressum';
+  // ── AI-Trust ──────────────────────────────────────────────────────────────
+  if (isAiTrust) {
+    return (
+      <PageWrapper>
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+          <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
+            <div style={{ fontSize: 72, marginBottom: 24 }}>🤖</div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12, color: G.text }}>Ihr AI-Trust Abo ist aktiv!</h1>
+            <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
+              Ihre Website wird ab sofort laufend auf KI-generierte Inhalte überwacht. Sie erhalten E-Mail-Alerts bei neuen Erkennungen und einen Quartals-Report.
+            </p>
 
+            <div style={{ background: G.bgWhite, border: `2px solid ${G.violet}`, borderRadius: 16, padding: 28, marginBottom: 20, textAlign: 'left', boxShadow: `0 4px 24px ${G.violetBg}` }}>
+              <h2 style={{ fontWeight: 700, color: G.text, marginBottom: 14, fontSize: 16 }}>🤖 AI-Trust Abo – aktiv</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: G.textSec }}>
+                <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>24/7 KI-Monitoring (250 Bilder)</div>
+                <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>Deepfake-Erkennung aktiviert</div>
+                <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>EU AI Act Art. 50 konform</div>
+                <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>E-Mail-Alerts bei neuen Erkennungen</div>
+                <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>Quartals-Report</div>
+              </div>
+            </div>
+
+            <div style={{ background: G.violetBg, border: `1px solid ${G.violetBorder}`, borderRadius: 10, padding: '14px 18px', marginBottom: 28, fontSize: 13, color: G.violet, fontWeight: 600 }}>
+              Ihr Shield-Badge steht in Ihrem Dashboard zum Einbetten bereit.
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: G.textMuted, fontSize: 13 }}>
+              <svg style={{ width: 18, height: 18, animation: 'spin 1s linear infinite', flexShrink: 0, color: G.violet }} fill="none" viewBox="0 0 24 24">
+                <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              <span>Weiterleitung zum Dashboard…</span>
+            </div>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div style={{ marginTop: 20 }}>
+              <a href="/dashboard" style={{ color: G.violet, fontSize: 13, textDecoration: 'underline' }}>Nicht weitergeleitet? Hier klicken →</a>
+            </div>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  // ── Einmalkauf (impressum / starter / professional) ───────────────────────
   return (
     <PageWrapper>
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>

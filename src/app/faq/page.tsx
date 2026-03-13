@@ -17,7 +17,10 @@ const FAQ_ITEMS = [
   { question: 'Muss ich KI-generierte Inhalte auf meiner Website kennzeichnen?', answer: 'Ja, sofern die Inhalte für EU-Nutzer als echt erscheinen könnten. Art. 50 EU AI Act verlangt Kennzeichnung von KI-generierten Inhalten, die zur Täuschung geeignet sind. Dataquard erkennt solche Inhalte automatisch.' },
   { question: 'Wie funktioniert der automatische Compliance-Scan?', answer: 'Dataquard analysiert in drei Schritten: (1) Technischer Scan – Cookies, Tracker, Dienste. (2) Inhaltsanalyse – KI-Bilder, Deepfake-Verdacht. (3) Rechtliche Bewertung – nDSG, DSGVO, EU AI Act mit Ampel-Risikobewertung. Resultat: Eine sofort einsetzbare Datenschutzerklärung.' },
   { question: 'Speichert Dataquard meine Bilder nach dem Scan?', answer: 'Nein. Dataquard verarbeitet Bilddaten ausschliesslich flüchtig im Arbeitsspeicher (RAM-only). Es werden keine Bilder gespeichert oder an Dritte weitergegeben. Die Infrastruktur läuft auf Schweizer Servern (Supabase Zürich).' },
-  { question: 'Was kostet Dataquard?', answer: "Der Basis-Scan ist kostenlos. Für die generierte Datenschutzerklärung, Deepfake-Check und EU AI Act Art. 50 Klausel: STARTER ab CHF 79 (Einmalkauf), PROFESSIONAL ab CHF 149 mit erweiterten Features." },
+  { question: 'Was kostet Dataquard?', answer: "Der Basis-Scan ist kostenlos. Für die generierte Datenschutzerklärung, Deepfake-Check und EU AI Act Art. 50 Klausel: STARTER ab CHF 79 (Einmalkauf), PROFESSIONAL ab CHF 149 mit erweiterten Features. Das AI-Trust Abo für laufende Überwachung kostet CHF 99 pro Jahr." },
+  { question: 'Was ist der EU AI Act Art. 50?', answer: 'Der EU AI Act ist das weltweit erste umfassende KI-Gesetz. Artikel 50 verlangt, dass KI-generierte Inhalte als solche gekennzeichnet werden müssen. Für Schweizer KMU mit EU-Kunden gilt: Wer KI-Bilder auf seiner Website verwendet, muss diese transparent kennzeichnen — sonst drohen Bussgelder.' },
+  { question: 'Muss ich KI-Bilder auf meiner Website kennzeichnen?', answer: 'Ja, wenn Sie Kunden in der EU haben. Der EU AI Act Art. 50 schreibt vor, dass KI-generierte Inhalte erkennbar sein müssen. Viele KMU nutzen Tools wie Midjourney, DALL-E oder ChatGPT für Website-Bilder, ohne zu wissen, dass eine Kennzeichnungspflicht besteht. Dataquard erkennt automatisch, welche Bilder auf Ihrer Website KI-generiert sind.' },
+  { question: 'Was ist ein Deepfake und warum ist das für mein KMU relevant?', answer: 'Ein Deepfake ist ein manipuliertes Bild oder Video, das täuschend echt aussieht. Für KMU relevant: Betrüger können Team-Fotos manipulieren, gefälschte Geschäftsführer-Videos erstellen oder Ihr Firmenimage missbrauchen. Der Dataquard AI-Trust Check erkennt solche Manipulationen und warnt Sie.' },
 ];
 
 function FaqAccordion({ faq }: { faq: { question: string; answer: string } }) {
@@ -68,7 +71,7 @@ export default function FaqPage() {
               EU AI Act & KI-Kennzeichnung
             </h2>
             <div className="space-y-4">
-              {FAQ_ITEMS.slice(4, 7).map((faq, i) => <FaqAccordion key={i} faq={faq} />)}
+              {FAQ_ITEMS.slice(4, 10).map((faq, i) => <FaqAccordion key={i} faq={faq} />)}
             </div>
           </div>
 
@@ -77,7 +80,7 @@ export default function FaqPage() {
               Dataquard Plattform
             </h2>
             <div className="space-y-4">
-              {FAQ_ITEMS.slice(7).map((faq, i) => <FaqAccordion key={i} faq={faq} />)}
+              {FAQ_ITEMS.slice(10).map((faq, i) => <FaqAccordion key={i} faq={faq} />)}
             </div>
           </div>
 

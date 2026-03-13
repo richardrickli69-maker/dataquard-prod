@@ -5,8 +5,8 @@ import type { Metadata } from 'next';
 import { SoftwareApplicationSchema, OrganizationSchema } from '@/components/seo/SchemaOrg';
 
 export const metadata: Metadata = {
-  title: 'Dataquard – Website rechtssicher in 3 Minuten',
-  description: 'Datenschutz-Generator für Schweizer KMUs – Datenschutzerklärung, Impressum & Compliance-Check. nDSG/DSGVO-konform.',
+  title: 'Dataquard – 4-Säulen-Analyse: Compliance, Performance, Security & AI-Trust',
+  description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust (KI-Bild-Erkennung & Deepfake-Check nach EU AI Act Art. 50). Datenschutzerklärung & Impressum für KMU – nDSG/DSGVO-konform.',
 };
 
 export default function RootLayout({

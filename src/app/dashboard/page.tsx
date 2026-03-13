@@ -57,6 +57,8 @@ interface Subscription {
   stripe_customer_id: string;
   valid_until: string;
   created_at: string;
+  ai_trust_active?: boolean;
+  ai_trust_expires_at?: string;
 }
 
 export default function DashboardPage() {
@@ -72,7 +74,8 @@ export default function DashboardPage() {
   const [badgeUrl, setBadgeUrl] = useState('');
   const [badgeLoading, setBadgeLoading] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen' | 'badge'>('overview');
+  const [aiTrustCopied, setAiTrustCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen' | 'badge' | 'aitrust'>('overview');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -232,6 +235,7 @@ export default function DashboardPage() {
             { key: 'billing', label: '💳 Abrechnung' },
             { key: 'massnahmen', label: '🎯 Massnahmen' },
             { key: 'badge', label: '🛡️ Verified Badge' },
+            { key: 'aitrust', label: '🤖 AI-Trust' },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -527,6 +531,72 @@ export default function DashboardPage() {
             {badges.length === 0 && subscription && subscription.plan !== 'impressum' && (
               <div style={{ textAlign: 'center', color: G.textMuted, padding: 32 }}>
                 Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf &ldquo;Badge erstellen&rdquo;.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: AI-Trust */}
+        {activeTab === 'aitrust' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {subscription?.ai_trust_active ? (
+              <>
+                {/* Status-Anzeige */}
+                <div style={{ background: '#0F1B2D', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <img src="/badge-ai-trust.svg" alt="AI-Trust Badge" style={{ width: 64, height: 'auto', flexShrink: 0 }} />
+                  <div>
+                    <p style={{ color: '#ffffff', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>AI-Trust aktiv</p>
+                    <p style={{ color: '#9ca3af', fontSize: 13 }}>Nächster Scan: automatisch · 250 Bilder</p>
+                    <p style={{ color: '#9ca3af', fontSize: 13 }}>
+                      Gültig bis: {subscription.ai_trust_expires_at
+                        ? new Date(subscription.ai_trust_expires_at).toLocaleDateString('de-CH')
+                        : '–'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Shield-Badge Embed Code */}
+                <div style={card}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>Shield-Badge für Ihre Website</h3>
+                  <p style={{ fontSize: 13, color: '#888899', marginBottom: 14 }}>
+                    Kopieren Sie diesen Code in den Footer Ihrer Website:
+                  </p>
+                  <div style={{ background: '#111827', borderRadius: 8, padding: 14, fontFamily: 'monospace', fontSize: 12, color: '#22c55e', position: 'relative', lineHeight: 1.7 }}>
+                    <button
+                      onClick={() => {
+                        const code = `<!-- Dataquard AI-Trust Badge -->\n<a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">\n  <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />\n</a>`;
+                        navigator.clipboard.writeText(code);
+                        setAiTrustCopied(true);
+                        setTimeout(() => setAiTrustCopied(false), 2000);
+                      }}
+                      style={{ position: 'absolute', top: 10, right: 10, background: 'transparent', border: '1px solid #374151', borderRadius: 6, color: aiTrustCopied ? '#22c55e' : '#9ca3af', fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
+                    >
+                      {aiTrustCopied ? '✅ Kopiert!' : 'Kopieren'}
+                    </button>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{`<!-- Dataquard AI-Trust Badge -->
+<a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">
+  <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />
+</a>`}</pre>
+                  </div>
+
+                  {/* Vorschau */}
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ fontSize: 12, color: '#888899', marginBottom: 8 }}>Vorschau:</p>
+                    <img src="/badge-ai-trust-banner.svg" alt="AI-Trust Banner" style={{ height: 70, width: 'auto' }} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Upsell */
+              <div style={{ border: '1px solid rgba(139,92,246,0.3)', borderRadius: 12, padding: 20, background: 'rgba(139,92,246,0.04)' }}>
+                <p style={{ fontSize: 14, color: '#1a1a2e', marginBottom: 6 }}>🤖 Laufende KI-Überwachung für Ihre Website</p>
+                <p style={{ fontSize: 13, color: '#888899', marginBottom: 12 }}>Deepfake-Erkennung, EU AI Act Konformität, Shield-Badge</p>
+                <a
+                  href="/checkout?plan=ai-trust"
+                  style={{ color: '#8B5CF6', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
+                >
+                  AI-Trust Abo aktivieren → CHF 99/Jahr
+                </a>
               </div>
             )}
           </div>

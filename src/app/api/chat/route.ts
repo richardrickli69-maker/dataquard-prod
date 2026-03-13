@@ -19,10 +19,11 @@ Dataquard ist ein Schweizer SaaS-Tool das Websites automatisch auf Compliance, P
 ## So funktioniert der Dataquard-Scanner
 1. URL eingeben auf dataquard.ch – kostenlos, kein Login nötig
 2. Automatischer Scan: Der Scanner liest den Quellcode der Website und erkennt alle eingebundenen Drittanbieter-Dienste (Google Analytics, Meta Pixel, Stripe, Hotjar etc.) via Pattern-Matching
-3. Drei-Säulen-Analyse:
+3. Vier-Säulen-Analyse:
    - 🔒 Compliance-Score: nDSG/DSGVO-Konformität, Datenschutzerklärung, Cookie Banner, Tracker
    - ⚡ Optimierungs-Score: Ladezeit, Performance, Mobile-Freundlichkeit
    - ✅ Vertrauens-Score: SSL/HTTPS, Impressum (Vollständigkeit + Pflichtangaben), Kontaktinfos
+   - 🤖 AI-Trust-Score: KI-Bild-Erkennung, Deepfake-Check, EU AI Act Art. 50 Konformität
 4. Jurisdiktions-Erkennung: 🟢 nDSG (Schweiz) / 🟡 DSGVO (EU/DE) / 🔴 Beides
 5. Report mit konkreten Empfehlungen + direkte Weiterleitung zum Policy-Generator
 

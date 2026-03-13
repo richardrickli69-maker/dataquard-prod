@@ -1,10 +1,8 @@
-// src/app/page.task.tsx
+// src/app/page.tsx
 // ÄNDERUNGEN:
-// - Impressum-Plan aus Preise entfernt (4 → 3 Pläne, grid repeat(3,1fr))
-// - 'Dataquard vs. andere Tools' Heading → 'Impressum fehlt auf Ihrer Website? – Vergleich'
-// - AGB-Sektion VOR FAQ verschoben
-// - Mobile responsive: grid-Klassen + <style> Media Queries
-// - "Assistant"-ChatBot wird via layout.task.tsx entfernt (nicht hier)
+// - 4-Säulen-Analyse: AI-Trust als 4. Säule (KI-Bild-Erkennung & Deepfake-Check, EU AI Act Art. 50)
+// - Header-Banner, Hero, Trust-Badges, Ampel, Säulen, Scan-Preview, Pricing, Vergleich, Stats, FAQ aktualisiert
+// - AI-Trust Abo Add-On Karte (CHF 99/J., violett)
 'use client';
 
 import Link from 'next/link';
@@ -32,6 +30,9 @@ const G = {
   redBg: 'rgba(220,38,38,0.06)',
   redBorder: 'rgba(220,38,38,0.15)',
   yellow: '#eab308',
+  violet: '#8B5CF6',
+  violetBg: 'rgba(139,92,246,0.08)',
+  violetBorder: 'rgba(139,92,246,0.25)',
 };
 
 export default function HomePage() {
@@ -50,9 +51,10 @@ export default function HomePage() {
     setScanProgress(0);
     const steps = [
       { msg: 'Prüfe SSL & HTTPS…', progress: 20 },
-      { msg: 'Erkenne Drittanbieter & Tracker…', progress: 45 },
-      { msg: 'Analysiere Impressum & Datenschutz…', progress: 70 },
-      { msg: 'Berechne Compliance-Score…', progress: 90 },
+      { msg: 'Erkenne Drittanbieter & Tracker…', progress: 40 },
+      { msg: 'Analysiere Impressum & Datenschutz…', progress: 60 },
+      { msg: 'AI-Trust: Prüfe KI-Bilder & Deepfakes…', progress: 80 },
+      { msg: 'Berechne 4-Säulen-Score…', progress: 90 },
     ];
     for (const step of steps) {
       setScanStatus(step.msg);
@@ -78,6 +80,9 @@ export default function HomePage() {
     { q: 'Wie viel Bussgeld droht bei DSGVO/nDSG-Verstössen?', a: 'Bis CHF 250\'000 bei nDSG und bis € 20 Mio. bei DSGVO. Mit Dataquard sind Sie in Minuten konform.' },
     { q: 'Kann ich die Policy bearbeiten?', a: 'Ja! Sie erhalten eine Markdown/HTML-Version die Sie problemlos anpassen können.' },
     { q: 'Gibt es eine Geld-zurück-Garantie?', a: 'Ja! 30 Tage volle Rückerstattung ohne Angabe von Gründen.' },
+    { q: 'Was ist der EU AI Act Art. 50?', a: 'Der EU AI Act ist das weltweit erste umfassende KI-Gesetz. Artikel 50 verlangt, dass KI-generierte Inhalte als solche gekennzeichnet werden müssen. Für Schweizer KMU mit EU-Kunden gilt: Wer KI-Bilder auf seiner Website verwendet, muss diese transparent kennzeichnen — sonst drohen Bussgelder.' },
+    { q: 'Muss ich KI-Bilder auf meiner Website kennzeichnen?', a: 'Ja, wenn Sie Kunden in der EU haben. Der EU AI Act Art. 50 schreibt vor, dass KI-generierte Inhalte erkennbar sein müssen. Viele KMU nutzen Tools wie Midjourney, DALL-E oder ChatGPT für Website-Bilder, ohne zu wissen, dass eine Kennzeichnungspflicht besteht. Dataquard erkennt automatisch, welche Bilder auf Ihrer Website KI-generiert sind.' },
+    { q: 'Was ist ein Deepfake und warum ist das für mein KMU relevant?', a: 'Ein Deepfake ist ein manipuliertes Bild oder Video, das täuschend echt aussieht. Für KMU relevant: Betrüger können Team-Fotos manipulieren, gefälschte Geschäftsführer-Videos erstellen oder Ihr Firmenimage missbrauchen. Der Dataquard AI-Trust Check erkennt solche Manipulationen und warnt Sie.' },
   ];
 
   return (
@@ -105,7 +110,7 @@ export default function HomePage() {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            NEU: KI-Compliance (EU AI Act Art. 50)
+            NEU: AI-Trust Säule — KI-Bilder &amp; Deepfake-Erkennung nach EU AI Act Art. 50
           </div>
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.redBg, border: `1px solid ${G.redBorder}`, fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 20, marginBottom: 28, color: G.red }}>
@@ -117,8 +122,8 @@ export default function HomePage() {
           <br />
           <span style={{ fontSize: 34, fontWeight: 700, color: G.textSec }}>Wir ändern das — in 3 Minuten.</span>
         </h1>
-        <p style={{ fontSize: 16, color: G.textSec, maxWidth: 620, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Der einzige Schweizer Website-Check, der <strong style={{ color: G.text }}>Compliance, Performance und Security</strong> gleichzeitig prüft — und direkt behebt. Jetzt mit automatischer <strong style={{ color: G.text }}>KI-Inhaltsprüfung nach EU AI Act Art. 50</strong> — kein Mehraufwand, kein Cookie-Banner nötig.
+        <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
+          Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: <strong style={{ color: G.text }}>Compliance, Performance, Security und AI-Trust</strong> — gleichzeitig geprüft, direkt behoben. Erkennt automatisch <strong style={{ color: G.text }}>KI-generierte Bilder und Deepfakes</strong> nach EU AI Act Art. 50.
         </p>
         <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           <input type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
@@ -138,18 +143,18 @@ export default function HomePage() {
           </div>
         )}
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted, flexWrap: 'wrap' }}>
-          <span>🇨🇭 Schweizer Produkt</span><span>🔒 Daten in Zürich</span><span>⚖️ nDSG/DSGVO</span><span>⏱ Ergebnis in 60 Sek.</span>
+          <span>🇨🇭 Schweizer Produkt</span><span>🔒 Daten in Zürich</span><span>⚖️ nDSG/DSGVO</span><span>🤖 AI-Trust</span><span>⏱ Ergebnis in 60 Sek.</span>
         </div>
       </section>
 
       {/* ═══ 3. TRUST STRIP ═══ */}
       <div style={{ background: G.bgWhite, borderTop: `1px solid ${G.border}`, borderBottom: `1px solid ${G.border}` }}>
-        <div className="grid-trust" style={{ maxWidth: 750, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', padding: '18px 0' }}>
+        <div className="grid-trust" style={{ maxWidth: 860, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', padding: '18px 0' }}>
           {[
             { i: '🇨🇭', t: 'Daten in der Schweiz', s: 'Sicher auf Schweizer Servern' },
             { i: '✅', t: 'EDÖB-konform', s: 'nDSG 2023 erfüllt' },
             { i: '🔒', t: 'Keine Kreditkarte', s: 'Kostenlos starten' },
-            { i: '🤖', t: 'KI-Compliance', s: 'EU AI Act Art. 50' },
+            { i: '🤖', t: 'AI-Trust', s: 'KI-Bilder & Deepfake-Check' },
           ].map((b, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '8px 16px', borderRight: idx < 3 ? `1px solid ${G.border}` : 'none' }}>
               <span style={{ fontSize: 26 }}>{b.i}</span>
@@ -169,19 +174,20 @@ export default function HomePage() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>Das Dataquard <span style={{ color: G.green }}>Ampel-System</span></h2>
           <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>So sieht Ihr Ergebnis aus — auf einen Blick verständlich</p>
         </div>
-        <div style={{ maxWidth: 480, margin: '0 auto', background: G.bgWhite, borderRadius: 20, padding: '32px 28px', border: `1px solid ${G.border}`, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', background: G.bgWhite, borderRadius: 20, padding: '32px 28px', border: `1px solid ${G.border}`, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', fontSize: 13, color: G.textMuted, marginBottom: 20 }}>beispiel-kmu.ch</div>
-          <div style={{ display: 'flex', gap: 28, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
             {[
               { label: 'Compliance', score: 'A', color: '#22c55e' },
               { label: 'Performance', score: 'B', color: '#eab308' },
               { label: 'Security', score: 'C', color: '#dc2626' },
+              { label: 'AI-Trust', score: 'D', color: '#8B5CF6' },
             ].map(a => (
               <div key={a.label} style={{ textAlign: 'center' }}>
-                <div style={{ width: 70, height: 70, borderRadius: '50%', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${a.color}`, background: `${a.color}12`, boxShadow: `0 0 20px ${a.color}20` }}>
-                  <span style={{ fontSize: 26, fontWeight: 900, color: a.color }}>{a.score}</span>
+                <div style={{ width: 62, height: 62, borderRadius: '50%', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${a.color}`, background: `${a.color}12`, boxShadow: `0 0 20px ${a.color}20` }}>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: a.color }}>{a.score}</span>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: G.text }}>{a.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: G.text }}>{a.label}</div>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', margin: '6px auto 0', background: a.color, boxShadow: `0 0 8px ${a.color}` }} />
               </div>
             ))}
@@ -190,32 +196,34 @@ export default function HomePage() {
             <div>🟢 <strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
             <div>🟡 <strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
             <div>🔴 <strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
+            <div>🟡 <strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
           </div>
         </div>
       </section>
 
-      {/* ═══ 5. DREI SÄULEN ═══ */}
+      {/* ═══ 5. VIER SÄULEN ═══ */}
       <section style={{ maxWidth: 960, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Drei-Säulen-Analyse</span>
-          <h2 style={{ fontSize: 30, fontWeight: 800, marginTop: 6 }}>Mehr als nur ein Compliance-Check</h2>
-          <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>73% der Schweizer KMU-Websites sind nicht nDSG-konform. Wir prüfen alles — gleichzeitig.</p>
+          <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Vier-Säulen-Analyse</span>
+          <h2 style={{ fontSize: 30, fontWeight: 800, marginTop: 6 }}>Mehr als nur ein Compliance-Check — die einzige 4-Säulen-Analyse der Schweiz</h2>
+          <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>73% der Schweizer KMU-Websites sind nicht nDSG-konform. Und niemand prüft KI-Inhalte. Wir schon.</p>
         </div>
-        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
           {[
             { ic: '⚖️', tag: 'RECHTSSICHERHEIT', t: 'Compliance-Check', s: 'nDSG + DSGVO', d: 'Automatische Prüfung aller rechtlichen Anforderungen. Ampel-System zeigt sofort, wo Handlungsbedarf besteht.', ch: ['Datenschutzerklärung vorhanden', 'Cookie-Banner konform', 'Tracker erkannt & dokumentiert', 'Impressum vollständig'] },
             { ic: '⚡', tag: 'GESCHWINDIGKEIT', t: 'Performance-Scan', s: 'Speed & Technik', d: 'Ladezeit, externe Scripts, Google Fonts — alles was bremst und rechtlich riskant ist.', ch: ['Ladezeit < 3 Sekunden', 'Mobile-freundlich', 'SSL aktiv & gültig', 'Keine veralteten Scripts'] },
             { ic: '🛡️', tag: 'VERTRAUEN', t: 'Trust-Score', s: 'Sicherheit & Vertrauen', d: 'SSL, Impressum, Cookie-Handling, Datentransfer. Ihr Vertrauens-Profil auf einen Blick.', ch: ['Meta-Tags vollständig', 'Kontaktinfos sichtbar', 'Keine broken Links', 'HTTPS überall'] },
+            { ic: '🤖', tag: 'KI-SICHERHEIT', t: 'AI-Trust Check', s: 'KI-Erkennung & Deepfakes', d: 'Automatische Erkennung von KI-generierten Bildern und Deepfakes. EU AI Act Art. 50 Konformität auf Knopfdruck.', ch: ['KI-generierte Bilder erkannt', 'Deepfake-Warnung', 'EU AI Act Art. 50 konform', 'Transparenz-Badge verfügbar'] },
           ].map(c => (
             <div key={c.t} style={{ background: G.bgWhite, borderRadius: 16, padding: 26, border: `1px solid ${G.border}`, position: 'relative', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${G.green}, transparent)` }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: G.green, letterSpacing: 2 }}>{c.tag}</span>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.tag === 'KI-SICHERHEIT' ? `linear-gradient(90deg, ${G.violet}, transparent)` : `linear-gradient(90deg, ${G.green}, transparent)` }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, letterSpacing: 2 }}>{c.tag}</span>
               <div style={{ fontSize: 30, margin: '10px 0 6px' }}>{c.ic}</div>
               <h3 style={{ fontSize: 17, fontWeight: 800 }}>{c.t}</h3>
-              <div style={{ fontSize: 12, color: G.green, marginBottom: 12, fontWeight: 600 }}>{c.s}</div>
+              <div style={{ fontSize: 12, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, marginBottom: 12, fontWeight: 600 }}>{c.s}</div>
               <p style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6, marginBottom: 14 }}>{c.d}</p>
               <div style={{ borderTop: `1px solid ${G.border}`, paddingTop: 10 }}>
-                {c.ch.map(x => <div key={x} style={{ fontSize: 12, color: G.text, padding: '3px 0', display: 'flex', gap: 6 }}><span style={{ color: G.green }}>✓</span>{x}</div>)}
+                {c.ch.map(x => <div key={x} style={{ fontSize: 12, color: G.text, padding: '3px 0', display: 'flex', gap: 6 }}><span style={{ color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green }}>✓</span>{x}</div>)}
               </div>
             </div>
           ))}
@@ -241,19 +249,31 @@ export default function HomePage() {
                 { l: 'Cookie-Banner', ic: '⚠️', c: '#eab308' },
                 { l: 'Google Analytics', ic: '❌', c: '#ef4444' },
                 { l: 'SSL-Zertifikat', ic: '✅', c: '#22c55e' },
+                { l: 'KI-Bilder erkannt', ic: '⚠️ 3/5', c: '#eab308' },
               ].map(r => (
                 <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#14142a', borderRadius: 8, marginBottom: 4, border: '1px solid #2a2a44' }}>
                   <span style={{ fontSize: 12, color: '#ccc' }}>{r.l}</span>
                   <span style={{ fontSize: 12, color: r.c }}>{r.ic}</span>
                 </div>
               ))}
-              <div style={{ marginTop: 14, borderTop: '1px solid #2a2a44', paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 10, color: '#666' }}>Compliance-Score</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 80, background: '#2a2a44', borderRadius: 8, height: 5 }}>
-                    <div style={{ width: '28%', background: '#ef4444', height: 5, borderRadius: 8 }} />
+              <div style={{ marginTop: 14, borderTop: '1px solid #2a2a44', paddingTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, color: '#666' }}>Compliance-Score</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 60, background: '#2a2a44', borderRadius: 8, height: 5 }}>
+                      <div style={{ width: '28%', background: '#ef4444', height: 5, borderRadius: 8 }} />
+                    </div>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: '#ef4444' }}>28<span style={{ fontSize: 10, color: '#666' }}>/100</span></span>
                   </div>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: '#ef4444' }}>28<span style={{ fontSize: 11, color: '#666' }}>/100</span></span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, color: '#666' }}>AI-Trust Score</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 60, background: '#2a2a44', borderRadius: 8, height: 5 }}>
+                      <div style={{ width: '45%', background: '#8B5CF6', height: 5, borderRadius: 8 }} />
+                    </div>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: '#8B5CF6' }}>45<span style={{ fontSize: 10, color: '#666' }}>/100</span></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -265,6 +285,7 @@ export default function HomePage() {
               { ic: '🔍', t: 'Alle Tracker werden erkannt', d: 'Google Analytics, Facebook Pixel, Hotjar – wir finden jeden Drittanbieter.' },
               { ic: '🚦', t: 'Ampel zeigt Handlungsbedarf', d: 'Rot, Gelb, Grün – auf einen Blick sehen Sie, was behoben werden muss.' },
               { ic: '⚡', t: 'Policy mit einem Klick generieren', d: 'Datenschutzerklärung erstellen, herunterladen, einbinden. Fertig.' },
+              { ic: '🤖', t: 'KI-Bilder automatisch erkennen', d: 'Deepfakes und KI-generierte Inhalte auf Ihrer Website finden — EU AI Act konform.' },
             ].map(p => (
               <div key={p.t} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
                 <span style={{ fontSize: 22, flexShrink: 0 }}>{p.ic}</span>
@@ -329,16 +350,17 @@ export default function HomePage() {
       </section>
 
       {/* ═══ 9. STATS ═══ */}
-      <section style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
-        <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, textAlign: 'center' }}>
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px' }}>
+        <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, textAlign: 'center' }}>
           {[
             { ic: '📊', n: "4\u2019800+", l: 'Schweizer KMUs betroffen von nDSG-Pflichten' },
             { ic: '⚠️', n: '73%', l: 'der Schweizer Websites ohne korrekte DSE' },
+            { ic: '🤖', n: '0%', l: 'der Schweizer Compliance-Tools prüfen KI-Inhalte' },
             { ic: '⚡', n: '3 min', l: 'bis Ihre Website vollständig geschützt ist' },
           ].map(s => (
             <div key={s.n} style={{ background: G.bgWhite, borderRadius: 14, padding: 24, border: `1px solid ${G.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ fontSize: 20, marginBottom: 6 }}>{s.ic}</div>
-              <div style={{ fontSize: 32, fontWeight: 900, color: G.green }}>{s.n}</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: G.green }}>{s.n}</div>
               <div style={{ fontSize: 12, color: G.textMuted, marginTop: 6, lineHeight: 1.5 }}>{s.l}</div>
             </div>
           ))}
@@ -353,7 +375,7 @@ export default function HomePage() {
           <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
             {[
               { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben – kostenlos, ohne Anmeldung. Wir erkennen automatisch alle Drittanbieter.' },
-              { n: '2', ic: '📊', t: 'Report erhalten', d: 'Compliance-Score, Jurisdiktion (nDSG/DSGVO) und konkrete Handlungsempfehlungen.' },
+              { n: '2', ic: '📊', t: 'Report erhalten', d: '4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust. Jurisdiktion (nDSG/DSGVO), KI-Bilder-Check und konkrete Handlungsempfehlungen.' },
               { n: '3', ic: '📄', t: 'Dokument herunterladen', d: 'Datenschutzerklärung + Impressum + Cookie-Banner generiert, als PDF. Fertig in Minuten.' },
             ].map(s => (
               <div key={s.n} style={{ textAlign: 'center' }}>
@@ -367,15 +389,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 11. PREISE ═══ (Impressum-Plan entfernt, 3 Pläne) */}
-      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
+      {/* ═══ 11. PREISE ═══ */}
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
         <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Transparent. Fair. Schweizer Qualität.</h2>
         <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Einmalkauf · Keine versteckten Kosten</p>
         <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {[
-            { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check'], m: ['Datenschutzerklärung', 'Impressum'], c: 'Kostenlos scannen', l: '/scanner' },
-            { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain', '🤖 KI-Realitäts-Analyse', '🔍 Deepfake-Check'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
-            { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support', '🤖 KI-Realitäts-Analyse', '🔍 Deepfake-Check (EU AI Act Art. 50)', '📋 Auto-Klausel Datenschutz'], m: [], c: 'Professional wählen', l: '/checkout' },
+            { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check', '🤖 AI-Trust Vorschau (5 Bilder, 1 Seite)'], m: ['Datenschutzerklärung', 'Impressum', 'AI-Trust Details & Vollscan'], c: 'Kostenlos scannen', l: '/scanner' },
+            { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain', '🤖 AI-Trust Scan — 50 Bilder, gesamte Website'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
+            { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support', '🤖 AI-Trust Scan — 250 Bilder/Domain, 5 Domains', '📋 AI-Klausel für Datenschutzerklärung'], m: [], c: 'Professional wählen', l: '/checkout' },
           ].map(pl => (
             <div key={pl.n} style={{ padding: 22, borderRadius: 14, border: pl.hl ? `2px solid ${G.green}` : `1px solid ${G.border}`, background: G.bgWhite, position: 'relative', boxShadow: pl.hl ? `0 4px 20px ${G.greenBg}` : '0 2px 8px rgba(0,0,0,0.03)' }}>
               {pl.hl && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.green, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1 }}>EMPFOHLEN</div>}
@@ -390,11 +412,32 @@ export default function HomePage() {
           ))}
         </div>
         <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>Alle Preise in CHF inkl. MwSt. · Einmalkauf · Keine versteckten Kosten</p>
+
+        {/* AI-Trust Abo Add-On */}
+        <div style={{ marginTop: 40, textAlign: 'center' }}>
+          <p style={{ fontSize: 14, color: G.textSec, marginBottom: 20 }}>
+            Sie möchten laufenden Schutz? Das <strong style={{ color: G.violet }}>AI-Trust Abo</strong> überwacht Ihre Website dauerhaft.
+          </p>
+          <div style={{ maxWidth: 400, margin: '0 auto', padding: 28, borderRadius: 16, border: `2px solid ${G.violet}`, background: G.bgWhite, position: 'relative', boxShadow: `0 4px 24px ${G.violetBg}` }}>
+            <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.violet, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1, whiteSpace: 'nowrap' }}>ADD-ON</div>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>🤖</div>
+            <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>AI-Trust Abo</h3>
+            <div style={{ fontSize: 26, fontWeight: 900, color: G.violet, margin: '8px 0 2px' }}>CHF 99</div>
+            <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 16 }}>pro Jahr</div>
+            <div style={{ textAlign: 'left', marginBottom: 20 }}>
+              {['✓ 24/7 Monitoring (250 Bilder)', '✓ Deepfake-Erkennung', '✓ EU AI Act Art. 50', '✓ Shield-Badge', '✓ E-Mail-Alerts', '✓ Quartals-Report'].map(f => (
+                <div key={f} style={{ fontSize: 12, color: G.text, padding: '3px 0', display: 'flex', gap: 6 }}><span style={{ color: G.violet }}>{f.startsWith('✓') ? '' : '✓'}</span>{f}</div>
+              ))}
+            </div>
+            <Link href="/checkout?plan=ai-trust" style={{ display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: 'none', background: G.violet, color: '#fff' }}>AI-Trust aktivieren →</Link>
+            <p style={{ fontSize: 11, color: G.textMuted, marginTop: 10, textAlign: 'center' }}>Kombinierbar mit jedem Einmalkauf-Paket.</p>
+          </div>
+        </div>
       </section>
 
-      {/* ═══ 12. VERGLEICH ═══ (Heading umbenannt) */}
-      <section style={{ maxWidth: 750, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 24 }}>Impressum fehlt auf Ihrer Website? – So hilft Dataquard</h2>
+      {/* ═══ 12. VERGLEICH ═══ */}
+      <section style={{ maxWidth: 800, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 24 }}>Dataquard vs. Wettbewerb — der einzige 4-Säulen-Check</h2>
         <div className="table-scroll" style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${G.border}` }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead><tr style={{ background: G.bgLight }}>
@@ -405,10 +448,17 @@ export default function HomePage() {
             </tr></thead>
             <tbody>
               {[
-                ['Compliance-Check', '✅', '✅', '✅'], ['Performance-Check', '✅', '❌', '❌'],
-                ['Security-Check', '✅', '❌', '❌'], ['Schweizer nDSG', '✅', '✅', '⚠️'],
-                ['Auto-Scan & Pre-fill', '✅', '✅', '❌'], ['Cookie-Banner Generator', '✅', '❌', '⚠️'],
-                ['Preis', 'CHF 79', 'CHF 55', '€ 144+'], ['Daten in Schweiz', '✅', '⚠️', '❌'],
+                ['Compliance-Check', '✅', '✅', '✅'],
+                ['Performance-Check', '✅', '❌', '❌'],
+                ['Security-Check', '✅', '❌', '❌'],
+                ['🤖 KI-Bild-Erkennung', '✅', '❌', '❌'],
+                ['🤖 Deepfake-Check (EU AI Act)', '✅', '❌', '❌'],
+                ['Schweizer nDSG', '✅', '✅', '⚠️'],
+                ['Auto-Scan & Pre-fill', '✅', '✅', '❌'],
+                ['Cookie-Banner Generator', '✅', '❌', '⚠️'],
+                ['Laufende KI-Überwachung', 'CHF 99/J.', '❌', '❌'],
+                ['Preis (Einmalkauf)', 'ab CHF 79', 'CHF 55/J.', '€ 144+/J.'],
+                ['Daten in Schweiz', '✅', '⚠️', '❌'],
               ].map((r, i) => (
                 <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
                   <td style={{ padding: '10px 14px', color: G.text }}>{r[0]}</td>
@@ -422,7 +472,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 13. AGB ═══ (VOR FAQ verschoben) */}
+      {/* ═══ 13. AGB ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 18, padding: '40px 32px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>📋 Allgemeine Geschäftsbedingungen</h2>

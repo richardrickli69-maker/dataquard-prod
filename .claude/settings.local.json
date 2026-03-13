@@ -5,7 +5,8 @@
       "Bash(npx tsc --noEmit)",
       "Bash(mv \"Neues Logo Dataquard.PNG\" \"logo-dataquard.png\")",
       "Bash(mv \"Schriftzug Dataquard.PNG\" \"schriftzug-dataquard.png\")",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [
       "Read(.env)",
