@@ -563,17 +563,29 @@ export default function DashboardPage() {
                   </p>
                   <div style={{ background: '#111827', borderRadius: 8, padding: 14, fontFamily: 'monospace', fontSize: 12, color: '#22c55e', position: 'relative', lineHeight: 1.7 }}>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const code = `<!-- Dataquard AI-Trust Badge -->\n<a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">\n  <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />\n</a>`;
-                        navigator.clipboard.writeText(code);
+                        try {
+                          await navigator.clipboard.writeText(code);
+                        } catch {
+                          // Fallback für Browser ohne Clipboard API
+                          const el = document.createElement('textarea');
+                          el.value = code;
+                          el.style.position = 'fixed';
+                          el.style.opacity = '0';
+                          document.body.appendChild(el);
+                          el.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(el);
+                        }
                         setAiTrustCopied(true);
                         setTimeout(() => setAiTrustCopied(false), 2000);
                       }}
-                      style={{ position: 'absolute', top: 10, right: 10, background: 'transparent', border: '1px solid #374151', borderRadius: 6, color: aiTrustCopied ? '#22c55e' : '#9ca3af', fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
+                      style={{ position: 'absolute', top: 10, right: 10, background: 'transparent', border: '1px solid #374151', borderRadius: 6, color: aiTrustCopied ? '#22c55e' : '#9ca3af', fontSize: 11, padding: '3px 10px', cursor: 'pointer', transition: 'color 0.15s' }}
                     >
-                      {aiTrustCopied ? '✅ Kopiert!' : 'Kopieren'}
+                      {aiTrustCopied ? '✅ Kopiert!' : '📋 Kopieren'}
                     </button>
-                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{`<!-- Dataquard AI-Trust Badge -->
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', paddingRight: 80 }}>{`<!-- Dataquard AI-Trust Badge -->
 <a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">
   <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />
 </a>`}</pre>
