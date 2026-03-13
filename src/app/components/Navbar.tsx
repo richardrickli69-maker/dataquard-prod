@@ -7,38 +7,38 @@ import Image from 'next/image';
 export function Navbar() {
   return (
     <nav className="w-full sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 grid grid-cols-3 items-center">
 
-        {/* Links: Neues Logo */}
-        <div className="flex items-center shrink-0">
+        {/* Links: Logo */}
+        <div className="flex items-center justify-start">
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
               src="/logo-dataquard.png"
               alt="Dataquard Logo"
               width={200}
-              height={80}
-              style={{ height: 44, width: 'auto', objectFit: 'contain' }}
+              height={160}
+              style={{ height: 88, width: 'auto', objectFit: 'contain' }}
               priority
             />
           </Link>
         </div>
 
-        {/* Mitte: Schriftzug */}
-        <div className="flex flex-1 items-center justify-center">
+        {/* Mitte: Schriftzug – immer exakt zentriert */}
+        <div className="flex items-center justify-center">
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
               src="/schriftzug-dataquard.png"
               alt="Dataquard"
               width={400}
               height={80}
-              style={{ height: 28, width: 'auto', objectFit: 'contain' }}
+              style={{ height: 32, width: 'auto', objectFit: 'contain' }}
               priority
             />
           </Link>
         </div>
 
         {/* Rechts: Anmelden */}
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center justify-end">
           <Link
             href="/auth"
             style={{
