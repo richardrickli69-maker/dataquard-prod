@@ -7,7 +7,7 @@ import Image from 'next/image';
 export function Navbar() {
   return (
     <nav className="w-full sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-28 flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-28 flex items-center justify-center">
 
         {/* Logo + Schriftzug */}
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14 }}>
