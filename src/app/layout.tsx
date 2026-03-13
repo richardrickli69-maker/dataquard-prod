@@ -2,6 +2,7 @@
 // ÄNDERUNG: ChatBot (Assistant) entfernt
 import CookieBanner from "@/components/CookieBanner/CookieBanner";
 import type { Metadata } from 'next';
+import { SoftwareApplicationSchema, OrganizationSchema } from '@/components/seo/SchemaOrg';
 
 export const metadata: Metadata = {
   title: 'Dataquard – Website rechtssicher in 3 Minuten',
@@ -18,6 +19,8 @@ export default function RootLayout({
       <head>
         <meta name="cookie-consent-present" content="true" />
         <meta name="privacy-policy" content="/datenschutz" />
+        <SoftwareApplicationSchema />
+        <OrganizationSchema />
       </head>
       <body>
         {children}
