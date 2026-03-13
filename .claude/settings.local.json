@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(code --install-extension ms-vscode.live-server)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(mv \"Neues Logo Dataquard.PNG\" \"logo-dataquard.png\")",
+      "Bash(mv \"Schriftzug Dataquard.PNG\" \"schriftzug-dataquard.png\")"
     ],
     "deny": [
       "Read(.env)",

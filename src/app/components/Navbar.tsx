@@ -9,26 +9,36 @@ export function Navbar() {
     <nav className="w-full sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
 
-        {/* Logo – ganz links */}
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center gap-3" style={{ textDecoration: 'none' }}>
+        {/* Links: Neues Logo */}
+        <div className="flex items-center shrink-0">
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
-              src="/logo.png"
-              alt="Dataquard"
-              width={256}
-              height={256}
-              style={{ height: 36, width: 'auto', objectFit: 'contain' }}
+              src="/logo-dataquard.png"
+              alt="Dataquard Logo"
+              width={200}
+              height={80}
+              style={{ height: 44, width: 'auto', objectFit: 'contain' }}
               priority
             />
-            <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: -0.5 }}>
-              <span style={{ color: '#22c55e' }}>Data</span>
-              <span style={{ color: '#1a1a2e' }}>quard</span>
-            </span>
           </Link>
         </div>
 
-        {/* Login – ganz rechts */}
-        <div className="flex items-center">
+        {/* Mitte: Schriftzug */}
+        <div className="flex items-center justify-center">
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Image
+              src="/schriftzug-dataquard.png"
+              alt="Dataquard"
+              width={400}
+              height={80}
+              style={{ height: 28, width: 'auto', objectFit: 'contain' }}
+              priority
+            />
+          </Link>
+        </div>
+
+        {/* Rechts: Anmelden */}
+        <div className="flex items-center shrink-0">
           <Link
             href="/auth"
             style={{
