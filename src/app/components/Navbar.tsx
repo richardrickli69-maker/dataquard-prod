@@ -24,7 +24,7 @@ export function Navbar() {
         </div>
 
         {/* Mitte: Schriftzug */}
-        <div className="flex items-center justify-center">
+        <div className="flex flex-1 items-center justify-center">
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
               src="/schriftzug-dataquard.png"
