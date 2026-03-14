@@ -99,8 +99,8 @@ export default function GeneratorPro() {
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
           <span style={{ fontWeight: 700 }}>
-            <span style={{ color: "#4d9fff" }}>Data</span>
-            <span style={{ color: "#c0392b" }}>guard</span>
+            <span style={{ color: "#22c55e" }}>Data</span>
+            <span style={{ color: "#e2eaf3" }}>quard</span>
             <span style={{ color: "#9ab0c8", fontWeight: 400, fontSize: "0.85rem", marginLeft: "0.5rem" }}>Cookie-Banner</span>
           </span>
           <span style={{

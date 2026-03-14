@@ -23,8 +23,12 @@ export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId
       subject: '🎉 Ihre Datenschutzerklärung ist bereit!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #22c55e; color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0;">🎉 Ihre Policy ist fertig!</h1>
+          <div style="background: #22c55e; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <div style="margin-bottom: 16px;">
+              <img src="https://dataquard.ch/logo-dataquard.png" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle;" />
+              <img src="https://dataquard.ch/schriftzug-dataquard.png" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+            </div>
+            <h1 style="margin: 0; font-size: 20px;">🎉 Ihre Policy ist fertig!</h1>
           </div>
           <div style="background: #f8f9fb; padding: 40px; border-radius: 0 0 8px 8px; border: 1px solid #e2e4ea;">
             <p style="color: #1a1a2e;">Ihre Datenschutzerklärung für <strong>${domain}</strong> wurde generiert!</p>
@@ -53,8 +57,12 @@ export async function sendWelcomeEmail({ email, name }: WelcomeEmailParams) {
       subject: '👋 Willkommen bei Dataquard!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #22c55e; color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0;">👋 Willkommen bei Dataquard!</h1>
+          <div style="background: #22c55e; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <div style="margin-bottom: 16px;">
+              <img src="https://dataquard.ch/logo-dataquard.png" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle;" />
+              <img src="https://dataquard.ch/schriftzug-dataquard.png" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+            </div>
+            <h1 style="margin: 0; font-size: 20px;">👋 Willkommen bei Dataquard!</h1>
           </div>
           <div style="background: #f8f9fb; padding: 40px; border-radius: 0 0 8px 8px; border: 1px solid #e2e4ea;">
             <p style="color: #1a1a2e;">${greeting} vielen Dank für Ihre Anmeldung! 🎉</p>
@@ -94,8 +102,12 @@ export async function sendRescanChangeEmail({ email, domain, addedTrackers, remo
       subject: `🔄 Änderung erkannt auf ${domain} – Datenschutzerklärung prüfen`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <div style="background:#22c55e;color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0;">
-            <h1 style="margin:0;">🔄 Website-Änderung erkannt</h1>
+          <div style="background:#22c55e;color:white;padding:30px 40px;text-align:center;border-radius:8px 8px 0 0;">
+            <div style="margin-bottom:16px;">
+              <img src="https://dataquard.ch/logo-dataquard.png" alt="Dataquard" width="48" height="48" style="display:inline-block;vertical-align:middle;" />
+              <img src="https://dataquard.ch/schriftzug-dataquard.png" alt="Dataquard" width="140" height="28" style="display:inline-block;vertical-align:middle;margin-left:10px;" />
+            </div>
+            <h1 style="margin:0;font-size:20px;">🔄 Website-Änderung erkannt</h1>
             <p style="margin:8px 0 0;opacity:0.85;">Dataquard – Wöchentlicher Re-Scan</p>
           </div>
           <div style="background:#f8f9fb;padding:40px;border-radius:0 0 8px 8px;border:1px solid #e2e4ea;">
@@ -129,8 +141,12 @@ export async function sendReminderEmail(email: string) {
       subject: '⚠️ Sie haben eine Compliance-Lücke?',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #22c55e; color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0;">⚠️ Compliance-Lücke schliessen</h1>
+          <div style="background: #22c55e; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <div style="margin-bottom: 16px;">
+              <img src="https://dataquard.ch/logo-dataquard.png" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle;" />
+              <img src="https://dataquard.ch/schriftzug-dataquard.png" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+            </div>
+            <h1 style="margin: 0; font-size: 20px;">⚠️ Compliance-Lücke schliessen</h1>
           </div>
           <div style="background: #f8f9fb; padding: 40px; border-radius: 0 0 8px 8px; border: 1px solid #e2e4ea;">
             <p style="color: #1a1a2e;">Sie haben sich angemeldet, aber noch keine Policy generiert.</p>
