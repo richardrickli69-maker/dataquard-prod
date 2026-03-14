@@ -46,7 +46,7 @@ export default function AuthPage() {
   const handleResetPassword = async () => {
     if (!email) { setError('Bitte E-Mail-Adresse eingeben'); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/update-password`,
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
     });
     if (error) { setError(error.message); } else { setResetSent(true); setError(''); }
   };
