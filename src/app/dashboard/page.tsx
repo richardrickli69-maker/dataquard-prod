@@ -8,6 +8,8 @@ import ActionPlan from '@/components/ActionPlan';
 import { supabase } from '@/lib/supabase';
 import { PageWrapper } from '../components/PageWrapper';
 
+const ADMIN_EMAIL = 'richard.rickli69@gmail.com';
+
 const G = {
   green: '#22c55e',
   greenBg: 'rgba(34,197,94,0.08)',
@@ -40,16 +42,6 @@ interface Policy {
   created_at: string;
 }
 
-interface BatchJob {
-  id: string;
-  domain: string;
-  status: string;
-  jurisdiction: string;
-  created_at: string;
-  completed_at: string;
-  cost_cents: number;
-}
-
 interface Subscription {
   id: string;
   plan: string;
@@ -67,7 +59,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
-  const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [latestScan, setLatestScan] = useState<{ url: string; scan: any } | null>(null);
   const [badges, setBadges] = useState<{ id: string; website_url: string; issued_at: string; expires_at: string; is_active: boolean }[]>([]);
@@ -75,7 +66,7 @@ export default function DashboardPage() {
   const [badgeLoading, setBadgeLoading] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
   const [aiTrustCopied, setAiTrustCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'audit' | 'jobs' | 'billing' | 'massnahmen' | 'badge' | 'aitrust'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'billing' | 'massnahmen' | 'badge' | 'aitrust'>('overview');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -99,10 +90,6 @@ export default function DashboardPage() {
     const { data: auditData } = await supabase
       .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);
     if (auditData) setAuditLog(auditData);
-
-    const { data: jobsData } = await supabase
-      .from('batch_jobs').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(10);
-    if (jobsData) setBatchJobs(jobsData);
 
     const { data: subData } = await supabase
       .from('subscriptions').select('*').eq('user_id', userId)
@@ -169,8 +156,6 @@ export default function DashboardPage() {
     impressum: '📄 Impressum Only – CHF 19',
   }[plan] || plan);
 
-  const totalCostCents = batchJobs.reduce((sum, j) => sum + (j.cost_cents || 0), 0);
-
   const card: React.CSSProperties = {
     background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 12, padding: 24,
   };
@@ -199,6 +184,9 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>🔍 Scannen</Link>
             <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>📈 Upgrade</Link>
+            {user?.email === ADMIN_EMAIL && (
+              <Link href="/admin" style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>⚡ Admin</Link>
+            )}
             <button
               onClick={async () => { await supabase.auth.signOut(); router.push('/auth'); }}
               style={{ padding: '8px 16px', border: `1px solid rgba(220,38,38,0.3)`, color: G.red, background: 'transparent', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}
@@ -212,10 +200,9 @@ export default function DashboardPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 28 }}>
           {[
             { label: 'Policies', value: policies.length, icon: '📄' },
-            { label: 'Batch Jobs', value: batchJobs.length, icon: '⚙️' },
-            { label: 'Audit Einträge', value: auditLog.length, icon: '📋' },
-            { label: 'KI-Kosten', value: `CHF ${(totalCostCents / 100).toFixed(2)}`, icon: '🤖' },
+            { label: 'Letzter Scan', value: latestScan ? new Date().toLocaleDateString('de-CH') : '–', icon: '🔍' },
             { label: 'Plan', value: subscription?.plan?.toUpperCase() || 'FREE', icon: '💳' },
+            { label: 'Badges', value: badges.length, icon: '🛡️' },
           ].map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
               <div style={{ fontSize: 22, marginBottom: 4 }}>{stat.icon}</div>
@@ -230,8 +217,6 @@ export default function DashboardPage() {
           {[
             { key: 'overview', label: '🏠 Übersicht' },
             { key: 'policies', label: '📄 Policies' },
-            { key: 'audit', label: '📋 Audit-Trail' },
-            { key: 'jobs', label: '⚙️ Batch Jobs' },
             { key: 'billing', label: '💳 Abrechnung' },
             { key: 'massnahmen', label: '🎯 Massnahmen' },
             { key: 'badge', label: '🛡️ Verified Badge' },
@@ -310,67 +295,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Tab: Audit-Trail */}
-        {activeTab === 'audit' && (
-          <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-            {auditLog.length === 0 ? (
-              <div style={{ padding: 40, textAlign: 'center', color: G.textMuted }}>Noch keine Audit-Einträge vorhanden.</div>
-            ) : (
-              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${G.border}` }}>
-                    {['Ereignis', 'Resource', 'Details', 'Datum'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: G.textMuted, fontWeight: 600, fontSize: 12 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLog.map((entry) => (
-                    <tr key={entry.id} style={{ borderBottom: `1px solid ${G.border}` }}>
-                      <td style={{ padding: '12px 16px', color: G.text }}>{getEventLabel(entry.action)}</td>
-                      <td style={{ padding: '12px 16px', color: G.textMuted, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.resource ?? '–'}</td>
-                      <td style={{ padding: '12px 16px', color: G.textMuted, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {entry.details ? JSON.stringify(entry.details).slice(0, 60) : '–'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{new Date(entry.created_at).toLocaleDateString('de-CH')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
-        {/* Tab: Batch Jobs */}
-        {activeTab === 'jobs' && (
-          <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-            {batchJobs.length === 0 ? (
-              <div style={{ padding: 40, textAlign: 'center', color: G.textMuted }}>Noch keine Batch Jobs vorhanden.</div>
-            ) : (
-              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${G.border}` }}>
-                    {['Domain', 'Jurisdiction', 'Status', 'KI-Kosten', 'Erstellt'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: G.textMuted, fontWeight: 600, fontSize: 12 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {batchJobs.map((job) => (
-                    <tr key={job.id} style={{ borderBottom: `1px solid ${G.border}` }}>
-                      <td style={{ padding: '12px 16px', color: G.text }}>{job.domain}</td>
-                      <td style={{ padding: '12px 16px', color: G.textSec }}>{job.jurisdiction}</td>
-                      <td style={{ padding: '12px 16px', fontWeight: 700, color: getStatusColor(job.status) }}>{job.status}</td>
-                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{job.cost_cents ? `CHF ${(job.cost_cents / 100).toFixed(4)}` : '–'}</td>
-                      <td style={{ padding: '12px 16px', color: G.textMuted }}>{new Date(job.created_at).toLocaleDateString('de-CH')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
         {/* Tab: Billing */}
         {activeTab === 'billing' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -396,20 +320,6 @@ export default function DashboardPage() {
                   <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
                 </div>
               )}
-            </div>
-
-            <div style={card}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>🤖 KI-Kostenübersicht</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-                <div style={{ background: G.bgLight, borderRadius: 10, padding: 16, textAlign: 'center' }}>
-                  <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 4 }}>Gesamt KI-Kosten</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: G.yellow }}>CHF {(totalCostCents / 100).toFixed(4)}</div>
-                </div>
-                <div style={{ background: G.bgLight, borderRadius: 10, padding: 16, textAlign: 'center' }}>
-                  <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 4 }}>Policy Jobs</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: G.green }}>{batchJobs.length}</div>
-                </div>
-              </div>
             </div>
 
             {!subscription && (
