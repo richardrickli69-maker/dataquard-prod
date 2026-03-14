@@ -38,6 +38,18 @@ export interface ExtendedScanResult {
   recommendations: string[];
   /** KI-Inhaltsanalyse (EU AI Act Art. 50) */
   aiAudit: AiAuditResult;
+  /** Sightengine-Bildscan (KI-Bild, Deepfake, Nudity, Waffen) */
+  sightengine: {
+    imagesAnalysed: number;
+    aiImagesFound: number;
+    deepfakeCount: number;
+    nudityCount: number;
+    weaponCount: number;
+    unsafeCount: number;
+    allSafe: boolean;
+    maxAiScore: number;
+    deepfakeDetected: boolean;
+  } | null;
 }
 
 export async function checkSSL(domain: string): Promise<{
@@ -418,6 +430,115 @@ export function generateRecommendations(
   return recommendations;
 }
 
+interface SightengineImgResult {
+  url: string;
+  ai_score: number;
+  deepfake_score: number;
+  nudity_detected: boolean;
+  weapon_detected: boolean;
+  safe: boolean;
+}
+
+async function scanSiteImagesWithSightengine(url: string): Promise<{
+  imagesAnalysed: number;
+  aiImagesFound: number;
+  deepfakeCount: number;
+  nudityCount: number;
+  weaponCount: number;
+  unsafeCount: number;
+  allSafe: boolean;
+  maxAiScore: number;
+  deepfakeDetected: boolean;
+} | null> {
+  const apiUser = process.env.SIGHTENGINE_API_USER;
+  const apiSecret = process.env.SIGHTENGINE_API_SECRET;
+  if (!apiUser || !apiSecret) return null;
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    const imgUrls: string[] = [];
+    const base = new URL(url);
+    for (const match of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
+      try {
+        const src = match[1];
+        if (src.startsWith('data:')) continue;
+        const absUrl = new URL(src, base).href;
+        if (/\.(jpe?g|png|webp)$/i.test(absUrl)) {
+          imgUrls.push(absUrl);
+          if (imgUrls.length >= 10) break;
+        }
+      } catch { /* skip */ }
+    }
+    if (imgUrls.length === 0) return null;
+
+    const scanOne = async (imageUrl: string): Promise<SightengineImgResult | null> => {
+      try {
+        const params = new URLSearchParams({
+          url: imageUrl,
+          models: 'nudity-2.1,weapon,genai',
+          api_user: apiUser,
+          api_secret: apiSecret,
+        });
+        const r = await fetch(`https://api.sightengine.com/1.0/check.json?${params}`, {
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!r.ok) return null;
+        const d = await r.json();
+        if (d.status !== 'success') return null;
+        const aiScore: number = d.type?.ai_generated ?? 0;
+        const deepfakeScore: number = d.type?.deepfake ?? 0;
+        const nudityDetected =
+          (d.nudity?.sexual_activity ?? 0) > 0.3 ||
+          (d.nudity?.sexual_display ?? 0) > 0.3 ||
+          (d.nudity?.erotica ?? 0) > 0.3;
+        const weaponDetected = (d.weapon ?? 0) > 0.5;
+        return {
+          url: imageUrl,
+          ai_score: aiScore,
+          deepfake_score: deepfakeScore,
+          nudity_detected: nudityDetected,
+          weapon_detected: weaponDetected,
+          safe: aiScore <= 0.5 && !nudityDetected && !weaponDetected,
+        };
+      } catch { return null; }
+    };
+
+    const details: SightengineImgResult[] = [];
+    for (let i = 0; i < imgUrls.length; i += 5) {
+      const batch = await Promise.allSettled(imgUrls.slice(i, i + 5).map(scanOne));
+      for (const r of batch) {
+        if (r.status === 'fulfilled' && r.value) details.push(r.value);
+      }
+    }
+    if (details.length === 0) return null;
+
+    const aiImagesFound = details.filter(r => r.ai_score > 0.5).length;
+    const deepfakeCount = details.filter(r => r.deepfake_score > 0.5).length;
+    const nudityCount = details.filter(r => r.nudity_detected).length;
+    const weaponCount = details.filter(r => r.weapon_detected).length;
+    const unsafeCount = details.filter(r => !r.safe).length;
+    return {
+      imagesAnalysed: details.length,
+      aiImagesFound,
+      deepfakeCount,
+      nudityCount,
+      weaponCount,
+      unsafeCount,
+      allSafe: unsafeCount === 0,
+      maxAiScore: Math.max(...details.map(r => r.ai_score * 100)),
+      deepfakeDetected: deepfakeCount > 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function performExtendedScan(
   domain: string
 ): Promise<ExtendedScanResult> {
@@ -441,16 +562,24 @@ export async function performExtendedScan(
     analyzeForAiContent(domain.startsWith('http') ? domain : `https://${domain}`),
   ]);
 
-  const [outdatedScripts, mixedContent] = await Promise.all([
+  const siteUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+  const [outdatedScripts, mixedContent, sightengineResult] = await Promise.all([
     checkOutdatedScripts(domain),
     checkMixedContent(domain),
+    scanSiteImagesWithSightengine(siteUrl),
   ]);
 
   const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
-  const complianceScore =
+  let complianceScore =
     hasPrivacyPolicy && complianceCheck.hasCookieBanner ? 85 :
     hasPrivacyPolicy ? 65 :
     complianceCheck.hasCookieBanner ? 50 : 40;
+  // Bild-Sicherheit beeinflusst Compliance (EU AI Act / Datenschutz)
+  if (sightengineResult) {
+    if (sightengineResult.deepfakeCount > 0) complianceScore = Math.max(0, complianceScore - 15);
+    if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) complianceScore = Math.max(0, complianceScore - 10);
+    if (sightengineResult.aiImagesFound > 0) complianceScore = Math.max(0, complianceScore - 5);
+  }
   const optimizationScore = Math.round(
     ((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100
   );
@@ -515,5 +644,6 @@ export async function performExtendedScan(
     insights,
     recommendations,
     aiAudit,
+    sightengine: sightengineResult,
   };
 }

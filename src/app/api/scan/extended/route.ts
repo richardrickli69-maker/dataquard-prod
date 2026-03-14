@@ -137,12 +137,24 @@ export async function POST(request: NextRequest) {
       console.error('[saveScan] Exception:', saveError);
     }
 
+    const se = scanResult.sightengine;
+    const imageAnalysis = se ? {
+      total_images_scanned: se.imagesAnalysed,
+      ai_generated_count: se.aiImagesFound,
+      deepfake_count: se.deepfakeCount,
+      nudity_count: se.nudityCount,
+      weapon_count: se.weaponCount,
+      unsafe_count: se.unsafeCount,
+      all_safe: se.allSafe,
+    } : null;
+
     return NextResponse.json(
       {
         success: true,
         data: {
           url: trimmedUrl,
           scan: scanResult,
+          image_analysis: imageAnalysis,
           timestamp: new Date().toISOString(),
         },
       },
