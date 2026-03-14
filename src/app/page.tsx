@@ -389,6 +389,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ 10b. WARUM COPY-PASTE NICHT REICHT ═══ */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>HÄUFIGSTER FEHLER</span>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+            &laquo;Ich kopiere einfach eine Datenschutzerklärung von einer anderen Website.&raquo;
+          </h2>
+          <p style={{ color: G.textSec, fontSize: 14, marginTop: 8 }}>Das machen 90% der KMUs. Und genau deshalb sind 73% nicht rechtskonform.</p>
+        </div>
+
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 32 }}>
+          {/* LINKS: Copy-Paste Risiken */}
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #ef4444, transparent)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>❌</span>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#991b1b' }}>Copy-Paste Datenschutzerklärung</h3>
+            </div>
+            {[
+              { ic: '⚠️', t: 'Falsche Drittanbieter', d: 'Enthält Google Analytics, obwohl Sie es nicht nutzen — aber Ihr Stripe fehlt komplett.' },
+              { ic: '⚠️', t: 'Falsche Jurisdiktion', d: 'Kopiert von einer .de-Website? Dann fehlt der nDSG-Teil. Kopiert von .ch? Dann fehlt DSGVO für deutsche Kunden.' },
+              { ic: '⚠️', t: 'Veraltet ab Tag 1', d: 'Sie fügen ein Kontaktformular hinzu, wechseln den Hoster — die kopierte Policy weiss nichts davon.' },
+              { ic: '⚠️', t: 'Rechtlich angreifbar', d: 'Eine falsche DSE ist schlimmer als keine — sie beweist, dass Sie es versucht aber falsch gemacht haben.' },
+            ].map(r => (
+              <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>{r.ic}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#991b1b', marginBottom: 2 }}>{r.t}</div>
+                  <div style={{ fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, opacity: 0.85 }}>{r.d}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, padding: '12px 14px', background: '#fee2e2', borderRadius: 10, fontSize: 12, color: '#991b1b', fontWeight: 600, textAlign: 'center' }}>
+              💰 Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. (DSGVO)
+            </div>
+          </div>
+
+          {/* RECHTS: Dataquard Lösung */}
+          <div style={{ background: G.greenBg || 'rgba(34,197,94,0.04)', border: `1px solid ${G.green}33`, borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${G.green}, transparent)` }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>✅</span>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard — automatisch korrekt</h3>
+            </div>
+            {[
+              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen.' },
+              { ic: '🚦', t: 'Richtige Jurisdiktion', d: 'Automatische Erkennung: nDSG, DSGVO oder beides — basierend auf Ihrer Domain, Ihrem Server und Ihren Besuchern.' },
+              { ic: '🔄', t: 'Immer aktuell', d: 'Neuer Tracker? Neues Plugin? Erneut scannen, Policy aktualisieren. Ihre DSE wächst mit Ihrer Website.' },
+              { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14 — mit allen Pflichtangaben, die ein Jurist erwarten würde.' },
+            ].map(r => (
+              <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>{r.ic}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: G.green, marginBottom: 2 }}>{r.t}</div>
+                  <div style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6 }}>{r.d}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, padding: '12px 14px', background: `${G.green}12`, borderRadius: 10, fontSize: 12, color: G.green, fontWeight: 600, textAlign: 'center' }}>
+              ✓ Ab CHF 79 · Einmalkauf · Rechtssicher · In 3 Minuten fertig
+            </div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 10, border: 'none', fontSize: 14, cursor: 'pointer', boxShadow: `0 4px 14px ${G.green}40` }}>
+            Jetzt Ihre Website prüfen — kostenlos →
+          </button>
+          <p style={{ fontSize: 11, color: G.textMuted, marginTop: 8 }}>Kein Risiko. Kein Abo. Sofort Ergebnis.</p>
+        </div>
+      </section>
+
       {/* ═══ 11. PREISE ═══ */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
         <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Transparent. Fair. Schweizer Qualität.</h2>
