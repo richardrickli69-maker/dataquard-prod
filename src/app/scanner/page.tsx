@@ -122,13 +122,18 @@ export default function ScannerPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlParam = params.get('url');
-    if (urlParam) setUrl(urlParam);
+    if (urlParam && urlParam.trim()) {
+      setUrl(urlParam);
+      setTimeout(() => handleScanWithUrl(urlParam), 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleScan = async () => {
-    if (!url.trim()) { setError('Bitte geben Sie eine URL ein.'); return; }
+  const handleScanWithUrl = async (scanUrlParam?: string) => {
+    const rawUrl = scanUrlParam ?? url;
+    if (!rawUrl.trim()) { setError('Bitte geben Sie eine URL ein.'); return; }
     setError(''); setScanning(true); setResult(null);
-    let scanUrl = url.trim();
+    let scanUrl = rawUrl.trim();
     if (!scanUrl.startsWith('http://') && !scanUrl.startsWith('https://')) scanUrl = 'https://' + scanUrl;
     try {
       let session = null;
@@ -189,6 +194,8 @@ export default function ScannerPage() {
       setError(err instanceof Error ? err.message : 'Scan fehlgeschlagen. Bitte versuchen Sie es erneut.');
     } finally { setScanning(false); }
   };
+
+  const handleScan = () => handleScanWithUrl();
 
   const handleChat = async () => {
     if (!chatInput.trim() || chatLoading) return;

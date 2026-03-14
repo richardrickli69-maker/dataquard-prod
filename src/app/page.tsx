@@ -106,7 +106,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ═══ 2. HERO ═══ */}
-      <section style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
+      <section id="hero-scanner" style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
@@ -126,7 +126,7 @@ export default function HomePage() {
           Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: <strong style={{ color: G.text }}>Compliance, Performance, Security und AI-Trust</strong> — gleichzeitig geprüft, direkt behoben. Erkennt automatisch <strong style={{ color: G.text }}>KI-generierte Bilder und Deepfakes</strong> nach EU AI Act Art. 50.
         </p>
         <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
-          <input type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
+          <input id="hero-url-input" type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
           <button onClick={handleHeroScan} style={{ padding: '15px 24px', background: G.green, color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 13 }}>Jetzt kostenlos prüfen →</button>
         </div>
         {heroScanning && (
@@ -295,7 +295,7 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
-            <button onClick={handleHeroScan} style={{ marginTop: 12, padding: '12px 28px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, border: 'none', fontSize: 13, cursor: 'pointer' }}>Jetzt kostenlos prüfen →</button>
+            <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ marginTop: 12, padding: '12px 28px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, border: 'none', fontSize: 13, cursor: 'pointer' }}>Jetzt kostenlos prüfen →</button>
           </div>
         </div>
       </section>
