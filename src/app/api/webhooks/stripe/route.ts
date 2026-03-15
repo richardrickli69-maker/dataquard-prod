@@ -350,7 +350,7 @@ function generateAiTrustEmailHtml({ userEmail, amount, currency }: { userEmail: 
         <tr>
           <td style="background:linear-gradient(135deg,#5b21b6,#7c3aed);padding:32px 40px;text-align:center;">
             <div style="margin-bottom:12px;">
-              <img src="https://www.dataquard.ch/logo.png" alt="Dataquard" width="48" height="48" style="display:inline-block;vertical-align:middle;background:white;border-radius:8px;padding:4px;" />
+              <img src="https://www.dataquard.ch/logo.png" alt="Dataquard" width="58" height="58" style="display:inline-block;vertical-align:middle;background:white;border-radius:8px;padding:4px;" />
             </div>
             <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Dataquard AI-Trust</div>
             <div style="color:#ddd6fe;font-size:13px;margin-top:4px;">KI-Überwachung. Dauerhaft. Automatisch.</div>

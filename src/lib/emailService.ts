@@ -27,10 +27,10 @@ export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId
       subject: '🎉 Ihre Datenschutzerklärung ist bereit!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #0F1B2D; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle; background: white; border-radius: 8px; padding: 4px;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
+              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
             </div>
             <h1 style="margin: 0; font-size: 20px;">🎉 Ihre Policy ist fertig!</h1>
           </div>
@@ -62,10 +62,10 @@ export async function sendWelcomeEmail({ email, name }: WelcomeEmailParams) {
       subject: '👋 Willkommen bei Dataquard!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #0F1B2D; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle; background: white; border-radius: 8px; padding: 4px;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
+              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
             </div>
             <h1 style="margin: 0; font-size: 20px;">👋 Willkommen bei Dataquard!</h1>
           </div>
@@ -108,10 +108,10 @@ export async function sendRescanChangeEmail({ email, domain, addedTrackers, remo
       subject: `🔄 Änderung erkannt auf ${domain} – Datenschutzerklärung prüfen`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <div style="background:#0F1B2D;color:white;padding:30px 40px;text-align:center;border-radius:8px 8px 0 0;">
+          <div style="background:#F3F4F6;color:#1F2937;padding:30px 40px;text-align:center;border-radius:8px 8px 0 0;">
             <div style="margin-bottom:16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48" style="display:inline-block;vertical-align:middle;background:white;border-radius:8px;padding:4px;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28" style="display:inline-block;vertical-align:middle;margin-left:10px;" />
+              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display:inline-block;vertical-align:middle;" />
+              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display:inline-block;vertical-align:middle;margin-left:10px;" />
             </div>
             <h1 style="margin:0;font-size:20px;">🔄 Website-Änderung erkannt</h1>
             <p style="margin:8px 0 0;opacity:0.85;">Dataquard – Wöchentlicher Re-Scan</p>
@@ -148,10 +148,10 @@ export async function sendReminderEmail(email: string) {
       subject: '⚠️ Sie haben eine Compliance-Lücke?',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #0F1B2D; color: white; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48" style="display: inline-block; vertical-align: middle; background: white; border-radius: 8px; padding: 4px;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
+              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
             </div>
             <h1 style="margin: 0; font-size: 20px;">⚠️ Compliance-Lücke schliessen</h1>
           </div>
