@@ -556,10 +556,14 @@ export default function HomePage() {
                 ['Daten in Schweiz', '✅', '⚠️', '❌'],
               ].map((r, i) => (
                 <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
-                  <td style={{ padding: '10px 14px', color: G.text }}>{r[0]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3]}</td>
+                  <td style={{ padding: '10px 14px', color: G.text }}>
+                    {r[0].startsWith('🤖')
+                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><IconEl ic="🤖" size={16} />{r[0].replace(/^🤖\s*/, '')}</span>
+                      : r[0]}
+                  </td>
+                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1] === '✅' ? <IconEl ic="✅" size={18} /> : r[1]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2] === '✅' ? <IconEl ic="✅" size={18} /> : r[2]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3] === '✅' ? <IconEl ic="✅" size={18} /> : r[3]}</td>
                 </tr>
               ))}
             </tbody>

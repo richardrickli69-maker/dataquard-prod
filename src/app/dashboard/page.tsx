@@ -203,11 +203,15 @@ export default function DashboardPage() {
           {[
             { label: 'Policies', value: policies.length, icon: '📄' },
             { label: 'Letzter Scan', value: latestScan ? new Date().toLocaleDateString('de-CH') : '–', icon: '🔍' },
-            { label: 'Plan', value: subscription ? `${subscription.plan.toUpperCase()}${subscription.ai_trust_active ? ' + AI-Trust' : ''}` : 'FREE', icon: '💳' },
-            { label: 'Aktive Abos', value: (subscription?.plan ? 1 : 0) + (subscription?.ai_trust_active ? 1 : 0), icon: '🛡️' },
+            { label: 'Plan', value: subscription ? `${subscription.plan.toUpperCase()}${subscription.ai_trust_active ? ' + AI-Trust' : ''}` : 'FREE', icon: '💳' as const },
+            { label: 'Aktive Abos', value: (subscription?.plan ? 1 : 0) + (subscription?.ai_trust_active ? 1 : 0), icon: '🛡️' as const },
           ].map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
-              <div style={{ fontSize: 22, marginBottom: 4 }}>{stat.icon}</div>
+              <div style={{ marginBottom: 4 }}>
+                {stat.icon === '💳' ? <img src="/icon-zahlung.png" alt="Plan" width={22} height={22} style={{ display: 'inline-block' }} />
+                  : stat.icon === '🛡️' ? <img src="/icon-schutz.png" alt="Abos" width={22} height={22} style={{ display: 'inline-block' }} />
+                  : <span style={{ fontSize: 22 }}>{stat.icon}</span>}
+              </div>
               <div style={{ fontSize: 18, fontWeight: 800, color: G.green }}>{stat.value}</div>
               <div style={{ fontSize: 11, color: G.textMuted, marginTop: 2 }}>{stat.label}</div>
             </div>
@@ -217,12 +221,12 @@ export default function DashboardPage() {
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: `1px solid ${G.border}`, paddingBottom: 0, overflowX: 'auto' }}>
           {[
-            { key: 'overview', label: '🏠 Übersicht' },
-            { key: 'policies', label: '📄 Policies' },
-            { key: 'billing', label: '💳 Abrechnung' },
-            { key: 'massnahmen', label: '🎯 Massnahmen' },
-            { key: 'badge', label: '🛡️ Verified Badge' },
-            { key: 'aitrust', label: '🤖 AI-Trust' },
+            { key: 'overview', icon: '🏠', label: 'Übersicht' },
+            { key: 'policies', icon: '📄', label: 'Policies' },
+            { key: 'billing', icon: '/icon-zahlung.png', label: 'Abrechnung' },
+            { key: 'massnahmen', icon: '🎯', label: 'Massnahmen' },
+            { key: 'badge', icon: '/icon-schutz.png', label: 'Verified Badge' },
+            { key: 'aitrust', icon: '/badge-ai-trust.svg', label: 'AI-Trust' },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -231,8 +235,12 @@ export default function DashboardPage() {
                 padding: '10px 16px', border: 'none', background: activeTab === tab.key ? G.green : 'transparent',
                 color: activeTab === tab.key ? '#fff' : G.textSec, borderRadius: '8px 8px 0 0',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
               }}
             >
+              {tab.icon.startsWith('/')
+                ? <img src={tab.icon} alt="" width={16} height={16} style={{ display: 'inline-block', opacity: activeTab === tab.key ? 1 : 0.7 }} />
+                : <span>{tab.icon}</span>}
               {tab.label}
             </button>
           ))}
@@ -301,7 +309,7 @@ export default function DashboardPage() {
         {activeTab === 'billing' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={card}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>💳 Aktueller Plan</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/icon-zahlung.png" alt="Plan" width={18} height={18} style={{ display: 'inline-block' }} /> Aktueller Plan</h2>
               {subscription ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[
@@ -362,7 +370,7 @@ export default function DashboardPage() {
         {activeTab === 'badge' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ background: G.greenBg, border: `1px solid ${G.greenBorder}`, borderRadius: 12, padding: 20 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.green, marginBottom: 6 }}>🛡️ Dataquard Verified Badge</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.green, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/icon-schutz.png" alt="Badge" width={18} height={18} style={{ display: 'inline-block' }} /> Dataquard Verified Badge</h2>
               <p style={{ color: G.textSec, fontSize: 13 }}>
                 Zeigen Sie Ihren Besuchern, dass Ihre Website auf DSGVO/nDSG-Compliance geprüft wurde.
                 Betten Sie das Badge auf Ihrer Website ein – es verlinkt auf eine öffentliche Verifikationsseite.
@@ -382,7 +390,7 @@ export default function DashboardPage() {
                     onClick={generateBadge} disabled={badgeLoading || !badgeUrl.trim()}
                     style={{ padding: '10px 20px', background: G.green, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: badgeLoading ? 'not-allowed' : 'pointer', opacity: badgeLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}
                   >
-                    {badgeLoading ? '⏳ Erstelle...' : '🛡️ Badge erstellen'}
+                    {badgeLoading ? '⏳ Erstelle...' : <><img src="/icon-schutz.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />Badge erstellen</>}
                   </button>
                 </div>
               </div>
@@ -457,7 +465,7 @@ export default function DashboardPage() {
                 <div style={{ background: '#0F1B2D', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                   <img src="/badge-ai-trust.svg" alt="AI-Trust Badge" style={{ width: 64, height: 'auto', flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <p style={{ color: '#22c55e', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>✅ AI-Trust aktiv</p>
+                    <p style={{ color: '#22c55e', fontWeight: 700, fontSize: 15, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/icon-verifiziert.png" alt="Aktiv" width={18} height={18} style={{ display: 'inline-block' }} /> AI-Trust aktiv</p>
                     <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 3 }}>Nächster Scan: automatisch · 250 Bilder</p>
                     <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 3 }}>
                       Gültig bis: {subscription.ai_trust_expires_at
@@ -524,7 +532,7 @@ export default function DashboardPage() {
             ) : (
               /* Upsell */
               <div style={{ border: '1px solid rgba(139,92,246,0.3)', borderRadius: 12, padding: 28, background: 'rgba(139,92,246,0.04)' }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>🤖 AI-Trust aktivieren</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/badge-ai-trust.svg" alt="AI-Trust" width={20} height={20} style={{ display: 'inline-block' }} /> AI-Trust aktivieren</p>
                 <p style={{ fontSize: 13, color: '#555566', marginBottom: 6, lineHeight: 1.6 }}>
                   Laufende KI-Bildüberwachung (250 Bilder/Monat), Deepfake-Erkennung,<br/>
                   EU AI Act Art. 50 Konformität, Shield-Badge + E-Mail-Alerts.

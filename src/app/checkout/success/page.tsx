@@ -60,14 +60,14 @@ function SuccessInner() {
       <PageWrapper>
         <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
           <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
-            <div style={{ fontSize: 72, marginBottom: 24 }}>🤖</div>
+            <div style={{ marginBottom: 24 }}><img src="/badge-ai-trust.svg" alt="AI-Trust" width={72} height={72} style={{ display: 'inline-block' }} /></div>
             <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12, color: G.text }}>Ihr AI-Trust Abo ist aktiv!</h1>
             <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
               Ihre Website wird ab sofort laufend auf KI-generierte Inhalte überwacht. Sie erhalten E-Mail-Alerts bei neuen Erkennungen und einen Quartals-Report.
             </p>
 
             <div style={{ background: G.bgWhite, border: `2px solid ${G.violet}`, borderRadius: 16, padding: 28, marginBottom: 20, textAlign: 'left', boxShadow: `0 4px 24px ${G.violetBg}` }}>
-              <h2 style={{ fontWeight: 700, color: G.text, marginBottom: 14, fontSize: 16 }}>🤖 AI-Trust Abo – aktiv</h2>
+              <h2 style={{ fontWeight: 700, color: G.text, marginBottom: 14, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/badge-ai-trust.svg" alt="AI-Trust" width={20} height={20} style={{ display: 'inline-block' }} /> AI-Trust Abo – aktiv</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: G.textSec }}>
                 <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>24/7 KI-Monitoring (250 Bilder)</div>
                 <div style={{ display: 'flex', gap: 8 }}><span style={{ color: G.violet }}>✓</span>Deepfake-Erkennung aktiviert</div>
@@ -103,7 +103,7 @@ function SuccessInner() {
     <PageWrapper>
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
         <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: 72, marginBottom: 24 }}>✅</div>
+          <div style={{ marginBottom: 24 }}><img src="/icon-verifiziert.png" alt="Erfolg" width={72} height={72} style={{ display: 'inline-block' }} /></div>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12, color: G.text }}>Vielen Dank für Ihren Kauf!</h1>
           <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
             {isImpressum
@@ -156,7 +156,7 @@ export default function SuccessPage() {
     <Suspense fallback={
       <PageWrapper>
         <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontSize: 48 }}>✅</div>
+          <div><img src="/icon-verifiziert.png" alt="Erfolg" width={48} height={48} style={{ display: 'inline-block' }} /></div>
         </div>
       </PageWrapper>
     }>

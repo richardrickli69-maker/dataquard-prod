@@ -121,7 +121,7 @@ export default async function VerifyPage({ params }: Props) {
 
               <p style={{ color: '#888899', fontSize: 11, marginBottom: 8 }}>Verifiziert durch</p>
               <Link href="/" style={{ color: '#22c55e', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                🛡️ dataquard.ch
+                <img src="/icon-schutz.png" alt="Schutz" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />dataquard.ch
               </Link>
               <p style={{ marginTop: 12 }}>
                 <Link href="/" style={{ color: '#888899', fontSize: 12, textDecoration: 'none' }}>← Zur Startseite</Link>

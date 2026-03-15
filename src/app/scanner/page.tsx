@@ -85,7 +85,9 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
             style={{ transition: 'stroke-dashoffset 1s ease' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 14 }}>{icon}</span>
+          {({ '🔒': '/icon-sicherheit.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[icon]
+            ? <img src={({ '🔒': '/icon-sicherheit.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[icon]} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />
+            : <span style={{ fontSize: 14 }}>{icon}</span>}
           <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>{score}%</span>
         </div>
       </div>
@@ -242,7 +244,9 @@ export default function ScannerPage() {
                 { icon: '🤖', title: 'AI-Trust', desc: 'KI-Bild-Erkennung, Deepfake-Check, EU AI Act Art. 50' },
               ].map(item => (
                 <div key={item.title} style={{ display: 'flex', gap: 12, padding: 12, background: G.bgLight, borderRadius: 10 }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+                  {({ '🔒': '/icon-sicherheit.png', '🛡️': '/icon-schutz.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[item.icon]
+                    ? <img src={({ '🔒': '/icon-sicherheit.png', '🛡️': '/icon-schutz.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[item.icon]} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />
+                    : <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>}
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 2 }}>{item.title}</p>
                     <p style={{ fontSize: 12, color: G.textSec }}>{item.desc}</p>
@@ -341,7 +345,7 @@ export default function ScannerPage() {
             {/* AI-Trust Detail */}
             <div style={{ ...card, borderTop: `3px solid ${G.violet}` }}>
               <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-                🤖 AI-Trust — KI-Inhaltsanalyse (EU AI Act Art. 50)
+                <img src="/badge-ai-trust.svg" alt="AI-Trust" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> AI-Trust — KI-Inhaltsanalyse (EU AI Act Art. 50)
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ padding: 12, background: G.violetBg, borderRadius: 10, fontSize: 13, color: G.text }}>
@@ -409,7 +413,7 @@ export default function ScannerPage() {
                 </div>
                 {result.imageAnalysis.ai_generated_count > 0 && (
                   <div style={{ padding: 10, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: 10, fontSize: 12, color: '#92400e', marginBottom: 6 }}>
-                    <strong>⚖️ EU AI Act Art. 50:</strong> KI-generierte Bilder müssen als solche gekennzeichnet werden. {result.imageAnalysis.ai_generated_count} Bild(er) möglicherweise KI-generiert.
+                    <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><img src="/icon-recht.png" alt="Recht" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> EU AI Act Art. 50:</strong> KI-generierte Bilder müssen als solche gekennzeichnet werden. {result.imageAnalysis.ai_generated_count} Bild(er) möglicherweise KI-generiert.
                   </div>
                 )}
                 {result.imageAnalysis.deepfake_count > 0 && (
@@ -432,7 +436,7 @@ export default function ScannerPage() {
                 🍪 Cookie-Banner generieren
               </Link>
               <Link href="/checkout" style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.green, color: '#fff', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-                🔒 Datenschutzerklärung – CHF 79
+                <img src="/icon-sicherheit.png" alt="Datenschutz" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />Datenschutzerklärung – CHF 79
               </Link>
             </div>
           </div>

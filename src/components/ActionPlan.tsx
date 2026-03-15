@@ -121,7 +121,7 @@ export default function ActionPlan({ scanResult, url }: Props) {
             onClick={handleGenerate}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
           >
-            <span>🤖</span>
+            <img src="/badge-ai-trust.svg" alt="AI" width={20} height={20} style={{ display: 'inline-block' }} />
             <span>KI-Analyse generieren</span>
           </button>
         )}

@@ -192,7 +192,7 @@ function CheckoutContent() {
                 {loading && selectedPlan === plan.id
                   ? '⏳ Weiterleitung…'
                   : isViolet
-                    ? `🤖 Abonnieren – CHF ${plan.price}/Jahr`
+                    ? `Abonnieren – CHF ${plan.price}/Jahr`
                     : `Jetzt kaufen – CHF ${plan.price}`}
               </button>
             </div>
@@ -209,13 +209,13 @@ function CheckoutContent() {
       )}
       {(selectedPlan === 'starter' || selectedPlan === 'professional') && (
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 12, padding: '24px 28px', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 6 }}>🤖 AI Datenschutzerklärung inklusive</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/badge-ai-trust.svg" alt="AI" width={20} height={20} style={{ display: 'inline-block' }} /> AI Datenschutzerklärung inklusive</h3>
           <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6 }}>Nach der Zahlung können Sie im Dashboard Ihre Domain eingeben und die Datenschutzerklärung automatisch generieren lassen.</p>
         </div>
       )}
       {selectedPlan === 'ai-trust' && (
         <div style={{ background: G.violetBg, border: `1px solid ${G.violetBorder}`, borderRadius: 12, padding: '24px 28px', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.violet, marginBottom: 6 }}>🤖 AI-Trust – Laufende KI-Überwachung</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.violet, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/badge-ai-trust.svg" alt="AI-Trust" width={20} height={20} style={{ display: 'inline-block' }} /> AI-Trust – Laufende KI-Überwachung</h3>
           <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6 }}>
             Das AI-Trust Abo überwacht Ihre Website wöchentlich auf KI-generierte Inhalte und Deepfakes nach EU AI Act Art. 50. Sie erhalten E-Mail-Alerts bei Änderungen und können den AI-Trust Badge auf Ihrer Website einbinden.
           </p>
@@ -249,11 +249,11 @@ function CheckoutContent() {
           {loading
             ? '⏳ Weiterleitung zu Stripe...'
             : isAiTrust
-              ? `🤖 Jetzt abonnieren – CHF ${selectedPlanData?.price}/Jahr`
-              : `💳 Jetzt kaufen – CHF ${selectedPlanData?.price}`}
+              ? `Jetzt abonnieren – CHF ${selectedPlanData?.price}/Jahr`
+              : `Jetzt kaufen – CHF ${selectedPlanData?.price}`}
         </button>
         <p style={{ textAlign: 'center', color: G.textMuted, fontSize: 12, marginTop: 10 }}>
-          Sichere Zahlung via Stripe · {isAiTrust ? 'Jederzeit kündbar · ' : '30 Tage Geld-zurück-Garantie · '}Schweizer Qualität
+          Sichere Zahlung via Stripe · {isAiTrust ? 'Jederzeit kündbar · ' : '14 Tage Geld-zurück-Garantie · '}Schweizer Qualität
         </p>
       </div>
 
