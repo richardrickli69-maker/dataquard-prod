@@ -48,7 +48,7 @@ export async function generateInstallationPdf(params: {
   const logoController = new AbortController()
   const logoTimeout = setTimeout(() => logoController.abort(), 5000)
   try {
-    const logoRes = await fetch('https://dataquard.ch/logo.png', { signal: logoController.signal })
+    const logoRes = await fetch('https://www.dataquard.ch/logo.png', { signal: logoController.signal })
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
     const logoMaxWidth = 120

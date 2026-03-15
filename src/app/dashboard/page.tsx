@@ -133,7 +133,7 @@ export default function DashboardPage() {
   };
 
   const copyEmbedCode = (badgeId: string) => {
-    const code = `<a href="https://dataquard.ch/verify/${badgeId}" target="_blank" rel="noopener">\n  <img src="https://dataquard.ch/api/badges/${badgeId}/image" alt="Dataquard Verified" width="200" height="120" />\n</a>`;
+    const code = `<a href="https://www.dataquard.ch/verify/${badgeId}" target="_blank" rel="noopener">\n  <img src="https://www.dataquard.ch/api/badges/${badgeId}/image" alt="Dataquard Verified" width="200" height="120" />\n</a>`;
     navigator.clipboard.writeText(code);
     setBadgeCopied(true);
     setTimeout(() => setBadgeCopied(false), 2000);
@@ -424,8 +424,8 @@ export default function DashboardPage() {
                           </a>
                           <p style={{ color: G.textMuted, fontSize: 12, marginBottom: 6 }}>Embed-Code für Ihre Website:</p>
                           <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px', fontFamily: 'monospace', fontSize: 11, color: G.green, wordBreak: 'break-all', lineHeight: 1.6 }}>
-                            {`<a href="https://dataquard.ch/verify/${badge.id}" target="_blank" rel="noopener">`}<br />
-                            {`  <img src="https://dataquard.ch/api/badges/${badge.id}/image" alt="Dataquard Verified" width="200" height="120" />`}<br />
+                            {`<a href="https://www.dataquard.ch/verify/${badge.id}" target="_blank" rel="noopener">`}<br />
+                            {`  <img src="https://www.dataquard.ch/api/badges/${badge.id}/image" alt="Dataquard Verified" width="200" height="120" />`}<br />
                             {`</a>`}
                           </div>
                           <button onClick={() => copyEmbedCode(badge.id)}
@@ -487,7 +487,7 @@ export default function DashboardPage() {
                   <div style={{ background: '#111827', borderRadius: 8, padding: 14, fontFamily: 'monospace', fontSize: 12, color: '#22c55e', position: 'relative', lineHeight: 1.7 }}>
                     <button
                       onClick={async () => {
-                        const code = `<!-- Dataquard AI-Trust Badge -->\n<a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">\n  <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />\n</a>`;
+                        const code = `<!-- Dataquard AI-Trust Badge -->\n<a href="https://www.dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">\n  <img src="https://www.dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />\n</a>`;
                         try {
                           await navigator.clipboard.writeText(code);
                         } catch {
@@ -509,8 +509,8 @@ export default function DashboardPage() {
                       {aiTrustCopied ? '✅ Kopiert!' : '📋 Kopieren'}
                     </button>
                     <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', paddingRight: 80 }}>{`<!-- Dataquard AI-Trust Badge -->
-<a href="https://dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">
-  <img src="https://dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />
+<a href="https://www.dataquard.ch" target="_blank" rel="noopener" style="display:inline-block;">
+  <img src="https://www.dataquard.ch/badge-ai-trust-banner.svg" alt="AI-Compliance verifiziert durch Dataquard" width="200" height="70" />
 </a>`}</pre>
                   </div>
 

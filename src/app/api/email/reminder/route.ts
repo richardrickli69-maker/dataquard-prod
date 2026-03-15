@@ -25,7 +25,7 @@ function reminderEmailHtml(domain: string, scanDate: string): string {
       </div>
       <p style="color:#374151;font-size:16px;">Erstellen Sie jetzt in <strong>3 Minuten</strong> Ihre Datenschutzerklärung:</p>
       <div style="text-align:center;margin:32px 0;">
-        <a href="https://dataquard.ch/datenschutz-generator?domain=${encodeURIComponent(domain)}&utm_source=reminder&utm_medium=email&utm_campaign=day3"
+        <a href="https://www.dataquard.ch/datenschutz-generator?domain=${encodeURIComponent(domain)}&utm_source=reminder&utm_medium=email&utm_campaign=day3"
            style="background:#003d82;color:#fff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:16px;font-weight:bold;display:inline-block;">
           Jetzt Datenschutzerklärung erstellen →
         </a>
@@ -34,8 +34,8 @@ function reminderEmailHtml(domain: string, scanDate: string): string {
     <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 40px;">
       <p style="margin:0;color:#9ca3af;font-size:12px;">
         Sie erhalten diese E-Mail weil Sie ${domain} auf dataquard.ch geprüft haben.<br>
-        <a href="https://dataquard.ch/unsubscribe" style="color:#9ca3af;">Abmelden</a> ·
-        Dataquard · Basel, Schweiz
+        <a href="https://www.dataquard.ch/unsubscribe" style="color:#9ca3af;">Abmelden</a> ·
+        Dataquard · Reinach BL, Schweiz
       </p>
     </td></tr>
   </table>

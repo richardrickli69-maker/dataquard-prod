@@ -96,7 +96,7 @@ export async function processBatchResults() {
 
           if (updatedJob?.users) {
             try {
-              await fetch("https://dataquard.ch/api/email/send", {
+              await fetch("https://www.dataquard.ch/api/email/send", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ type: "policy-ready", email: (updatedJob.users as { email: string }).email, domain: job.domain, policyContent: policyContent.substring(0, 200), jobId: job.id }),

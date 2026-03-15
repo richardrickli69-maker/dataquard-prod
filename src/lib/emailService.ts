@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 
 const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
-const BASE_URL = 'https://dataquard.ch';
+const BASE_URL = 'https://www.dataquard.ch';
 const LOGO_URL = `${BASE_URL}/logo-dataquard.png`;
 const SCHRIFTZUG_URL = `${BASE_URL}/schriftzug-dataquard.png`;
 

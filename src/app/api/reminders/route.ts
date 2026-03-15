@@ -68,11 +68,11 @@ export async function POST(request: NextRequest) {
           <p>Wir haben <strong>${domain}</strong> gescannt und Compliance-Risiken festgestellt.</p>
           <p>Ein fehlendes Impressum oder eine fehlende Datenschutzerklärung kann zu Bussgeldern bis CHF 50'000 führen.</p>
           <div style="margin: 30px 0;">
-            <a href="https://dataquard.ch/checkout" style="background: #4F46E5; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+            <a href="https://www.dataquard.ch/checkout" style="background: #4F46E5; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">
               Jetzt rechtssicher werden →
             </a>
           </div>
-          <p style="color: #666; font-size: 14px;">Dataquard · Basel, Schweiz · <a href="https://dataquard.ch">dataquard.ch</a></p>
+          <p style="color: #666; font-size: 14px;">Dataquard · Reinach BL, Schweiz · <a href="https://www.dataquard.ch">dataquard.ch</a></p>
         </div>
       `,
     });

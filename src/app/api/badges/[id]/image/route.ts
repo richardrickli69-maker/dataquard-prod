@@ -35,7 +35,7 @@ function buildSvg(websiteUrl: string, isValid: boolean): string {
   <rect x="0" y="5" width="200" height="5" fill="${borderColor}"/>
 
   <!-- Logo -->
-  <image href="https://dataquard.ch/logo.png" x="82" y="16" width="36" height="36"/>
+  <image href="https://www.dataquard.ch/logo.png" x="82" y="16" width="36" height="36"/>
 
   <!-- Brand name -->
   <text x="100" y="66" text-anchor="middle" class="brand">Dataquard</text>

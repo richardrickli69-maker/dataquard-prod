@@ -62,7 +62,7 @@ export async function analyzeForAiContent(url: string): Promise<AiAuditResult> {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Dataquard-Compliance-Scanner/2.0 (+https://dataquard.ch)',
+        'User-Agent': 'Dataquard-Compliance-Scanner/2.0 (+https://www.dataquard.ch)',
         'Accept': 'text/html,application/xhtml+xml',
       },
     });

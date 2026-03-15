@@ -319,8 +319,8 @@ export async function POST(request: NextRequest) {
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
             <h2 style="color:#1a1a2e;">Zahlung fehlgeschlagen</h2>
             <p style="color:#555566;">Die Zahlung für Ihr Dataquard AI-Trust Abo konnte nicht verarbeitet werden. Bitte aktualisieren Sie Ihre Zahlungsmethode.</p>
-            <a href="https://dataquard.ch/dashboard" style="display:inline-block;background:#22c55e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Zahlungsmethode aktualisieren →</a>
-            <p style="color:#888899;font-size:12px;margin-top:24px;">Dataquard · Reinach BL, Schweiz · <a href="https://dataquard.ch" style="color:#888899;">dataquard.ch</a></p>
+            <a href="https://www.dataquard.ch/dashboard" style="display:inline-block;background:#22c55e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Zahlungsmethode aktualisieren →</a>
+            <p style="color:#888899;font-size:12px;margin-top:24px;">Dataquard · Reinach BL, Schweiz · <a href="https://www.dataquard.ch" style="color:#888899;">dataquard.ch</a></p>
           </div>`,
         });
         console.log(`[Webhook] Zahlungsfehlschlag-E-Mail gesendet an: ${customerEmail}`);
@@ -387,7 +387,7 @@ function generateAiTrustEmailHtml({ userEmail, amount, currency }: { userEmail: 
         </tr>
         <tr>
           <td style="padding:0 40px 32px;text-align:center;">
-            <a href="https://dataquard.ch/dashboard" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;">
+            <a href="https://www.dataquard.ch/dashboard" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;">
               Zum Dashboard →
             </a>
             <p style="margin:12px 0 0;color:#9ca3af;font-size:13px;">Angemeldet als ${userEmail}</p>
@@ -404,8 +404,8 @@ function generateAiTrustEmailHtml({ userEmail, amount, currency }: { userEmail: 
           <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
             <p style="margin:0;font-size:12px;color:#9ca3af;">
               © 2026 Dataquard · Reinach BL, Schweiz<br/>
-              <a href="https://dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a> &nbsp;·&nbsp;
-              <a href="https://dataquard.ch/impressum" style="color:#9ca3af;">Impressum</a>
+              <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a> &nbsp;·&nbsp;
+              <a href="https://www.dataquard.ch/impressum" style="color:#9ca3af;">Impressum</a>
             </p>
           </td>
         </tr>
@@ -481,7 +481,7 @@ function generateEmailHtml({
           </tr>
           <tr>
             <td style="padding:0 40px 32px;text-align:center;">
-              <a href="https://dataquard.ch/dashboard"
+              <a href="https://www.dataquard.ch/dashboard"
                 style="display:inline-block;background:linear-gradient(135deg,#00e676,#00c853);color:#040c1c;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;">
                 Jetzt erste Datenschutzerklärung erstellen →
               </a>
@@ -540,9 +540,9 @@ function generateEmailHtml({
             <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
                 © 2026 Dataquard · Richard Rickli · Reinach BL, Schweiz<br/>
-                <a href="https://dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
+                <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
                 &nbsp;·&nbsp;
-                <a href="https://dataquard.ch/impressum-generator" style="color:#9ca3af;">Impressum</a>
+                <a href="https://www.dataquard.ch/impressum-generator" style="color:#9ca3af;">Impressum</a>
               </p>
             </td>
           </tr>
