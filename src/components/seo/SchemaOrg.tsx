@@ -45,7 +45,7 @@ export function OrganizationSchema() {
     url: 'https://www.dataquard.ch',
     logo: 'https://www.dataquard.ch/logo-dataquard.png',
     foundingDate: '2026',
-    foundingLocation: { '@type': 'Place', addressLocality: 'Basel', addressCountry: 'CH' },
+    foundingLocation: { '@type': 'Place', addressLocality: 'Reinach BL', addressCountry: 'CH' },
     areaServed: [
       { '@type': 'Country', name: 'Schweiz' },
       { '@type': 'Country', name: 'Deutschland' },

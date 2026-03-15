@@ -28,7 +28,7 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
                 <span style={{ color: '#22c55e' }}>Data</span>
                 <span style={{ color: '#1a1a2e' }}>quard</span>
               </span>
-              {' '}© 2026 · Basel, Schweiz
+              {' '}© 2026 · Reinach BL, Schweiz
             </span>
             <div style={{ display: 'flex', gap: 16, alignItems: 'center', fontSize: 12, flexWrap: 'wrap' }}>
               {[

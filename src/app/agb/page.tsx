@@ -25,7 +25,7 @@ export default function AGBPage() {
         <div style={{ marginBottom: 40 }}>
           <Link href="/" style={{ color: G.textMuted, fontSize: 13, textDecoration: 'none' }}>← Zurück zur Startseite</Link>
           <h1 style={{ fontSize: 32, fontWeight: 800, marginTop: 20, marginBottom: 6, color: G.text }}>📋 Allgemeine Geschäftsbedingungen</h1>
-          <p style={{ color: G.textMuted, fontSize: 13 }}>Stand: März 2026 · Dataquard, Basel, Schweiz</p>
+          <p style={{ color: G.textMuted, fontSize: 13 }}>Stand: März 2026 · Dataquard, Reinach BL, Schweiz</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -87,8 +87,8 @@ export default function AGBPage() {
           </div>
 
           <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: '20px 24px', fontSize: 13, color: G.textMuted }}>
-            <p><strong style={{ color: G.textSec }}>Gerichtsstand & anwendbares Recht:</strong> Es gilt Schweizer Recht. Gerichtsstand ist Basel, Schweiz.</p>
-            <p style={{ marginTop: 6 }}><strong style={{ color: G.textSec }}>Kontakt:</strong> Dataquard · Basel, Schweiz · <span style={{ color: G.green }}>support@dataquard.ch</span></p>
+            <p><strong style={{ color: G.textSec }}>Gerichtsstand & anwendbares Recht:</strong> Es gilt Schweizer Recht. Gerichtsstand ist Reinach BL, Schweiz.</p>
+            <p style={{ marginTop: 6 }}><strong style={{ color: G.textSec }}>Kontakt:</strong> Dataquard · Reinach BL, Schweiz · <span style={{ color: G.green }}>support@dataquard.ch</span></p>
           </div>
 
         </div>
