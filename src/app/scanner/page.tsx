@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -55,8 +55,6 @@ interface ScanResult {
   };
 }
 
-interface ChatMessage { role: 'user' | 'assistant'; content: string; }
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const jurisdictionStyle = (j: string): React.CSSProperties => {
@@ -105,19 +103,6 @@ export default function ScannerPage() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
-
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([{
-    role: 'assistant',
-    content: 'Hallo! Ich bin der Dataquard Assistent. Ich helfe Ihnen bei Fragen zu DSGVO, nDSG und Website-Compliance. Was möchten Sie wissen?'
-  }]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, chatOpen]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -196,28 +181,6 @@ export default function ScannerPage() {
   };
 
   const handleScan = () => handleScanWithUrl();
-
-  const handleChat = async () => {
-    if (!chatInput.trim() || chatLoading) return;
-    const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
-    const updatedMessages = [...chatMessages, userMsg];
-    setChatMessages(updatedMessages); setChatInput(''); setChatLoading(true);
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: updatedMessages,
-          context: result ? `Website ${result.url} analysiert. Compliance: ${result.scores.compliance}%, Optimierung: ${result.scores.optimization}%, Vertrauen: ${result.scores.trust}%. Jurisdiktion: ${result.jurisdiction}.` : undefined,
-        }),
-      });
-      if (!res.ok) throw new Error('Chat-Fehler');
-      const data = await res.json();
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.message ?? 'Entschuldigung, keine Antwort erhalten.' }]);
-    } catch {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Der Assistent ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut oder schreiben Sie an support@dataquard.ch.' }]);
-    } finally { setChatLoading(false); }
-  };
 
   const card: React.CSSProperties = { background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
   const inputStyle: React.CSSProperties = { flex: 1, background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: '12px 16px', color: G.text, fontSize: 14, outline: 'none' };
@@ -476,48 +439,6 @@ export default function ScannerPage() {
         )}
       </div>
 
-      {/* Chat window */}
-      {chatOpen && (
-        <div style={{ position: 'fixed', bottom: 80, right: 16, width: 340, background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', zIndex: 50, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: G.green }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 18 }}>🤖</span>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Dataquard Assistent</p>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', margin: 0 }}>DSGVO &amp; nDSG Hilfe</p>
-              </div>
-            </div>
-            <button onClick={() => setChatOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>✕</button>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 280 }}>
-            {chatMessages.map((msg, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: 12, fontSize: 13, lineHeight: 1.5, background: msg.role === 'user' ? G.green : G.bgLight, color: msg.role === 'user' ? '#fff' : G.text }}>
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            {chatLoading && (
-              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <div style={{ background: G.bgLight, padding: '8px 12px', borderRadius: 12, display: 'flex', gap: 4 }}>
-                  {[0, 150, 300].map(d => <span key={d} style={{ width: 6, height: 6, background: G.textMuted, borderRadius: '50%', animation: `bounce 1s ${d}ms infinite` }} />)}
-                </div>
-              </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
-          <div style={{ padding: '10px 12px', borderTop: `1px solid ${G.border}`, display: 'flex', gap: 8 }}>
-            <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} placeholder="Ihre Frage…" style={{ flex: 1, background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: '8px 12px', fontSize: 13, color: G.text, outline: 'none' }} />
-            <button onClick={handleChat} disabled={chatLoading || !chatInput.trim()} style={{ background: G.green, border: 'none', color: '#fff', padding: '8px 12px', borderRadius: 10, cursor: 'pointer', opacity: chatLoading || !chatInput.trim() ? 0.4 : 1 }}>→</button>
-          </div>
-          <style>{`@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }`}</style>
-        </div>
-      )}
-
-      {/* Chat toggle */}
-      <button onClick={() => setChatOpen(prev => !prev)} style={{ position: 'fixed', bottom: 16, right: 16, width: 52, height: 52, background: G.green, color: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 4px 16px rgba(34,197,94,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 50, fontSize: 22 }} title="Dataquard Assistent öffnen">
-        {chatOpen ? '✕' : '🤖'}
-      </button>
     </PageWrapper>
   );
 }

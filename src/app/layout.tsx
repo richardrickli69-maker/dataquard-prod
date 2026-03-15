@@ -1,5 +1,4 @@
-// src/app/layout.task.tsx
-// ÄNDERUNG: ChatBot (Assistant) entfernt
+// src/app/layout.tsx
 import CookieBanner from "@/components/CookieBanner/CookieBanner";
 import type { Metadata } from 'next';
 import { SoftwareApplicationSchema, OrganizationSchema } from '@/components/seo/SchemaOrg';
