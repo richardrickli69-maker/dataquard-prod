@@ -29,15 +29,38 @@ export default function UpdatePasswordPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Supabase exchanged the code from the URL automatically via onAuthStateChange
+    let timeoutId: NodeJS.Timeout;
+
+    // Supabase Auth Event Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true);
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        setReady(true);
+      }
     });
-    // Also check if session already exists (PKCE flow)
+
+    // Session-Check (PKCE Flow — Code wurde serverseitig getauscht)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
+      if (session) {
+        setReady(true);
+      } else {
+        // Kein Session gefunden — 5 Sekunden warten, dann nochmal prüfen
+        timeoutId = setTimeout(async () => {
+          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          if (retrySession) {
+            setReady(true);
+          } else {
+            // Endgültig keine Session — Benutzer zurück zum Login schicken
+            console.error('[update-password] Keine Session nach Timeout — Redirect zu /auth');
+            window.location.href = '/auth?error=session_expired';
+          }
+        }, 5000);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

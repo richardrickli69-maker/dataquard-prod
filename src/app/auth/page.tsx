@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { PageWrapper } from '../components/PageWrapper';
@@ -21,8 +21,10 @@ const G = {
   redBorder: 'rgba(220,38,38,0.15)',
 };
 
-export default function AuthPage() {
+function AuthPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionError = searchParams.get('error') === 'session_expired';
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
@@ -95,6 +97,12 @@ export default function AuthPage() {
               {isSignUp ? 'Konto erstellen' : 'Anmelden'}
             </h2>
 
+            {sessionError && (
+              <div style={{ background: G.redBg, border: `1px solid ${G.redBorder}`, color: G.red, padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+                Ihre Sitzung ist abgelaufen. Bitte fordern Sie einen neuen Passwort-Link an.
+              </div>
+            )}
+
             {error && (
               <div style={{ background: G.redBg, border: `1px solid ${G.redBorder}`, color: G.red, padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
                 {error}
@@ -140,5 +148,13 @@ export default function AuthPage() {
         </div>
       </div>
     </PageWrapper>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthPageInner />
+    </Suspense>
   );
 }
