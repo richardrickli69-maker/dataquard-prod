@@ -207,8 +207,8 @@ export async function POST(request: NextRequest) {
       }
 
       const { error: userUpsertError } = resolvedUserId
-        ? await supabaseAdmin.from('users').upsert({ id: resolvedUserId, email: customerEmail ?? '', subscription_tier: plan }, { onConflict: 'id' })
-        : await supabaseAdmin.from('users').upsert({ email: customerEmail ?? '', subscription_tier: plan }, { onConflict: 'email' });
+        ? await supabaseAdmin.from('users').upsert({ id: resolvedUserId, email: customerEmail ?? '', plan }, { onConflict: 'id' })
+        : await supabaseAdmin.from('users').upsert({ email: customerEmail ?? '', plan }, { onConflict: 'email' });
 
       if (userUpsertError) {
         console.warn('[Webhook] users-Upsert Fehler:', userUpsertError.message);

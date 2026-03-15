@@ -52,6 +52,7 @@ interface Subscription {
   created_at: string;
   ai_trust_active?: boolean;
   ai_trust_expires_at?: string;
+  ai_trust_stripe_subscription_id?: string;
 }
 
 export default function DashboardPage() {
@@ -202,7 +203,7 @@ export default function DashboardPage() {
           {[
             { label: 'Policies', value: policies.length, icon: '📄' },
             { label: 'Letzter Scan', value: latestScan ? new Date().toLocaleDateString('de-CH') : '–', icon: '🔍' },
-            { label: 'Plan', value: subscription?.plan?.toUpperCase() || 'FREE', icon: '💳' },
+            { label: 'Plan', value: subscription ? `${subscription.plan.toUpperCase()}${subscription.ai_trust_active ? ' + AI-Trust' : ''}` : 'FREE', icon: '💳' },
             { label: 'Aktive Abos', value: (subscription?.plan ? 1 : 0) + (subscription?.ai_trust_active ? 1 : 0), icon: '🛡️' },
           ].map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
@@ -453,16 +454,27 @@ export default function DashboardPage() {
             {subscription?.ai_trust_active ? (
               <>
                 {/* Status-Anzeige */}
-                <div style={{ background: '#0F1B2D', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ background: '#0F1B2D', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                   <img src="/badge-ai-trust.svg" alt="AI-Trust Badge" style={{ width: 64, height: 'auto', flexShrink: 0 }} />
-                  <div>
-                    <p style={{ color: '#ffffff', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>AI-Trust aktiv</p>
-                    <p style={{ color: '#9ca3af', fontSize: 13 }}>Nächster Scan: automatisch · 250 Bilder</p>
-                    <p style={{ color: '#9ca3af', fontSize: 13 }}>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <p style={{ color: '#22c55e', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>✅ AI-Trust aktiv</p>
+                    <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 3 }}>Nächster Scan: automatisch · 250 Bilder</p>
+                    <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 3 }}>
                       Gültig bis: {subscription.ai_trust_expires_at
                         ? new Date(subscription.ai_trust_expires_at).toLocaleDateString('de-CH')
                         : '–'}
                     </p>
+                    {subscription.ai_trust_stripe_subscription_id && (
+                      <p style={{ color: '#4b5563', fontSize: 11, fontFamily: 'monospace', marginBottom: 3 }}>
+                        Abo-ID: {subscription.ai_trust_stripe_subscription_id}
+                      </p>
+                    )}
+                    <Link
+                      href="/scanner"
+                      style={{ display: 'inline-block', marginTop: 10, color: '#22c55e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      🔍 Neuen KI-Scan starten →
+                    </Link>
                   </div>
                 </div>
 
@@ -511,15 +523,19 @@ export default function DashboardPage() {
               </>
             ) : (
               /* Upsell */
-              <div style={{ border: '1px solid rgba(139,92,246,0.3)', borderRadius: 12, padding: 20, background: 'rgba(139,92,246,0.04)' }}>
-                <p style={{ fontSize: 14, color: '#1a1a2e', marginBottom: 6 }}>🤖 Laufende KI-Überwachung für Ihre Website</p>
-                <p style={{ fontSize: 13, color: '#888899', marginBottom: 12 }}>Deepfake-Erkennung, EU AI Act Konformität, Shield-Badge</p>
-                <a
+              <div style={{ border: '1px solid rgba(139,92,246,0.3)', borderRadius: 12, padding: 28, background: 'rgba(139,92,246,0.04)' }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>🤖 AI-Trust aktivieren</p>
+                <p style={{ fontSize: 13, color: '#555566', marginBottom: 6, lineHeight: 1.6 }}>
+                  Laufende KI-Bildüberwachung (250 Bilder/Monat), Deepfake-Erkennung,<br/>
+                  EU AI Act Art. 50 Konformität, Shield-Badge + E-Mail-Alerts.
+                </p>
+                <p style={{ fontSize: 12, color: '#888899', marginBottom: 18 }}>Jahres-Abo · Keine Einrichtungsgebühr · Kündbar</p>
+                <Link
                   href="/checkout?plan=ai-trust"
-                  style={{ color: '#8B5CF6', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
+                  style={{ display: 'inline-block', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
                 >
-                  AI-Trust Abo aktivieren → CHF 99/Jahr
-                </a>
+                  Jetzt für CHF 99/Jahr aktivieren →
+                </Link>
               </div>
             )}
           </div>

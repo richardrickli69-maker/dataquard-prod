@@ -10,7 +10,7 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'richard.rickli69@gma
 interface Customer {
   id: string;
   email: string;
-  subscription_tier: string;
+  plan: string;
   created_at: string;
 }
 
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     const { data: usersData } = await supabase
       .from('users')
-      .select('id, email, subscription_tier, created_at')
+      .select('id, email, plan, created_at')
       .order('created_at', { ascending: false });
 
     if (usersData) {
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
       const planBreakdown: Record<string, number> = {};
       let paidCount = 0;
       usersData.forEach((u: Customer) => {
-        const tier = u.subscription_tier || 'free';
+        const tier = u.plan || 'free';
         planBreakdown[tier] = (planBreakdown[tier] || 0) + 1;
         if (tier !== 'free' && tier !== null) paidCount++;
       });
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
     const matchesSearch = !searchTerm ||
       c.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlan = filterPlan === 'all' ||
-      (c.subscription_tier || 'free') === filterPlan;
+      (c.plan || 'free') === filterPlan;
     return matchesSearch && matchesPlan;
   });
 
@@ -209,7 +209,7 @@ export default function AdminDashboard() {
                 {filteredCustomers.map((customer) => (
                   <tr key={customer.id} style={{ borderBottom: '1px solid #f1f2f6' }}>
                     <td style={{ padding: '12px 16px', color: '#1a1a2e', fontWeight: 500 }}>{customer.email}</td>
-                    <td style={{ padding: '12px 16px' }}>{getPlanBadge(customer.subscription_tier || 'free')}</td>
+                    <td style={{ padding: '12px 16px' }}>{getPlanBadge(customer.plan || 'free')}</td>
                     <td style={{ padding: '12px 16px', color: '#888899' }}>{new Date(customer.created_at).toLocaleDateString('de-CH')}</td>
                     <td style={{ padding: '12px 16px', color: '#cccccc', fontFamily: 'monospace', fontSize: 11 }}>{customer.id.slice(0, 8)}...</td>
                   </tr>

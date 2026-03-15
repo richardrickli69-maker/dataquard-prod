@@ -48,10 +48,10 @@ async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
 
   if (!resolvedUser) return "free";
 
-  // subscription_tier aus users-Tabelle lesen
+  // plan aus users-Tabelle lesen
   const { data, error } = await supabase
     .from("users")
-    .select("subscription_tier")
+    .select("plan")
     .eq("id", resolvedUser.id)
     .single();
 
@@ -60,9 +60,9 @@ async function getUserPlan(): Promise<"free" | "starter" | "professional"> {
 
   if (error || !data) return "free";
 
-  const tier = data.subscription_tier as string;
+  const tier = data.plan as string;
 
-  console.log('[CookieBanner] subscription_tier raw:', JSON.stringify(tier));
+  console.log('[CookieBanner] plan raw:', JSON.stringify(tier));
   console.log('[CookieBanner] → Plan zurückgegeben:', tier === "professional" ? "professional" : tier === "starter" ? "starter" : "free");
 
   if (tier === "professional") return "professional";
