@@ -73,7 +73,7 @@ WICHTIG: Antworte ausschliesslich mit dem Text der Datenschutzerklärung, ohne P
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         { auth: { autoRefreshToken: false, persistSession: false } }
       );
-      const { data: { user } } = await supabaseVerify.auth.getUser(authHeader.slice(7));
+      const { data: { user } } = await supabaseVerify.auth.getUser(authHeader.slice(7).trim());
       if (user?.id) {
         await logAudit({
           user_id: user.id,

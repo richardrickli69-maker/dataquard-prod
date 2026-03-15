@@ -12,9 +12,15 @@ const supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL;
+
 async function sendReminderEmail(to: string, domain: string, scanDate: string): Promise<boolean> {
+  if (!APP_URL) {
+    console.error('[Reminder Cron] NEXT_PUBLIC_APP_URL nicht gesetzt');
+    return false;
+  }
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email/reminder`, {
+    const res = await fetch(`${APP_URL}/api/email/reminder`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to, domain, scanDate }),

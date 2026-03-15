@@ -4,11 +4,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import ActionPlan from '@/components/ActionPlan';
 import { supabase } from '@/lib/supabase';
 import { PageWrapper } from '../components/PageWrapper';
 
-const ADMIN_EMAIL = 'richard.rickli69@gmail.com';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'richard.rickli69@gmail.com';
 
 const G = {
   green: '#22c55e',
@@ -55,7 +56,7 @@ interface Subscription {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
@@ -88,7 +89,7 @@ export default function DashboardPage() {
     if (policiesData) setPolicies(policiesData);
 
     const { data: auditData } = await supabase
-      .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);
+      .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(3);
     if (auditData) setAuditLog(auditData);
 
     const { data: subData } = await supabase

@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover',
-});
-
 const ONE_TIME_PRICES: Record<string, number> = {
   impressum: 1900,
   starter: 7900,
@@ -18,6 +14,12 @@ const ONE_TIME_NAMES: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    return NextResponse.json({ error: 'Stripe nicht konfiguriert' }, { status: 500 });
+  }
+  const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.clover' });
+
   try {
     const { product, userId, userEmail } = await req.json();
     const plan = product as string;
@@ -27,7 +29,6 @@ export async function POST(req: NextRequest) {
     }
 
     const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    console.log('baseUrl:', baseUrl);
 
     let line_items: Stripe.Checkout.SessionCreateParams.LineItem[];
     let mode: Stripe.Checkout.SessionCreateParams.Mode;

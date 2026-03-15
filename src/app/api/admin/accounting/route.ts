@@ -8,6 +8,20 @@
 
 import { NextResponse } from 'next/server';
 
+interface StripeCharge {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created: number;
+  billing_details?: { email?: string };
+  customer?: string;
+}
+
+interface StripeSubscription {
+  plan?: { amount?: number };
+}
+
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_API = 'https://api.stripe.com/v1';
 
@@ -37,7 +51,7 @@ async function getAccountingData() {
 
   // Umsatz total
   const totalRevenue = charges.reduce(
-    (sum: number, c: any) => sum + c.amount, 0
+    (sum: number, c: StripeCharge) => sum + c.amount, 0
   ) / 100;
 
   // Umsatz pro Monat (letzte 12 Monate)
@@ -48,7 +62,7 @@ async function getAccountingData() {
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     revenuePerMonth[key] = 0;
   }
-  charges.forEach((c: any) => {
+  charges.forEach((c: StripeCharge) => {
     const d = new Date(c.created * 1000);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (key in revenuePerMonth) {
@@ -60,7 +74,7 @@ async function getAccountingData() {
   const planCount: Record<string, number> = {
     FREE: 0, STARTER: 0, PROFESSIONAL: 0, ENTERPRISE: 0,
   };
-  subscriptions.forEach((sub: any) => {
+  subscriptions.forEach((sub: StripeSubscription) => {
     const amount = sub.plan?.amount ?? 0;
     if (amount === 0)          planCount.FREE++;
     else if (amount <= 7900)   planCount.STARTER++;
@@ -69,7 +83,7 @@ async function getAccountingData() {
   });
 
   // Letzte 10 Zahlungen
-  const recentPayments = charges.slice(0, 10).map((c: any) => ({
+  const recentPayments = charges.slice(0, 10).map((c: StripeCharge) => ({
     id:       c.id,
     amount:   c.amount / 100,
     currency: c.currency.toUpperCase(),
@@ -80,7 +94,7 @@ async function getAccountingData() {
 
   // MRR
   const mrr = subscriptions.reduce(
-    (sum: number, sub: any) => sum + (sub.plan?.amount ?? 0), 0
+    (sum: number, sub: StripeSubscription) => sum + (sub.plan?.amount ?? 0), 0
   ) / 100;
 
   return {

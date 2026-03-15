@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
       }
 
       // ── Einmalkauf (payment mode) ──────────────────────────────────────
-      await supabaseAdmin.from('subscriptions').upsert({
+      const { error: subUpsertError } = await supabaseAdmin.from('subscriptions').upsert({
         ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
         email: customerEmail ?? null,
         plan,
@@ -202,6 +202,9 @@ export async function POST(request: NextRequest) {
         purchased_at: createdAt.toISOString(),
         created_at: new Date().toISOString(),
       }, { onConflict: resolvedUserId ? 'user_id' : 'email' });
+      if (subUpsertError) {
+        console.error('[Webhook] subscriptions-Upsert Fehler:', subUpsertError.message);
+      }
 
       const { error: userUpsertError } = resolvedUserId
         ? await supabaseAdmin.from('users').upsert({ id: resolvedUserId, email: customerEmail ?? '', subscription_tier: plan }, { onConflict: 'id' })
@@ -317,7 +320,7 @@ export async function POST(request: NextRequest) {
             <h2 style="color:#1a1a2e;">Zahlung fehlgeschlagen</h2>
             <p style="color:#555566;">Die Zahlung für Ihr Dataquard AI-Trust Abo konnte nicht verarbeitet werden. Bitte aktualisieren Sie Ihre Zahlungsmethode.</p>
             <a href="https://dataquard.ch/dashboard" style="display:inline-block;background:#22c55e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Zahlungsmethode aktualisieren →</a>
-            <p style="color:#888899;font-size:12px;margin-top:24px;">Dataquard · Basel, Schweiz · <a href="https://dataquard.ch" style="color:#888899;">dataquard.ch</a></p>
+            <p style="color:#888899;font-size:12px;margin-top:24px;">Dataquard · Reinach BL, Schweiz · <a href="https://dataquard.ch" style="color:#888899;">dataquard.ch</a></p>
           </div>`,
         });
         console.log(`[Webhook] Zahlungsfehlschlag-E-Mail gesendet an: ${customerEmail}`);
@@ -400,7 +403,7 @@ function generateAiTrustEmailHtml({ userEmail, amount, currency }: { userEmail: 
         <tr>
           <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
             <p style="margin:0;font-size:12px;color:#9ca3af;">
-              © 2026 Dataquard · Basel, Schweiz<br/>
+              © 2026 Dataquard · Reinach BL, Schweiz<br/>
               <a href="https://dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a> &nbsp;·&nbsp;
               <a href="https://dataquard.ch/impressum" style="color:#9ca3af;">Impressum</a>
             </p>
@@ -536,7 +539,7 @@ function generateEmailHtml({
           <tr>
             <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
-                © 2026 Dataquard · Richard Rickli · Basel, Schweiz<br/>
+                © 2026 Dataquard · Richard Rickli · Reinach BL, Schweiz<br/>
                 <a href="https://dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
                 &nbsp;·&nbsp;
                 <a href="https://dataquard.ch/impressum-generator" style="color:#9ca3af;">Impressum</a>

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { performExtendedScan } from '@/lib/extendedScanner';
+import { sendRescanChangeEmail } from '@/lib/emailService';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -66,18 +67,7 @@ export async function GET(request: NextRequest) {
         if (hasChanges) {
           const email = userEmailMap.get(scan.user_id);
           if (email) {
-            await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/email/send`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type:            'rescan-change',
-                email,
-                domain:          scan.domain,
-                addedTrackers,
-                removedTrackers,
-              }),
-            });
-            console.log(`[Rescan] ✅ Änderungs-E-Mail gesendet an ${email} für ${scan.domain}`);
+            await sendRescanChangeEmail({ email, domain: scan.domain, addedTrackers, removedTrackers });
           }
           results.changed++;
         }

@@ -12,10 +12,14 @@ const RATE_LIMIT = 3;
 const WINDOW_MS = 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
-  console.log('[scan] Authorization header:', request.headers.get('authorization')?.substring(0, 30));
   // Rate limiting for unauthenticated requests
   const authHeader = request.headers.get('authorization');
   const isAuthenticated = authHeader?.startsWith('Bearer ');
+  // Alte Einträge bereinigen (Memory Leak verhindern)
+  const nowClean = Date.now();
+  for (const [ip, data] of ipScanMap.entries()) {
+    if (nowClean > data.resetAt) ipScanMap.delete(ip);
+  }
   if (!isAuthenticated) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     const now = Date.now();
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest) {
       let userId: string | null = null;
       let rescanEnabled = false;
       if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.slice(7);
+        const token = authHeader.slice(7).trim();
         // Anon-Key-Client für JWT-Verifikation verwenden (zuverlässiger als Admin-Client)
         const { createClient } = await import('@supabase/supabase-js');
         const supabaseVerify = createClient(
@@ -89,7 +93,6 @@ export async function POST(request: NextRequest) {
           { auth: { autoRefreshToken: false, persistSession: false } }
         );
         const { data: { user }, error: authError } = await supabaseVerify.auth.getUser(token);
-        console.log('[auth] getUser result:', user?.id ?? null, authError?.message ?? null);
         if (!authError && user?.id) {
           userId = user.id;
           // Rescan aktivieren wenn User aktive Subscription hat
@@ -120,7 +123,6 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('[saveScan] Supabase Fehler:', error.message, error.details);
       } else {
-        console.log('[saveScan] ✅ Gespeichert:', data);
         if (userId) {
           await logAudit({
             user_id: userId,
