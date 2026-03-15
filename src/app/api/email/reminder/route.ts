@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'to und domain erforderlich' }, { status: 400 });
     }
     const { data, error } = await resend.emails.send({
-      from:    'Dataquard <noreply@dataquard.ch>',
+      from:    'Dataquard <info@dataquard.ch>',
       to:      [to],
       subject: `⚠️ ${domain} – Ihre Datenschutzerklärung fehlt noch`,
       html:    reminderEmailHtml(domain, scanDate ?? new Date().toISOString()),

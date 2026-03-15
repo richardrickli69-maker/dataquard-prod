@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Sofort erste E-Mail senden
     await resend.emails.send({
-      from: 'Dataquard <noreply@dataquard.ch>',
+      from: 'Dataquard <info@dataquard.ch>',
       to: email,
       subject: `Ihr Scan-Ergebnis für ${domain} – Handlungsbedarf`,
       html: `

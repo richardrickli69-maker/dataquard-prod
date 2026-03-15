@@ -18,7 +18,7 @@ export interface WelcomeEmailParams {
 export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId }: PolicyReadyEmailParams) {
   try {
     const result = await getResend().emails.send({
-      from: 'noreply@dataquard.ch',
+      from: 'info@dataquard.ch',
       to: email,
       subject: '🎉 Ihre Datenschutzerklärung ist bereit!',
       html: `
@@ -52,7 +52,7 @@ export async function sendWelcomeEmail({ email, name }: WelcomeEmailParams) {
   const greeting = safeDisplayName ? `Hallo ${safeDisplayName},` : 'Hallo,';
   try {
     const result = await getResend().emails.send({
-      from: 'noreply@dataquard.ch',
+      from: 'info@dataquard.ch',
       to: email,
       subject: '👋 Willkommen bei Dataquard!',
       html: `
@@ -97,7 +97,7 @@ export async function sendRescanChangeEmail({ email, domain, addedTrackers, remo
     : '';
   try {
     const result = await getResend().emails.send({
-      from: 'noreply@dataquard.ch',
+      from: 'info@dataquard.ch',
       to: email,
       subject: `🔄 Änderung erkannt auf ${domain} – Datenschutzerklärung prüfen`,
       html: `
@@ -136,7 +136,7 @@ export async function sendRescanChangeEmail({ email, domain, addedTrackers, remo
 export async function sendReminderEmail(email: string) {
   try {
     const result = await getResend().emails.send({
-      from: 'noreply@dataquard.ch',
+      from: 'info@dataquard.ch',
       to: email,
       subject: '⚠️ Sie haben eine Compliance-Lücke?',
       html: `

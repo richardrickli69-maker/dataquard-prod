@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
           ]);
 
           await resend.emails.send({
-            from: 'Dataquard <noreply@dataquard.ch>',
+            from: 'Dataquard <info@dataquard.ch>',
             to: customerEmail,
             subject: '🤖 Ihr AI-Trust Abo ist aktiv – Dataquard',
             html: generateAiTrustEmailHtml({ userEmail: customerEmail, amount: amountTotal, currency }),
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
         ]);
 
         const { error: emailError } = await resend.emails.send({
-          from: 'Dataquard <noreply@dataquard.ch>',
+          from: 'Dataquard <info@dataquard.ch>',
           to: customerEmail,
           subject: `Ihre Rechnung ${invoiceNumber} – Dataquard ${planLabel}`,
           html: generateEmailHtml({ planLabel, amount: amountTotal, currency, invoiceNumber, formattedDate, userEmail: customerEmail }),
@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
 
       if (customerEmail) {
         await resend.emails.send({
-          from: 'Dataquard <noreply@dataquard.ch>',
+          from: 'Dataquard <info@dataquard.ch>',
           to: customerEmail,
           subject: '⚠️ Zahlung fehlgeschlagen – AI-Trust Abo',
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
