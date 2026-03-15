@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import ActionPlan from '@/components/ActionPlan';
@@ -185,10 +184,10 @@ export default function DashboardPage() {
             <p style={{ color: G.textMuted, fontSize: 13 }}>{user?.email}</p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Image src="/suche.png" alt="" width={14} height={14} /> Scannen</Link>
-            <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 8, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Image src="/diagramm.png" alt="" width={14} height={14} /> Upgrade</Link>
+            <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/suche.png" alt="" width={14} height={14} /> Scannen</Link>
+            <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 8, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/diagramm.png" alt="" width={14} height={14} /> Upgrade</Link>
             {user?.email === ADMIN_EMAIL && (
-              <Link href="/admin" style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Image src="/energie.png" alt="" width={14} height={14} /> Admin</Link>
+              <Link href="/admin" style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/energie.png" alt="" width={14} height={14} /> Admin</Link>
             )}
             <button
               onClick={async () => { await supabase.auth.signOut(); router.push('/auth'); }}
@@ -212,7 +211,7 @@ export default function DashboardPage() {
                 {(stat.icon as string).startsWith('/')
                   ? ((stat.icon as string).endsWith('.svg')
                       ? <img src={stat.icon as string} alt={stat.label} width={22} height={22} style={{ display: 'inline-block' }} />
-                      : <Image src={stat.icon as string} alt={stat.label} width={22} height={22} style={{ display: 'inline-block' }} />)
+                      : <img src={stat.icon as string} alt={stat.label} width={22} height={22} style={{ display: 'inline-block' }} />)
                   : <span style={{ fontSize: 22 }}>{stat.icon}</span>}
               </div>
               <div style={{ fontSize: 18, fontWeight: 800, color: G.green }}>{stat.value}</div>
@@ -244,7 +243,7 @@ export default function DashboardPage() {
               {tab.icon.startsWith('/')
                 ? (tab.icon.endsWith('.svg')
                     ? <img src={tab.icon} alt="" width={16} height={16} style={{ display: 'inline-block', opacity: activeTab === tab.key ? 1 : 0.7 }} />
-                    : <Image src={tab.icon} alt="" width={16} height={16} style={{ display: 'inline-block', opacity: activeTab === tab.key ? 1 : 0.7 }} />)
+                    : <img src={tab.icon} alt="" width={16} height={16} style={{ display: 'inline-block', opacity: activeTab === tab.key ? 1 : 0.7 }} />)
                 : <span>{tab.icon}</span>}
               {tab.label}
             </button>
@@ -255,16 +254,16 @@ export default function DashboardPage() {
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={card}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/flug.png" alt="" width={18} height={18} /> Quick Actions</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/flug.png" alt="" width={18} height={18} /> Quick Actions</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-                <Link href="/scanner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.green, color: '#fff', borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><Image src="/suche.png" alt="" width={16} height={16} /> Website scannen</Link>
-                <Link href="/datenschutz-generator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><Image src="/dokument.png" alt="" width={16} height={16} /> Datenschutz erstellen</Link>
-                <Link href="/impressum-generator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><Image src="/dokument.png" alt="" width={16} height={16} /> Impressum erstellen</Link>
+                <Link href="/scanner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.green, color: '#fff', borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><img src="/suche.png" alt="" width={16} height={16} /> Website scannen</Link>
+                <Link href="/datenschutz-generator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><img src="/dokument.png" alt="" width={16} height={16} /> Datenschutz erstellen</Link>
+                <Link href="/impressum-generator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: G.bgLight, color: G.text, border: `1px solid ${G.border}`, borderRadius: 10, textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}><img src="/dokument.png" alt="" width={16} height={16} /> Impressum erstellen</Link>
               </div>
             </div>
             {auditLog.length > 0 && (
               <div style={card}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/zeit.png" alt="" width={18} height={18} /> Letzte Aktivität</h2>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/zeit.png" alt="" width={18} height={18} /> Letzte Aktivität</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {auditLog.slice(0, 3).map((entry, i) => (
                     <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 2 ? `1px solid ${G.border}` : 'none' }}>
@@ -364,7 +363,7 @@ export default function DashboardPage() {
               <div style={{ ...card, textAlign: 'center', padding: 48 }}>
                 <p style={{ color: G.textMuted, marginBottom: 16 }}>Noch kein Scan vorhanden – scannen Sie zuerst Ihre Website.</p>
                 <Link href="/scanner" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <Image src="/suche.png" alt="" width={16} height={16} /> Website scannen →
+                  <img src="/suche.png" alt="" width={16} height={16} /> Website scannen →
                 </Link>
               </div>
             )}
@@ -486,7 +485,7 @@ export default function DashboardPage() {
                       href="/scanner"
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, color: '#22c55e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}
                     >
-                      <Image src="/suche.png" alt="" width={14} height={14} /> Neuen KI-Scan starten →
+                      <img src="/suche.png" alt="" width={14} height={14} /> Neuen KI-Scan starten →
                     </Link>
                   </div>
                 </div>
