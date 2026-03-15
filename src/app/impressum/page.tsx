@@ -36,7 +36,7 @@ export default function ImpressumPage() {
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#22c55e', marginBottom: 12 }}>Kontakt</h2>
           <div style={{ color: '#555566', lineHeight: 1.9, fontSize: 14 }}>
             <p><span style={{ color: '#888899' }}>E-Mail: </span>
-              <a href="mailto:richard@dataquard.ch" style={{ color: '#22c55e', textDecoration: 'none' }}>richard@dataquard.ch</a>
+              <a href="mailto:info@dataquard.ch" style={{ color: '#22c55e', textDecoration: 'none' }}>info@dataquard.ch</a>
             </p>
             <p><span style={{ color: '#888899' }}>Website: </span>
               <a href="https://dataquard.ch" style={{ color: '#22c55e', textDecoration: 'none' }}>https://dataquard.ch</a>

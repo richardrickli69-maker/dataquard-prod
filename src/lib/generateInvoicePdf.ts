@@ -56,8 +56,12 @@ export async function generateInvoicePdf(params: {
     const logoRes = await fetch('https://dataquard.ch/logo.png', { signal: logoController.signal })
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
-    const logoDims = logoImage.scale(0.12)
-    page.drawImage(logoImage, { x: 50, y: height - 86, width: logoDims.width, height: logoDims.height })
+    const logoMaxWidth = 120
+    const logoMaxHeight = 50
+    const logoScale = Math.min(logoMaxWidth / logoImage.width, logoMaxHeight / logoImage.height)
+    const logoWidth = logoImage.width * logoScale
+    const logoHeight = logoImage.height * logoScale
+    page.drawImage(logoImage, { x: 50, y: height - 40 - logoHeight, width: logoWidth, height: logoHeight })
   } catch {
     page.drawText('Data', { x: 50, y: height - 60, size: 22, font: bold, color: green })
     page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: darkGreen })
@@ -75,7 +79,7 @@ export async function generateInvoicePdf(params: {
   page.drawLine({ start: { x: 50, y: height - 100 }, end: { x: width - 50, y: height - 100 }, thickness: 1, color: lightgray })
 
   // Absender
-  page.drawText('Richard Rickli · Gstadstrasse 53 · 4153 Reinach BL · Schweiz · richard@dataquard.ch', {
+  page.drawText('Richard Rickli · Gstadstrasse 53 · 4153 Reinach BL · Schweiz · info@dataquard.ch', {
     x: 50, y: height - 120, size: 8.5, font, color: gray,
   })
 
@@ -151,7 +155,7 @@ export async function generateInvoicePdf(params: {
 
   // Footer
   page.drawLine({ start: { x: 50, y: 55 }, end: { x: width - 50, y: 55 }, thickness: 0.5, color: lightgray })
-  page.drawText('dataquard.ch · richard@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
+  page.drawText('dataquard.ch · info@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
   page.drawText('Einzelunternehmen · Reinach BL · Schweiz', { x: 320, y: 40, size: 8.5, font, color: gray })
 
   const pdfBytes = await pdfDoc.save()

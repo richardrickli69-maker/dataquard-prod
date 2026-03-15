@@ -202,7 +202,7 @@ export default function DashboardPage() {
             { label: 'Policies', value: policies.length, icon: '📄' },
             { label: 'Letzter Scan', value: latestScan ? new Date().toLocaleDateString('de-CH') : '–', icon: '🔍' },
             { label: 'Plan', value: subscription?.plan?.toUpperCase() || 'FREE', icon: '💳' },
-            { label: 'Badges', value: badges.length, icon: '🛡️' },
+            { label: 'Aktive Abos', value: (subscription?.plan ? 1 : 0) + (subscription?.ai_trust_active ? 1 : 0), icon: '🛡️' },
           ].map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
               <div style={{ fontSize: 22, marginBottom: 4 }}>{stat.icon}</div>

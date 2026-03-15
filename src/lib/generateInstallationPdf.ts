@@ -51,8 +51,12 @@ export async function generateInstallationPdf(params: {
     const logoRes = await fetch('https://dataquard.ch/logo.png', { signal: logoController.signal })
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
-    const logoDims = logoImage.scale(0.12)
-    page.drawImage(logoImage, { x: 50, y: height - 100, width: logoDims.width, height: logoDims.height })
+    const logoMaxWidth = 120
+    const logoMaxHeight = 50
+    const logoScale = Math.min(logoMaxWidth / logoImage.width, logoMaxHeight / logoImage.height)
+    const logoWidth = logoImage.width * logoScale
+    const logoHeight = logoImage.height * logoScale
+    page.drawImage(logoImage, { x: 50, y: height - 40 - logoHeight, width: logoWidth, height: logoHeight })
   } catch {
     page.drawText('Data', { x: 50, y: height - 70, size: 22, font: bold, color: green })
     page.drawText('quard', { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 70, size: 22, font: bold, color: darkGreen })
@@ -212,7 +216,7 @@ export async function generateInstallationPdf(params: {
     }
 
     // Schritt 4: KI-Compliance
-    y -= 20
+    y -= 12
     page.drawRectangle({ x: 50, y: y - 2, width: 22, height: 22, color: green })
     page.drawText('4', { x: 58, y: y + 5, size: 11, font: bold, color: white })
     page.drawText('KI-Compliance (EU AI Act Art. 50)', { x: 80, y: y + 5, size: 12, font: bold, color: black })
@@ -229,7 +233,7 @@ export async function generateInstallationPdf(params: {
     }
 
     // Abschluss-Box
-    y -= 20
+    y -= 12
     page.drawRectangle({ x: 50, y: y - 10, width: width - 100, height: 36, color: lightGreenBg })
     page.drawText('Fertig! Ihre Website ist jetzt rechtssicher nach nDSG, DSGVO und EU AI Act Art. 50.', {
       x: 60, y: y + 12, size: 10, font: bold, color: darkGreen,
@@ -239,7 +243,7 @@ export async function generateInstallationPdf(params: {
 
   // Footer (beide Varianten)
   page.drawLine({ start: { x: 50, y: 55 }, end: { x: width - 50, y: 55 }, thickness: 0.5, color: lightgray })
-  page.drawText('dataquard.ch — richard@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
+  page.drawText('dataquard.ch — info@dataquard.ch', { x: 50, y: 40, size: 8.5, font, color: gray })
   page.drawText('Einzelunternehmen — Reinach BL — Schweiz', { x: 320, y: 40, size: 8.5, font, color: gray })
 
   const pdfBytes = await pdfDoc.save()
