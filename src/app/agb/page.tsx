@@ -82,7 +82,7 @@ export default function AGBPage() {
               <p>Dataquard stellt Werkzeuge und Vorlagen zur Unterstützung bei der Datenschutz-Compliance bereit. Unsere generierten Dokumente basieren auf juristisch validierten Textbausteinen.</p>
               <p><strong style={{ color: G.text }}>Dataquard ersetzt keine individuelle Rechtsberatung.</strong> Für rechtsverbindliche Prüfungen und spezifische rechtliche Situationen empfehlen wir die Konsultation eines qualifizierten Datenschutzanwalts.</p>
               <p>Dataquard übernimmt keine Haftung für Schäden, die durch die Verwendung der generierten Dokumente entstehen, sofern diese nicht dem Schweizer Recht entsprechen sollten.</p>
-              <p>Bei Fragen wenden Sie sich an: <span style={{ color: G.green }}>legal@dataquard.ch</span></p>
+              <p>Bei Fragen wenden Sie sich an: <span style={{ color: G.green }}>support@dataquard.ch</span></p>
             </div>
           </div>
 
