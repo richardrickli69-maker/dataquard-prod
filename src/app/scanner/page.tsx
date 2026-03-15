@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { PageWrapper } from '../components/PageWrapper';
 
@@ -63,7 +64,10 @@ const jurisdictionStyle = (j: string): React.CSSProperties => {
   return { color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' };
 };
 
-const jurisdictionEmoji = (j: string) => j === 'nDSG' ? '🟢' : j === 'DSGVO' ? '🟡' : '🔴';
+function JurisdictionIcon({ j }: { j: string }) {
+  const src = j === 'nDSG' ? '/gruener-kreis.png' : j === 'DSGVO' ? '/gelber-kreis.png' : '/roter-kreis.png';
+  return <Image src={src} alt={j} width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />;
+}
 
 const scoreColor = (score: number) => score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
 const scoreLabel = (score: number) => score >= 70 ? 'Gut' : score >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
@@ -85,9 +89,19 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
             style={{ transition: 'stroke-dashoffset 1s ease' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          {({ '🔒': '/icon-sicherheit.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[icon]
-            ? <img src={({ '🔒': '/icon-sicherheit.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[icon]} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />
-            : <span style={{ fontSize: 14 }}>{icon}</span>}
+          {((): React.ReactNode => {
+            const scoreIconMap: Record<string, string> = {
+              '🔒': '/gruener-kreis.png',
+              '⚡': '/flug.png',
+              '✅': '/energie.png',
+              '🤖': '/badge-ai-trust.svg',
+            };
+            const src = scoreIconMap[icon];
+            if (!src) return <span style={{ fontSize: 14 }}>{icon}</span>;
+            return src.endsWith('.svg')
+              ? <img src={src} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />
+              : <Image src={src} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />;
+          })()}
           <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>{score}%</span>
         </div>
       </div>
@@ -220,7 +234,7 @@ export default function ScannerPage() {
                   <span style={{ width: 16, height: 16, border: `2px solid ${G.green}`, borderTop: '2px solid transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
                   Analyse läuft…
                 </>
-              ) : '🚀 Analyse starten'}
+              ) : <><Image src="/suche.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Analyse starten</>}
             </button>
           </div>
           {error && <p style={{ marginTop: 10, color: G.red, fontSize: 13 }}>{error}</p>}
@@ -242,17 +256,31 @@ export default function ScannerPage() {
                 { icon: '📄', title: 'Impressum', desc: 'Vollständigkeit, Pflichtangaben nach nDSG/DSGVO' },
                 { icon: '🎯', title: 'Empfehlungen', desc: 'Konkrete Schritte zur Verbesserung' },
                 { icon: '🤖', title: 'AI-Trust', desc: 'KI-Bild-Erkennung, Deepfake-Check, EU AI Act Art. 50' },
-              ].map(item => (
+              ].map(item => {
+                const featureIconMap: Record<string, string> = {
+                  '🔒': '/gruener-kreis.png',
+                  '🛡️': '/icon-schutz.png',
+                  '✅': '/energie.png',
+                  '🤖': '/badge-ai-trust.svg',
+                  '⚡': '/flug.png',
+                  '📄': '/dokument.png',
+                  '🎯': '/ziel.png',
+                };
+                const iconSrc = featureIconMap[item.icon];
+                return (
                 <div key={item.title} style={{ display: 'flex', gap: 12, padding: 12, background: G.bgLight, borderRadius: 10 }}>
-                  {({ '🔒': '/icon-sicherheit.png', '🛡️': '/icon-schutz.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[item.icon]
-                    ? <img src={({ '🔒': '/icon-sicherheit.png', '🛡️': '/icon-schutz.png', '✅': '/icon-verifiziert.png', '🤖': '/badge-ai-trust.svg' } as Record<string,string>)[item.icon]} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />
+                  {iconSrc
+                    ? (iconSrc.endsWith('.svg')
+                        ? <img src={iconSrc} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />
+                        : <Image src={iconSrc} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />)
                     : <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>}
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 2 }}>{item.title}</p>
                     <p style={{ fontSize: 12, color: G.textSec }}>{item.desc}</p>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         )}
@@ -271,7 +299,7 @@ export default function ScannerPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...jurisdictionStyle(result.jurisdiction) }}>
-              {jurisdictionEmoji(result.jurisdiction)} Jurisdiktion: {result.jurisdiction}
+              <JurisdictionIcon j={result.jurisdiction} /> Jurisdiktion: {result.jurisdiction}
             </div>
 
             {/* Scores */}
@@ -287,7 +315,7 @@ export default function ScannerPage() {
 
             {/* Findings */}
             <div style={card}>
-              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>📊 Befunde</h2>
+              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/diagramm.png" alt="Befunde" width={16} height={16} /> Befunde</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {[
                   { label: 'Datenschutzerklärung', ok: result.findings.datenschutz, bad: '❌ Fehlt – Pflicht nach nDSG/DSGVO!', good: '✅ Vorhanden' },
@@ -330,7 +358,7 @@ export default function ScannerPage() {
             {/* Recommendations */}
             {result.recommendations.length > 0 && (
               <div style={card}>
-                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>🎯 Empfehlungen</h2>
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/ziel.png" alt="Empfehlungen" width={16} height={16} /> Empfehlungen</h2>
                 <ol style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.recommendations.map((rec, i) => (
                     <li key={i} style={{ fontSize: 13, color: G.textSec, display: 'flex', gap: 12 }}>

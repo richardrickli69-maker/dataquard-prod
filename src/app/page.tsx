@@ -6,20 +6,34 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageWrapper } from './components/PageWrapper';
 
-// Mapping: Emoji → Custom Icon Pfad
+// Mapping: Emoji → Custom Icon Pfad (alle neuen Icons eingebunden)
 const ICON_MAP: Record<string, string> = {
   '⚖️': '/icon-recht.png',
   '🛡️': '/icon-schutz.png',
   '🤖': '/badge-ai-trust.svg',
-  '✅': '/icon-verifiziert.png',
+  '✅': '/checkmark.png',
   '🔒': '/icon-sicherheit.png',
   '🔄': '/icon-rueckfuehrung.png',
   '↩️': '/icon-rueckfuehrung.png',
   '💳': '/icon-zahlung.png',
+  '⚡': '/flug.png',
+  '🔍': '/suche.png',
+  '🚦': '/verkehr.png',
+  '⚠️': '/warnung.png',
+  '📊': '/diagramm.png',
+  '📄': '/dokument.png',
+  '🎯': '/ziel.png',
+  '🏠': '/haus.png',
+  '⏱': '/uhr.png',
+  '🟢': '/gruener-kreis.png',
+  '🟡': '/gelber-kreis.png',
+  '🔴': '/roter-kreis.png',
+  '📋': '/ablage.png',
 };
 
 function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
@@ -33,9 +47,12 @@ function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
     );
   }
   const src = ICON_MAP[ic];
-  return src
-    ? <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
-    : <span style={{ fontSize: size * 0.87 }}>{ic}</span>;
+  if (!src) return <span style={{ fontSize: size * 0.87 }}>{ic}</span>;
+  // SVGs direkt als img rendern (next/image optimiert keine SVGs)
+  if (src.endsWith('.svg')) {
+    return <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
+  }
+  return <Image src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
 }
 
 const G = {
@@ -175,7 +192,7 @@ export default function HomePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={14} /> Daten in Zürich</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={14} /> nDSG/DSGVO</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={14} /> AI-Trust</span>
-          <span>⏱ Ergebnis in 60 Sek.</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={14} /> Ergebnis in 60 Sek.</span>
         </div>
       </section>
 
@@ -225,10 +242,10 @@ export default function HomePage() {
             ))}
           </div>
           <div style={{ background: G.bgLight, borderRadius: 12, padding: '14px 16px', fontSize: 12, color: G.textSec, lineHeight: 1.8 }}>
-            <div>🟢 <strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
-            <div>🟡 <strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
-            <div>🔴 <strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
-            <div>🟡 <strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><Image src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><Image src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><Image src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
           </div>
         </div>
       </section>
@@ -365,7 +382,7 @@ export default function HomePage() {
         <div className="impressum-cta-inner" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: '28px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: 24 }}>📄</span>
+              <Image src="/dokument.png" alt="Dokument" width={32} height={32} />
               <h3 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>Impressum fehlt auf Ihrer Website?</h3>
             </div>
             <p style={{ fontSize: 13, color: '#991b1b' }}>Ein fehlendes Impressum ist eine Ordnungswidrigkeit – bis CHF 50&apos;000 Bussgeld möglich.</p>
@@ -412,7 +429,7 @@ export default function HomePage() {
             ].map(s => (
               <div key={s.n} style={{ textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', background: G.greenBg, border: `2px solid ${G.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 18, fontWeight: 900, color: G.green }}>{s.n}</div>
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{s.ic}</div>
+                <div style={{ marginBottom: 8 }}><IconEl ic={s.ic} size={48} /></div>
                 <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{s.t}</h3>
                 <p style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6 }}>{s.d}</p>
               </div>
@@ -509,8 +526,8 @@ export default function HomePage() {
               <div style={{ fontSize: 24, fontWeight: 900, color: pl.hl ? G.green : G.text, margin: '8px 0 2px' }}>{pl.p}</div>
               <div style={{ fontSize: 10, color: G.textMuted, marginBottom: 4 }}>{pl.s}</div>
               <div style={{ fontSize: 11, color: G.textSec, marginBottom: 14 }}>{pl.d}</div>
-              {pl.f.map(f => <div key={f} style={{ fontSize: 11, color: G.text, padding: '2px 0', display: 'flex', gap: 6 }}><span style={{ color: G.green }}>✓</span>{f}</div>)}
-              {pl.m.map(f => <div key={f} style={{ fontSize: 11, color: G.textMuted, padding: '2px 0', display: 'flex', gap: 6 }}><span>✗</span>{f}</div>)}
+              {pl.f.map(f => <div key={f} style={{ fontSize: 11, color: G.text, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/checkmark.png" alt="Verfügbar" width={14} height={14} style={{ flexShrink: 0 }} />{f}</div>)}
+              {pl.m.map(f => <div key={f} style={{ fontSize: 11, color: G.textMuted, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><Image src="/fehler.png" alt="Nicht verfügbar" width={14} height={14} style={{ flexShrink: 0, opacity: 0.45 }} />{f}</div>)}
               <Link href={pl.l} style={{ display: 'block', textAlign: 'center', marginTop: 16, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 12, textDecoration: 'none', background: pl.hl ? G.green : 'transparent', color: pl.hl ? '#fff' : G.green, border: pl.hl ? 'none' : `2px solid ${G.green}` }}>{pl.c}</Link>
             </div>
           ))}
