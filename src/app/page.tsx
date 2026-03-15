@@ -110,14 +110,14 @@ export default function HomePage() {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            NEU: AI-Trust Säule — KI-Bilder &amp; Deepfake-Erkennung nach EU AI Act Art. 50
+            NEU ab 2026: AI-Trust Säule — EU AI Act Art. 50 macht KI-Kennzeichnung zur Pflicht. Dataquard prüft Ihre Website automatisch auf KI-Bilder &amp; Deepfakes.
           </div>
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.redBg, border: `1px solid ${G.redBorder}`, fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 20, marginBottom: 28, color: G.red }}>
           ⚠ nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000
         </div>
         <h1 style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text }}>
-          Ihre Website ist{' '}
+          Ihre KMU-Website ist{' '}
           <span style={{ color: G.green }}>nicht rechtskonform.</span>
           <br />
           <span style={{ fontSize: 34, fontWeight: 700, color: G.textSec }}>Wir ändern das — in 3 Minuten.</span>

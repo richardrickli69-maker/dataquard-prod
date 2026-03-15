@@ -349,13 +349,15 @@ function generateAiTrustEmailHtml({ userEmail, amount, currency }: { userEmail: 
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
         <tr>
           <td style="background:linear-gradient(135deg,#5b21b6,#7c3aed);padding:32px 40px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">🤖 Dataquard AI-Trust</div>
+            <div style="margin-bottom:12px;">
+              <img src="https://www.dataquard.ch/logo.png" alt="Dataquard" width="48" height="48" style="display:inline-block;vertical-align:middle;background:white;border-radius:8px;padding:4px;" />
+            </div>
+            <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Dataquard AI-Trust</div>
             <div style="color:#ddd6fe;font-size:13px;margin-top:4px;">KI-Überwachung. Dauerhaft. Automatisch.</div>
           </td>
         </tr>
         <tr>
           <td style="padding:40px 40px 24px;text-align:center;">
-            <div style="font-size:40px;margin-bottom:16px;">🤖</div>
             <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1a1a2e;">Ihr AI-Trust Abo ist aktiv!</h1>
             <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
               Ihre Website wird ab sofort laufend auf KI-generierte Inhalte überwacht.<br/>

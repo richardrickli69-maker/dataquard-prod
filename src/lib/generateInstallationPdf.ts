@@ -137,8 +137,8 @@ export async function generateInstallationPdf(params: {
       y -= 16
     }
 
-    // Abschluss-Box
-    y -= 20
+    // Abschluss-Box (60px Abstand damit Step-3-Inhalt nicht überdeckt wird)
+    y -= 60
     page.drawRectangle({ x: 50, y: y - 10, width: width - 100, height: 48, color: accentBg })
     page.drawText('Ihr AI-Trust Abo ist aktiv — EU AI Act Art. 50 konform.', {
       x: 60, y: y + 24, size: 10, font: bold, color: accentDark,
