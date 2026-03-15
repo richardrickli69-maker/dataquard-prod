@@ -43,7 +43,7 @@ export default function DatenschutzPage() {
             <strong style={{ color: G.text }}>Richard Rickli</strong><br />
             Dataquard<br />
             Basel-Region, Schweiz<br />
-            E-Mail: info@dataquard.ch<br />
+            E-Mail: datenschutz@dataquard.ch<br />
             Website: dataquard.ch
           </p>
         </Section>
@@ -102,7 +102,7 @@ export default function DatenschutzPage() {
             <li>Widerspruch gegen die Verarbeitung (Art. 30 nDSG / Art. 21 DSGVO)</li>
             <li>Datenübertragbarkeit (Art. 28 nDSG / Art. 20 DSGVO)</li>
           </ul>
-          <p style={{ marginTop: 8 }}>Kontakt: <a href="mailto:info@dataquard.ch" style={{ color: G.green }}>info@dataquard.ch</a></p>
+          <p style={{ marginTop: 8 }}>Kontakt: <a href="mailto:datenschutz@dataquard.ch" style={{ color: G.green }}>datenschutz@dataquard.ch</a></p>
         </Section>
 
         <Section title="8. Aufbewahrungsdauer">
