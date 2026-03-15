@@ -32,7 +32,7 @@ export default function AGBPage() {
 
           <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <span style={{ fontSize: 28 }}>🔒</span>
+              <img src="/icon-sicherheit.png" alt="Datenschutz" width={32} height={32} />
               <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>1. Datenschutz</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
@@ -45,7 +45,7 @@ export default function AGBPage() {
 
           <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <span style={{ fontSize: 28 }}>💳</span>
+              <img src="/icon-zahlung.png" alt="Zahlung" width={32} height={32} />
               <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>2. Zahlung</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
@@ -63,11 +63,11 @@ export default function AGBPage() {
 
           <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <span style={{ fontSize: 28 }}>↩️</span>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>3. 30 Tage Geld-zurück-Garantie</h2>
+              <img src="/icon-rueckfuehrung.png" alt="Geld-zurück" width={32} height={32} />
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>3. Geld-zurück-Garantie innerhalb von 14 Tagen</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
-              <p>Wir sind von unseren Produkten überzeugt. Wenn Sie aus irgendeinem Grund nicht zufrieden sind, erstatten wir Ihnen den vollen Kaufpreis – ohne Angabe von Gründen – innerhalb von 30 Tagen nach dem Kauf.</p>
+              <p>Wir sind von unseren Produkten überzeugt. Wenn Sie aus irgendeinem Grund nicht zufrieden sind, erstatten wir Ihnen den vollen Kaufpreis – ohne Angabe von Gründen – innerhalb von 14 Tagen nach dem Kauf.</p>
               <p>Für eine Rückerstattung wenden Sie sich einfach an: <span style={{ color: G.green }}>support@dataquard.ch</span></p>
               <p>Die Rückerstattung erfolgt auf das ursprüngliche Zahlungsmittel innerhalb von 5–10 Werktagen.</p>
             </div>
@@ -75,7 +75,7 @@ export default function AGBPage() {
 
           <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <span style={{ fontSize: 28 }}>⚖️</span>
+              <img src="/icon-recht.png" alt="Haftung" width={32} height={32} />
               <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>4. Haftung</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>

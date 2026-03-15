@@ -7,6 +7,15 @@ import { supabase } from '@/lib/supabase';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'richard.rickli69@gmail.com';
 
+interface RefundResult {
+  success?: boolean;
+  error?: string;
+  refund_id?: string;
+  status?: string;
+  amount?: number;
+  customer_email?: string;
+}
+
 interface Customer {
   id: string;
   email: string;
@@ -30,6 +39,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
+  const [refundPaymentId, setRefundPaymentId] = useState('');
+  const [refundReason, setRefundReason] = useState('');
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundResult, setRefundResult] = useState<RefundResult | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -77,6 +90,35 @@ export default function AdminDashboard() {
         totalPolicies: policyCount || 0,
         planBreakdown,
       });
+    }
+  };
+
+  const handleRefund = async () => {
+    if (!refundPaymentId.trim()) return;
+    if (!window.confirm(`Wirklich erstatten?\nPayment Intent: ${refundPaymentId}\nDies kann nicht rückgängig gemacht werden.`)) return;
+    setRefundLoading(true);
+    setRefundResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_intent_id: refundPaymentId.trim(),
+          reason: refundReason.trim() || 'Geld-zurück-Garantie (14 Tage)',
+          admin_email: session?.user?.email,
+        }),
+      });
+      const data: RefundResult = await res.json();
+      setRefundResult(data);
+      if (data.success) {
+        setRefundPaymentId('');
+        setRefundReason('');
+      }
+    } catch {
+      setRefundResult({ error: 'Verbindungsfehler' });
+    } finally {
+      setRefundLoading(false);
     }
   };
 
@@ -170,6 +212,43 @@ export default function AdminDashboard() {
         <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
           <Link href="/dashboard/analytics" style={{ padding: '10px 20px', background: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>📊 Analytics Detail</Link>
           <Link href="/dashboard/accounting" style={{ padding: '10px 20px', background: '#3b82f6', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>💰 Accounting Detail</Link>
+        </div>
+
+        {/* Rückerstattung */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e4ea', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            💶 Rückerstattung (14 Tage Garantie)
+          </h2>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+            <input
+              type="text"
+              value={refundPaymentId}
+              onChange={(e) => setRefundPaymentId(e.target.value)}
+              placeholder="Stripe Payment Intent ID (pi_...)"
+              style={{ flex: 1, minWidth: 260, background: '#f8f9fb', border: '1px solid #e2e4ea', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#1a1a2e', outline: 'none', fontFamily: 'monospace' }}
+            />
+            <input
+              type="text"
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              placeholder="Grund (optional)"
+              style={{ width: 200, background: '#f8f9fb', border: '1px solid #e2e4ea', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#1a1a2e', outline: 'none' }}
+            />
+            <button
+              onClick={handleRefund}
+              disabled={refundLoading || !refundPaymentId.trim()}
+              style={{ padding: '9px 20px', background: refundLoading ? '#e2e4ea' : '#ef4444', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: refundLoading ? 'default' : 'pointer' }}
+            >
+              {refundLoading ? '…' : 'Erstatten'}
+            </button>
+          </div>
+          {refundResult && (
+            <div style={{ padding: '10px 14px', borderRadius: 8, fontSize: 13, background: refundResult.success ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${refundResult.success ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`, color: refundResult.success ? '#166534' : '#991b1b' }}>
+              {refundResult.success
+                ? `✅ Erstattet: CHF ${refundResult.amount} · Refund ID: ${refundResult.refund_id} · Status: ${refundResult.status}${refundResult.customer_email ? ` · ${refundResult.customer_email}` : ''}`
+                : `❌ Fehler: ${refundResult.error}`}
+            </div>
+          )}
         </div>
 
         {/* Kundenliste */}

@@ -51,8 +51,8 @@ export async function generateInstallationPdf(params: {
     const logoRes = await fetch('https://www.dataquard.ch/logo.png', { signal: logoController.signal })
     const logoBuffer = await logoRes.arrayBuffer()
     const logoImage = await pdfDoc.embedPng(logoBuffer)
-    const logoMaxWidth = 120
-    const logoMaxHeight = 50
+    const logoMaxWidth = 160
+    const logoMaxHeight = 65
     const logoScale = Math.min(logoMaxWidth / logoImage.width, logoMaxHeight / logoImage.height)
     const logoWidth = logoImage.width * logoScale
     const logoHeight = logoImage.height * logoScale

@@ -10,6 +10,25 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageWrapper } from './components/PageWrapper';
 
+// Mapping: Emoji → Custom Icon Pfad
+const ICON_MAP: Record<string, string> = {
+  '⚖️': '/icon-recht.png',
+  '🛡️': '/icon-schutz.png',
+  '🤖': '/badge-ai-trust.svg',
+  '✅': '/icon-verifiziert.png',
+  '🔒': '/icon-sicherheit.png',
+  '🔄': '/icon-rueckfuehrung.png',
+  '↩️': '/icon-rueckfuehrung.png',
+  '💳': '/icon-zahlung.png',
+};
+
+function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
+  const src = ICON_MAP[ic];
+  return src
+    ? <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+    : <span style={{ fontSize: size * 0.87 }}>{ic}</span>;
+}
+
 const G = {
   green: '#22c55e',
   greenBright: '#39FF14',
@@ -143,7 +162,11 @@ export default function HomePage() {
           </div>
         )}
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted, flexWrap: 'wrap' }}>
-          <span>🇨🇭 Schweizer Produkt</span><span>🔒 Daten in Zürich</span><span>⚖️ nDSG/DSGVO</span><span>🤖 AI-Trust</span><span>⏱ Ergebnis in 60 Sek.</span>
+          <span>🇨🇭 Schweizer Produkt</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={14} /> Daten in Zürich</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={14} /> nDSG/DSGVO</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={14} /> AI-Trust</span>
+          <span>⏱ Ergebnis in 60 Sek.</span>
         </div>
       </section>
 
@@ -157,7 +180,7 @@ export default function HomePage() {
             { i: '🤖', t: 'AI-Trust', s: 'KI-Bilder & Deepfake-Check' },
           ].map((b, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '8px 16px', borderRight: idx < 3 ? `1px solid ${G.border}` : 'none' }}>
-              <span style={{ fontSize: 26 }}>{b.i}</span>
+              <IconEl ic={b.i} size={26} />
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: G.text }}>{b.t}</div>
                 <div style={{ fontSize: 11, color: G.textMuted }}>{b.s}</div>
@@ -218,7 +241,7 @@ export default function HomePage() {
             <div key={c.t} style={{ background: G.bgWhite, borderRadius: 16, padding: 26, border: `1px solid ${G.border}`, position: 'relative', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.tag === 'KI-SICHERHEIT' ? `linear-gradient(90deg, ${G.violet}, transparent)` : `linear-gradient(90deg, ${G.green}, transparent)` }} />
               <span style={{ fontSize: 10, fontWeight: 700, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, letterSpacing: 2 }}>{c.tag}</span>
-              <div style={{ fontSize: 30, margin: '10px 0 6px' }}>{c.ic}</div>
+              <div style={{ margin: '10px 0 6px' }}><IconEl ic={c.ic} size={32} /></div>
               <h3 style={{ fontSize: 17, fontWeight: 800 }}>{c.t}</h3>
               <div style={{ fontSize: 12, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, marginBottom: 12, fontWeight: 600 }}>{c.s}</div>
               <p style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6, marginBottom: 14 }}>{c.d}</p>
@@ -288,7 +311,7 @@ export default function HomePage() {
               { ic: '🤖', t: 'KI-Bilder automatisch erkennen', d: 'Deepfakes und KI-generierte Inhalte auf Ihrer Website finden — EU AI Act konform.' },
             ].map(p => (
               <div key={p.t} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{p.ic}</span>
+                <span style={{ flexShrink: 0 }}><IconEl ic={p.ic} size={22} /></span>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{p.t}</div>
                   <div style={{ fontSize: 12, color: G.textSec, lineHeight: 1.5 }}>{p.d}</div>
@@ -359,7 +382,7 @@ export default function HomePage() {
             { ic: '⚡', n: '3 min', l: 'bis Ihre Website vollständig geschützt ist' },
           ].map(s => (
             <div key={s.n} style={{ background: G.bgWhite, borderRadius: 14, padding: 24, border: `1px solid ${G.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <div style={{ fontSize: 20, marginBottom: 6 }}>{s.ic}</div>
+              <div style={{ marginBottom: 6 }}><IconEl ic={s.ic} size={22} /></div>
               <div style={{ fontSize: 28, fontWeight: 900, color: G.green }}>{s.n}</div>
               <div style={{ fontSize: 12, color: G.textMuted, marginTop: 6, lineHeight: 1.5 }}>{s.l}</div>
             </div>
@@ -414,7 +437,7 @@ export default function HomePage() {
               { ic: '⚠️', t: 'Rechtlich angreifbar', d: 'Eine falsche DSE ist schlimmer als keine — sie beweist, dass Sie es versucht aber falsch gemacht haben.' },
             ].map(r => (
               <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>{r.ic}</span>
+                <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#991b1b', marginBottom: 2 }}>{r.t}</div>
                   <div style={{ fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, opacity: 0.85 }}>{r.d}</div>
@@ -430,7 +453,7 @@ export default function HomePage() {
           <div style={{ background: G.greenBg || 'rgba(34,197,94,0.04)', border: `1px solid ${G.green}33`, borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${G.green}, transparent)` }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>✅</span>
+              <IconEl ic="✅" size={24} />
               <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard — automatisch korrekt</h3>
             </div>
             {[
@@ -440,7 +463,7 @@ export default function HomePage() {
               { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14 — mit allen Pflichtangaben, die ein Jurist erwarten würde.' },
             ].map(r => (
               <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>{r.ic}</span>
+                <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: G.green, marginBottom: 2 }}>{r.t}</div>
                   <div style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6 }}>{r.d}</div>
@@ -492,7 +515,7 @@ export default function HomePage() {
           </p>
           <div style={{ maxWidth: 400, margin: '0 auto', padding: 28, borderRadius: 16, border: `2px solid ${G.violet}`, background: G.bgWhite, position: 'relative', boxShadow: `0 4px 24px ${G.violetBg}` }}>
             <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.violet, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1, whiteSpace: 'nowrap' }}>ADD-ON</div>
-            <div style={{ fontSize: 24, marginBottom: 6 }}>🤖</div>
+            <div style={{ marginBottom: 6 }}><IconEl ic="🤖" size={28} /></div>
             <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>AI-Trust Abo</h3>
             <div style={{ fontSize: 26, fontWeight: 900, color: G.violet, margin: '8px 0 2px' }}>CHF 99</div>
             <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 16 }}>pro Jahr</div>
@@ -553,11 +576,11 @@ export default function HomePage() {
             {[
               { ic: '🔒', t: 'Datenschutz', d: 'Daten auf Schweizer Servern. Nie an Dritte.' },
               { ic: '💳', t: 'Zahlung', d: 'Einmalkauf. Keine Verlängerung.' },
-              { ic: '↩️', t: '30 Tage Garantie', d: 'Geld zurück ohne Angabe von Gründen.' },
+              { ic: '↩️', t: '14 Tage Garantie', d: 'Geld zurück ohne Angabe von Gründen.' },
               { ic: '⚖️', t: 'Haftung', d: 'Keine Rechtsberatung. Anwalt empfohlen.' },
             ].map(a => (
               <div key={a.t} style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 22, marginBottom: 6 }}>{a.ic}</div>
+                <div style={{ marginBottom: 6 }}><IconEl ic={a.ic} size={22} /></div>
                 <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{a.t}</div>
                 <div style={{ fontSize: 11, color: G.textSec, lineHeight: 1.5 }}>{a.d}</div>
               </div>

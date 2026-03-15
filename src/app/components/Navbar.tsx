@@ -39,7 +39,7 @@ export function Navbar() {
           flex-shrink: 0;
         }
         .dq-logo-text {
-          height: 22px;
+          height: 28px;
           width: auto;
           object-fit: contain;
           flex-shrink: 0;
@@ -54,7 +54,7 @@ export function Navbar() {
             height: 44px;
           }
           .dq-logo-text {
-            height: 18px;
+            height: 22px;
           }
         }
 
@@ -70,7 +70,7 @@ export function Navbar() {
             height: 36px;
           }
           .dq-logo-text {
-            height: 15px;
+            height: 18px;
           }
         }
       `}</style>
