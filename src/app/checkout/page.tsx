@@ -190,7 +190,7 @@ function CheckoutContent() {
                 }}
               >
                 {loading && selectedPlan === plan.id
-                  ? '⏳ Weiterleitung…'
+                  ? <><img src="/uhr.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Weiterleitung…</>
                   : isViolet
                     ? `Abonnieren – CHF ${plan.price}/Jahr`
                     : `Jetzt kaufen – CHF ${plan.price}`}
@@ -203,7 +203,7 @@ function CheckoutContent() {
       {/* Info box */}
       {selectedPlan === 'impressum' && (
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 12, padding: '24px 28px', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 6 }}>📄 Impressum Generator</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/dokument.png" alt="" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> Impressum Generator</h3>
           <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6 }}>Nach der Zahlung werden Sie direkt zum Impressum Generator weitergeleitet. Das fertige Impressum können Sie sofort herunterladen.</p>
         </div>
       )}
@@ -224,7 +224,7 @@ function CheckoutContent() {
 
       {/* Order summary */}
       <div style={{ background: G.bgWhite, border: `1px solid ${isAiTrust ? G.violetBorder : G.border}`, borderRadius: 14, padding: '28px' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16 }}>📋 Bestellübersicht</h3>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/ablage.png" alt="" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> Bestellübersicht</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700, marginBottom: 8, color: G.text }}>
           <span>{selectedPlanData?.name}</span>
           <span style={{ color: accentColor }}>CHF {selectedPlanData?.price}</span>
@@ -237,7 +237,7 @@ function CheckoutContent() {
 
         {error && (
           <div style={{ background: G.redBg, border: `1px solid ${G.redBorder}`, borderRadius: 8, padding: '12px 16px', marginBottom: 16, color: G.red, fontSize: 13 }}>
-            ⚠️ {error}
+            <img src="/warnung.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />{error}
           </div>
         )}
 
@@ -247,7 +247,7 @@ function CheckoutContent() {
           style={{ width: '100%', padding: '14px', background: accentColor, color: '#fff', fontWeight: 700, border: 'none', borderRadius: 10, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
         >
           {loading
-            ? '⏳ Weiterleitung zu Stripe...'
+            ? <><img src="/uhr.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Weiterleitung zu Stripe...</>
             : isAiTrust
               ? `Jetzt abonnieren – CHF ${selectedPlanData?.price}/Jahr`
               : `Jetzt kaufen – CHF ${selectedPlanData?.price}`}

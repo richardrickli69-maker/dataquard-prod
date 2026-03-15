@@ -289,15 +289,15 @@ export default function HomePage() {
             <div style={{ padding: 18 }}>
               <div style={{ fontSize: 9, color: '#666', letterSpacing: 2, marginBottom: 12, fontWeight: 700 }}>SCAN-ERGEBNIS</div>
               {[
-                { l: 'Datenschutzerklärung', ic: '❌', c: '#ef4444' },
-                { l: 'Cookie-Banner', ic: '⚠️', c: '#eab308' },
-                { l: 'Google Analytics', ic: '❌', c: '#ef4444' },
-                { l: 'SSL-Zertifikat', ic: '✅', c: '#22c55e' },
-                { l: 'KI-Bilder erkannt', ic: '⚠️ 3/5', c: '#eab308' },
+                { l: 'Datenschutzerklärung', ic: '/fehler.png', extra: '', c: '#ef4444' },
+                { l: 'Cookie-Banner', ic: '/warnung.png', extra: '', c: '#eab308' },
+                { l: 'Google Analytics', ic: '/fehler.png', extra: '', c: '#ef4444' },
+                { l: 'SSL-Zertifikat', ic: '/checkmark.png', extra: '', c: '#22c55e' },
+                { l: 'KI-Bilder erkannt', ic: '/warnung.png', extra: '3/5', c: '#eab308' },
               ].map(r => (
                 <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#14142a', borderRadius: 8, marginBottom: 4, border: '1px solid #2a2a44' }}>
                   <span style={{ fontSize: 12, color: '#ccc' }}>{r.l}</span>
-                  <span style={{ fontSize: 12, color: r.c }}>{r.ic}</span>
+                  <span style={{ fontSize: 12, color: r.c, display: 'flex', alignItems: 'center', gap: 4 }}><img src={r.ic} alt="" width={13} height={13} style={{ flexShrink: 0 }} />{r.extra}</span>
                 </div>
               ))}
               <div style={{ marginTop: 14, borderTop: '1px solid #2a2a44', paddingTop: 12 }}>
@@ -448,7 +448,7 @@ export default function HomePage() {
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #ef4444, transparent)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>❌</span>
+              <img src="/fehler.png" alt="Fehler" width={24} height={24} />
               <h3 style={{ fontSize: 16, fontWeight: 800, color: '#991b1b' }}>Copy-Paste Datenschutzerklärung</h3>
             </div>
             {[
@@ -466,7 +466,7 @@ export default function HomePage() {
               </div>
             ))}
             <div style={{ marginTop: 16, padding: '12px 14px', background: '#fee2e2', borderRadius: 10, fontSize: 12, color: '#991b1b', fontWeight: 600, textAlign: 'center' }}>
-              💰 Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. (DSGVO)
+              <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. (DSGVO)
             </div>
           </div>
 
@@ -582,9 +582,9 @@ export default function HomePage() {
                       ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><IconEl ic="🤖" size={16} />{r[0].replace(/^🤖\s*/, '')}</span>
                       : r[0]}
                   </td>
-                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1] === '✅' ? <IconEl ic="✅" size={18} /> : r[1]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2] === '✅' ? <IconEl ic="✅" size={18} /> : r[2]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3] === '✅' ? <IconEl ic="✅" size={18} /> : r[3]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1] === '✅' ? <IconEl ic="✅" size={18} /> : r[1] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[1] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[1]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2] === '✅' ? <IconEl ic="✅" size={18} /> : r[2] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[2] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[2]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3] === '✅' ? <IconEl ic="✅" size={18} /> : r[3] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[3] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[3]}</td>
                 </tr>
               ))}
             </tbody>
@@ -595,7 +595,7 @@ export default function HomePage() {
       {/* ═══ 13. AGB ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 18, padding: '40px 32px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>📋 Allgemeine Geschäftsbedingungen</h2>
+          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><img src="/ablage.png" alt="" width={26} height={26} style={{ display: 'inline-block' }} /> Allgemeine Geschäftsbedingungen</h2>
           <p style={{ color: G.textSec, fontSize: 13, maxWidth: 500, margin: '0 auto 28px' }}>Transparenz ist uns wichtig. Unsere AGB regeln die Nutzung klar und fair – ohne Kleingedrucktes.</p>
           <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24, textAlign: 'left' }}>
             {[
@@ -642,7 +642,7 @@ export default function HomePage() {
         <div style={{ maxWidth: 580, margin: '0 auto', background: G.bgWhite, borderRadius: 20, padding: '44px 32px', border: `1px solid ${G.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Ist Ihre Website wirklich rechtssicher?</h2>
           <p style={{ color: G.textSec, fontSize: 14, marginBottom: 10 }}>Finden Sie es in 60 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
-          <p style={{ fontSize: 12, color: '#b45309', marginBottom: 22 }}>⚖️ Das Schweizer nDSG ist seit 01.09.2023 in Kraft – ist Ihre Website konform?</p>
+          <p style={{ fontSize: 12, color: '#b45309', marginBottom: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><img src="/icon-recht.png" alt="" width={14} height={14} style={{ display: 'inline-block', flexShrink: 0 }} /> Das Schweizer nDSG ist seit 01.09.2023 in Kraft – ist Ihre Website konform?</p>
           <Link href="/scanner" style={{ display: 'inline-block', padding: '15px 36px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 10, fontSize: 16, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>Jetzt kostenlos scannen →</Link>
         </div>
       </section>
