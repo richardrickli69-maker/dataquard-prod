@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           await resend.emails.send({
             from: 'Dataquard <info@dataquard.ch>',
             to: customerEmail,
-            subject: '🤖 Ihr AI-Trust Abo ist aktiv – Dataquard',
+            subject: 'Ihr AI-Trust Abo ist aktiv – Dataquard',
             html: generateAiTrustEmailHtml({ userEmail: customerEmail, amount: amountTotal, currency }),
             attachments: [
               { filename: `Dataquard-Rechnung-${invoiceNumber}.pdf`, content: pdfBuffer },

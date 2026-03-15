@@ -62,7 +62,7 @@ const plans = [
     interval: 'pro Jahr',
     desc: 'Laufende KI-Überwachung',
     features: [
-      '🤖 KI-Bild-Erkennung (unbegrenzt)',
+      'KI-Bild-Erkennung (unbegrenzt)',
       '🕵️ Deepfake-Check nach EU AI Act',
       '📋 EU AI Act Art. 50 Klausel',
       '📧 Wöchentliche Änderungs-Alerts',

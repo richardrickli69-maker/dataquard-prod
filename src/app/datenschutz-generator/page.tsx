@@ -384,7 +384,7 @@ function DataschutzGeneratorInner() {
             {/* AI Toggle */}
             <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: G.text, marginBottom: 2 }}>🤖 KI-Optimierung aktivieren</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: G.text, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/badge-ai-trust.svg" alt="" width={16} height={16} style={{ display: 'inline-block' }} /> KI-Optimierung aktivieren</p>
                 <p style={{ fontSize: 12, color: G.textMuted }}>Claude AI formuliert individuellere Texte</p>
               </div>
               <button

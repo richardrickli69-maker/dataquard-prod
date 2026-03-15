@@ -23,6 +23,15 @@ const ICON_MAP: Record<string, string> = {
 };
 
 function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
+  if (ic === '🇨🇭') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}>
+        <rect width="32" height="32" rx="4" fill="#FF0000"/>
+        <rect x="8" y="13" width="16" height="6" fill="white"/>
+        <rect x="13" y="8" width="6" height="16" fill="white"/>
+      </svg>
+    );
+  }
   const src = ICON_MAP[ic];
   return src
     ? <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
@@ -162,7 +171,7 @@ export default function HomePage() {
           </div>
         )}
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted, flexWrap: 'wrap' }}>
-          <span>🇨🇭 Schweizer Produkt</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🇨🇭" size={14} /> Schweizer Produkt</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={14} /> Daten in Zürich</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={14} /> nDSG/DSGVO</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={14} /> AI-Trust</span>
@@ -490,9 +499,9 @@ export default function HomePage() {
         <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Einmalkauf · Keine versteckten Kosten</p>
         <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {[
-            { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check', '🤖 AI-Trust Vorschau (5 Bilder, 1 Seite)'], m: ['Datenschutzerklärung', 'Impressum', 'AI-Trust Details & Vollscan'], c: 'Kostenlos scannen', l: '/scanner' },
-            { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain', '🤖 AI-Trust Scan — 50 Bilder, gesamte Website'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
-            { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support', '🤖 AI-Trust Scan — 250 Bilder/Domain, 5 Domains', '📋 AI-Klausel für Datenschutzerklärung'], m: [], c: 'Professional wählen', l: '/checkout' },
+            { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check', 'AI-Trust Vorschau (5 Bilder, 1 Seite)'], m: ['Datenschutzerklärung', 'Impressum', 'AI-Trust Details & Vollscan'], c: 'Kostenlos scannen', l: '/scanner' },
+            { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain', 'AI-Trust Scan — 50 Bilder, gesamte Website'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
+            { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support', 'AI-Trust Scan — 250 Bilder/Domain, 5 Domains', '📋 AI-Klausel für Datenschutzerklärung'], m: [], c: 'Professional wählen', l: '/checkout' },
           ].map(pl => (
             <div key={pl.n} style={{ padding: 22, borderRadius: 14, border: pl.hl ? `2px solid ${G.green}` : `1px solid ${G.border}`, background: G.bgWhite, position: 'relative', boxShadow: pl.hl ? `0 4px 20px ${G.greenBg}` : '0 2px 8px rgba(0,0,0,0.03)' }}>
               {pl.hl && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.green, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1 }}>EMPFOHLEN</div>}
