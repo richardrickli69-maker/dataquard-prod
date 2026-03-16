@@ -142,13 +142,28 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
             if (!src) return <span style={{ fontSize: 14 }}>{icon}</span>;
             return <img src={src} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />;
           })()}
+          {/* Prozent-Zahl im Circle */}
           <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>{score}%</span>
         </div>
       </div>
-      <span style={{ fontSize: 11, color: G.textMuted, fontWeight: 500, textAlign: 'center' }}>{label}</span>
-      <span style={{ fontSize: 11, fontWeight: 600, color }}>{scoreLabel(score)}</span>
+      {/* Score-Label: text-sm (14px) */}
+      <span style={{ fontSize: 14, color: G.textMuted, fontWeight: 500, textAlign: 'center' }}>{label}</span>
+      {/* Bewertung: text-xs (12px) */}
+      <span style={{ fontSize: 12, fontWeight: 600, color }}>{scoreLabel(score)}</span>
     </div>
   );
+}
+
+// ─── Befund-Icon Helfer ────────────────────────────────────────────────────────
+
+function IconOK() {
+  return <img src="/checkmark.png" alt="OK" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />;
+}
+function IconWarn() {
+  return <img src="/warnung.png" alt="Warnung" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />;
+}
+function IconErr() {
+  return <img src="/fehler.png" alt="Fehler" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -256,13 +271,13 @@ export default function ScannerPage() {
       </div>
 
       <div style={{ maxWidth: 896, margin: '0 auto', padding: '40px 16px' }}>
-        {/* Title */}
+        {/* Titel */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6, color: G.text }}>Website-Analyse</h1>
           <p style={{ color: G.textSec, fontSize: 14 }}>Compliance · Optimierung · Sicherheit · <span style={{ color: G.violet }}>AI-Trust</span></p>
         </div>
 
-        {/* URL Input */}
+        {/* URL-Eingabe */}
         <div style={{ ...card, marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: G.textSec, marginBottom: 8 }}>Website-URL eingeben</label>
           <div style={{ display: 'flex', gap: 12 }}>
@@ -281,11 +296,11 @@ export default function ScannerPage() {
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
 
-        {/* Info box – kein Ergebnis */}
+        {/* Info-Box – kein Ergebnis */}
         {!result && !scanning && (
           <div style={card}>
             <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ color: G.green }}>ℹ️</span> Was wir prüfen
+              <img src="/energie.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> Was wir prüfen
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
               {[
@@ -308,16 +323,16 @@ export default function ScannerPage() {
                 };
                 const iconSrc = featureIconMap[item.icon];
                 return (
-                <div key={item.title} style={{ display: 'flex', gap: 12, padding: 12, background: G.bgLight, borderRadius: 10 }}>
-                  {iconSrc
-                    ? <img src={iconSrc} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />
-                    : <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>}
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 2 }}>{item.title}</p>
-                    <p style={{ fontSize: 12, color: G.textSec }}>{item.desc}</p>
+                  <div key={item.title} style={{ display: 'flex', gap: 12, padding: 12, background: G.bgLight, borderRadius: 10 }}>
+                    {iconSrc
+                      ? <img src={iconSrc} alt="" width={20} height={20} style={{ display: 'inline-block', flexShrink: 0 }} />
+                      : <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>}
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 2 }}>{item.title}</p>
+                      <p style={{ fontSize: 12, color: G.textSec }}>{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-              );
+                );
               })}
             </div>
           </div>
@@ -336,11 +351,12 @@ export default function ScannerPage() {
         {result && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+            {/* Jurisdiktion-Badge */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...jurisdictionStyle(result.jurisdiction) }}>
               <JurisdictionIcon j={result.jurisdiction} /> Jurisdiktion: {result.jurisdiction}
             </div>
 
-            {/* Scores */}
+            {/* Score-Circles */}
             <div style={card}>
               <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 20 }}>Analyse-Ergebnis</h2>
               <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 16 }}>
@@ -353,23 +369,83 @@ export default function ScannerPage() {
 
             {/* Befunde */}
             <div style={card}>
-              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/diagramm.png" alt="Befunde" width={16} height={16} /> Befunde</h2>
+              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <img src="/diagramm.png" alt="Befunde" width={16} height={16} /> Befunde
+              </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {[
-                  { label: 'Datenschutzerklärung', ok: result.findings.datenschutz, bad: '❌ Fehlt – Pflicht nach nDSG/DSGVO!', good: '✅ Vorhanden' },
-                  { label: 'Cookie Banner', ok: result.findings.cookieBanner, bad: '❌ Fehlt', good: '✅ Vorhanden' },
-                  { label: 'Tracker gefunden', ok: result.findings.trackerCount <= 4, bad: `⚠️ ${result.findings.trackerCount} Tracker – zu viele`, good: `✅ ${result.findings.trackerCount} Tracker (akzeptabel)` },
-                  { label: 'SSL / HTTPS', ok: result.findings.ssl, bad: '❌ Kein SSL – Sicherheitsrisiko!', good: '✅ Sicher' },
-                  { label: 'Mobile-Optimierung', ok: result.findings.mobile, bad: '⚠️ Nicht mobile-freundlich', good: '✅ Mobile-freundlich' },
-                  { label: 'Impressum', ok: result.findings.impressum, bad: '❌ Fehlt – gesetzlich verpflichtend!', good: result.findings.impressumVollstaendig ? '✅ Vollständig vorhanden' : '⚠️ Vorhanden, aber unvollständig' },
-                  { label: 'KI-Inhalte (AI-Trust)', ok: !result.aiTrust.requiresDisclosure, bad: '⚠️ KI-Signale erkannt – EU AI Act Art. 50 beachten', good: '✅ Keine KI-Inhalts-Signale' },
-                  ...(result.imageAnalysis ? [{ label: '🖼️ Bilder-Sicherheit', ok: result.imageAnalysis.all_safe, bad: `❌ ${result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt`, good: `✅ Alle ${result.imageAnalysis.total_images_scanned} Bilder sicher` }] : []),
-                ].map(row => (
-                  <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
-                    <span style={{ color: G.textMuted, fontSize: 13, width: 180, flexShrink: 0 }}>{row.label}:</span>
-                    <span style={{ fontSize: 13, color: row.ok ? G.green : G.red }}>{row.ok ? row.good : row.bad}</span>
+                {([
+                  {
+                    label: 'Datenschutzerklärung',
+                    ok: result.findings.datenschutz,
+                    bad: <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
+                    good: <><IconOK /> Vorhanden</>,
+                  },
+                  {
+                    label: 'Cookie Banner',
+                    ok: result.findings.cookieBanner,
+                    bad: <><IconErr /> Fehlt</>,
+                    good: <><IconOK /> Vorhanden</>,
+                  },
+                  {
+                    label: 'Tracker gefunden',
+                    ok: result.findings.trackerCount <= 4,
+                    bad: <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
+                    good: <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
+                  },
+                  {
+                    label: 'SSL / HTTPS',
+                    ok: result.findings.ssl,
+                    bad: <><IconErr /> Kein SSL – Sicherheitsrisiko!</>,
+                    good: <><IconOK /> Sicher</>,
+                  },
+                  {
+                    label: 'Mobile-Optimierung',
+                    ok: result.findings.mobile,
+                    bad: <><IconWarn /> Nicht mobile-freundlich</>,
+                    good: <><IconOK /> Mobile-freundlich</>,
+                  },
+                  {
+                    label: 'Impressum',
+                    ok: result.findings.impressum,
+                    bad: <><IconErr /> Fehlt – gesetzlich verpflichtend!</>,
+                    good: result.findings.impressumVollstaendig
+                      ? <><IconOK /> Vollständig vorhanden</>
+                      : <><IconWarn /> Vorhanden, aber unvollständig</>,
+                  },
+                  {
+                    // FIX 7: AI-Trust Zeile positiv/neutral formuliert mit Anker-Link
+                    label: 'KI-Inhalte (AI-Trust)',
+                    ok: !result.aiTrust.requiresDisclosure,
+                    bad: (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
+                        KI-Signale erkannt —{' '}
+                        <a href="#ai-trust-section" style={{ color: G.violet, fontWeight: 600, textDecoration: 'none' }}>
+                          Details im AI-Trust Bereich unten
+                        </a>
+                      </span>
+                    ),
+                    good: <><IconOK /> Keine KI-Inhalts-Signale erkannt</>,
+                  },
+                  ...(result.imageAnalysis ? [{
+                    label: (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <img src="/suche.png" alt="Bilder" width={14} height={14} /> Bilder-Sicherheit
+                      </span>
+                    ),
+                    ok: result.imageAnalysis.all_safe,
+                    bad: <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
+                    good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
+                  }] : []),
+                ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode }>).map((row, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
+                    <span style={{ color: G.textMuted, fontSize: 14, width: 180, flexShrink: 0 }}>{row.label}:</span>
+                    <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      {row.ok ? row.good : row.bad}
+                    </span>
                   </div>
                 ))}
+                {/* Unvollständige Impressum-Angaben */}
                 {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
                   <div style={{ marginTop: 12, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>
                     <p style={{ color: G.yellow, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Fehlende Pflichtangaben im Impressum:</p>
@@ -384,10 +460,13 @@ export default function ScannerPage() {
             {/* Erkenntnisse */}
             {result.insights.length > 0 && (
               <div style={card}>
-                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16 }}>💡 Erkenntnisse</h2>
+                {/* FIX 3: Erkenntnisse-Header — energie.png statt Emoji */}
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img src="/energie.png" alt="Erkenntnisse" width={16} height={16} /> Erkenntnisse
+                </h2>
                 <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.insights.map((insight, i) => (
-                    <li key={i} style={{ fontSize: 13, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.border}` }}>{insight}</li>
+                    <li key={i} style={{ fontSize: 14, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.border}` }}>{insight}</li>
                   ))}
                 </ul>
               </div>
@@ -396,10 +475,12 @@ export default function ScannerPage() {
             {/* Empfehlungen */}
             {result.recommendations.length > 0 && (
               <div style={card}>
-                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><img src="/ziel.png" alt="Empfehlungen" width={16} height={16} /> Empfehlungen</h2>
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img src="/ziel.png" alt="Empfehlungen" width={16} height={16} /> Empfehlungen
+                </h2>
                 <ol style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.recommendations.map((rec, i) => (
-                    <li key={i} style={{ fontSize: 13, color: G.textSec, display: 'flex', gap: 12 }}>
+                    <li key={i} style={{ fontSize: 14, color: G.textSec, display: 'flex', gap: 12 }}>
                       <span style={{ flexShrink: 0, width: 20, height: 20, background: G.greenBg, color: G.green, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
                       <span>{rec.replace(/^\d+\.?\s*/, '')}</span>
                     </li>
@@ -408,57 +489,87 @@ export default function ScannerPage() {
               </div>
             )}
 
-            {/* AI-Trust Detail */}
-            <div style={{ ...card, borderTop: `3px solid ${G.violet}` }}>
-              <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <img src="/badge-ai-trust.svg" alt="AI-Trust" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> AI-Trust — KI-Inhaltsanalyse (EU AI Act Art. 50)
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ padding: 12, background: G.violetBg, borderRadius: 10, fontSize: 13, color: G.text }}>
-                  {result.aiTrust.summary}
-                </div>
-                {result.aiTrust.sightengineActive && (
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: 140, padding: '10px 14px', background: G.bgLight, borderRadius: 10, fontSize: 12 }}>
-                      <span style={{ color: G.textMuted }}>Bilder gescannt</span>
-                      <p style={{ fontWeight: 700, fontSize: 18, color: G.text, margin: '2px 0 0' }}>{result.aiTrust.imagesAnalysed}</p>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 140, padding: '10px 14px', background: G.bgLight, borderRadius: 10, fontSize: 12 }}>
-                      <span style={{ color: G.textMuted }}>KI-Bilder erkannt</span>
-                      <p style={{ fontWeight: 700, fontSize: 18, color: result.aiTrust.aiImagesFound > 0 ? G.red : G.green, margin: '2px 0 0' }}>{result.aiTrust.aiImagesFound}</p>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 140, padding: '10px 14px', background: G.bgLight, borderRadius: 10, fontSize: 12 }}>
-                      <span style={{ color: G.textMuted }}>Deepfake-Risiko</span>
-                      <p style={{ fontWeight: 700, fontSize: 16, color: result.aiTrust.deepfakeRisk === 'none' ? G.green : result.aiTrust.deepfakeRisk === 'low' ? G.yellow : G.red, margin: '2px 0 0', textTransform: 'capitalize' }}>{result.aiTrust.deepfakeRisk}</p>
-                    </div>
-                  </div>
-                )}
-                {result.aiTrust.signals.length > 0 && (
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: G.textSec, marginBottom: 6 }}>Erkannte Signale:</p>
-                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {result.aiTrust.signals.map((s, i) => (
-                        <li key={i} style={{ fontSize: 12, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.violet}` }}>
-                          {s.detail} <span style={{ color: G.textMuted }}>({Math.round(s.confidence * 100)}% Konfidenz)</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {result.aiTrust.requiresDisclosure && (
-                  <div style={{ padding: 12, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 10, fontSize: 12, color: '#92400e' }}>
-                    <strong>Handlungsbedarf:</strong> Gemäss EU AI Act Art. 50 müssen KI-generierte Inhalte gekennzeichnet werden.{' '}
-                    <a href="/checkout?plan=ai-trust" style={{ color: G.violet, fontWeight: 600, textDecoration: 'underline' }}>AI-Trust Abo – CHF 99/Jahr →</a>
-                  </div>
-                )}
+            {/* ─── FIX 1: AI-Trust — positiver Upsell statt Warnungs-Box ─── */}
+            <div id="ai-trust-section" style={{
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+              border: '1px solid rgba(34,197,94,0.2)',
+              borderRadius: 16,
+              padding: 24,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <img src="/energie.png" alt="AI-Trust" width={32} height={32} style={{ flexShrink: 0 }} />
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: G.text }}>AI-Trust Analyse</h3>
               </div>
+
+              <p style={{ fontSize: 14, color: G.textSec, marginBottom: 16, lineHeight: 1.6 }}>
+                {result.aiTrust.signals.length > 0 ? (
+                  <>
+                    Wir haben <strong style={{ color: G.text }}>{result.aiTrust.signals.length} KI-Signal(e)</strong> auf Ihrer Website erkannt.
+                    Ab August 2026 verlangt der EU AI Act (Art. 50) eine Kennzeichnung von KI-Inhalten.
+                    Mit dem AI-Trust Abo überwachen wir Ihre Website automatisch und halten Sie konform.
+                  </>
+                ) : (
+                  <>Keine KI-Signale erkannt. Ihre Website ist in Bezug auf EU AI Act Art. 50 unauffällig.</>
+                )}
+              </p>
+
+              {/* Erkannte Signale kurz auflisten */}
+              {result.aiTrust.signals.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  {result.aiTrust.signals.map((signal, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <img src="/suche.png" alt="Signal" width={16} height={16} style={{ flexShrink: 0 }} />
+                      <span style={{ fontSize: 14, color: G.textSec }}>
+                        {signal.detail} <span style={{ color: G.textMuted, fontSize: 12 }}>({Math.round(signal.confidence * 100)}% Konfidenz)</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Sightengine-Statistiken (falls vorhanden) */}
+              {result.aiTrust.sightengineActive && (
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+                  <div style={{ flex: 1, minWidth: 120, padding: '10px 14px', background: 'rgba(255,255,255,0.7)', borderRadius: 10, fontSize: 12 }}>
+                    <span style={{ color: G.textMuted }}>Bilder gescannt</span>
+                    <p style={{ fontWeight: 700, fontSize: 18, color: G.text, margin: '2px 0 0' }}>{result.aiTrust.imagesAnalysed}</p>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 120, padding: '10px 14px', background: 'rgba(255,255,255,0.7)', borderRadius: 10, fontSize: 12 }}>
+                    <span style={{ color: G.textMuted }}>KI-Bilder erkannt</span>
+                    <p style={{ fontWeight: 700, fontSize: 18, color: result.aiTrust.aiImagesFound > 0 ? G.yellow : G.green, margin: '2px 0 0' }}>{result.aiTrust.aiImagesFound}</p>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 120, padding: '10px 14px', background: 'rgba(255,255,255,0.7)', borderRadius: 10, fontSize: 12 }}>
+                    <span style={{ color: G.textMuted }}>Deepfake-Risiko</span>
+                    <p style={{ fontWeight: 700, fontSize: 16, color: result.aiTrust.deepfakeRisk === 'none' ? G.green : result.aiTrust.deepfakeRisk === 'low' ? G.yellow : G.red, margin: '2px 0 0', textTransform: 'capitalize' }}>{result.aiTrust.deepfakeRisk}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* CTA — immer anzeigen als Upsell */}
+              <Link href="/checkout?plan=ai-trust" style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                background: '#22c55e',
+                color: '#ffffff',
+                fontWeight: 600,
+                fontSize: 14,
+                padding: '10px 24px',
+                borderRadius: 12,
+                textDecoration: 'none',
+              }}>
+                <img src="/energie.png" alt="" width={16} height={16} />
+                AI-Trust Abo aktivieren — CHF 99/Jahr →
+              </Link>
             </div>
 
             {/* KI-Bild-Analyse (Sightengine) */}
             {result.imageAnalysis && result.imageAnalysis.total_images_scanned > 0 && (
               <div style={{ ...card, borderTop: `3px solid ${G.violet}` }}>
+                {/* FIX 6: suche.png statt Emoji */}
                 <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  🖼️ KI-Bild-Analyse
+                  <img src="/suche.png" alt="KI-Bild-Analyse" width={16} height={16} /> KI-Bild-Analyse
                   <span style={{ fontSize: 11, fontWeight: 400, color: G.textMuted }}>({result.imageAnalysis.total_images_scanned} Bilder geprüft via Sightengine)</span>
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 12 }}>
@@ -471,7 +582,14 @@ export default function ScannerPage() {
                     <div key={i} style={{ padding: '10px 14px', borderRadius: 10, textAlign: 'center', background: item.warn ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)', border: `1px solid ${item.warn ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}` }}>
                       {item.val !== null
                         ? <p style={{ fontSize: 22, fontWeight: 700, color: item.warn ? G.red : G.green, margin: '0 0 2px' }}>{item.val}</p>
-                        : <p style={{ fontSize: 22, margin: '0 0 2px' }}>{result.imageAnalysis!.all_safe ? '✅' : '⚠️'}</p>
+                        : (
+                          <p style={{ margin: '0 0 2px', display: 'flex', justifyContent: 'center' }}>
+                            {/* FIX 6: ✅/⚠️ → Icons */}
+                            {result.imageAnalysis!.all_safe
+                              ? <img src="/checkmark.png" alt="OK" width={22} height={22} />
+                              : <img src="/warnung.png" alt="Warnung" width={22} height={22} />}
+                          </p>
+                        )
                       }
                       <span style={{ fontSize: 11, color: G.textMuted }}>{item.label}</span>
                     </div>
@@ -479,12 +597,17 @@ export default function ScannerPage() {
                 </div>
                 {result.imageAnalysis.ai_generated_count > 0 && (
                   <div style={{ padding: 10, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: 10, fontSize: 12, color: '#92400e', marginBottom: 6 }}>
-                    <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><img src="/icon-recht.png" alt="Recht" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> EU AI Act Art. 50:</strong> KI-generierte Bilder müssen als solche gekennzeichnet werden. {result.imageAnalysis.ai_generated_count} Bild(er) möglicherweise KI-generiert.
+                    <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <img src="/icon-recht.png" alt="Recht" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> EU AI Act Art. 50:
+                    </strong>{' '}
+                    KI-generierte Bilder müssen als solche gekennzeichnet werden. {result.imageAnalysis.ai_generated_count} Bild(er) möglicherweise KI-generiert.
                   </div>
                 )}
                 {result.imageAnalysis.deepfake_count > 0 && (
-                  <div style={{ padding: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, fontSize: 12, color: '#7f1d1d' }}>
-                    <strong>🚨 Deepfake erkannt:</strong> {result.imageAnalysis.deepfake_count} Bild(er) weisen Deepfake-Merkmale auf – mögliche rechtliche Konsequenzen.
+                  <div style={{ padding: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, fontSize: 12, color: '#7f1d1d', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {/* FIX 6: 🚨 → fehler.png */}
+                    <img src="/fehler.png" alt="Fehler" width={16} height={16} style={{ flexShrink: 0 }} />
+                    <span><strong>Deepfake erkannt:</strong> {result.imageAnalysis.deepfake_count} Bild(er) weisen Deepfake-Merkmale auf – mögliche rechtliche Konsequenzen.</span>
                   </div>
                 )}
               </div>
@@ -495,11 +618,13 @@ export default function ScannerPage() {
               <button onClick={() => { setResult(null); setUrl(''); }} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
                 ← Neue Analyse
               </button>
+              {/* FIX 6: 📄 → dokument.png */}
               <Link href={`/impressum-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}`} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
-                📄 Impressum generieren
+                <img src="/dokument.png" alt="" width={14} height={14} /> Impressum generieren
               </Link>
+              {/* FIX 6: 🍪 → ablage.png */}
               <Link href={`/cookie-banner-generator?domain=${encodeURIComponent(result.url)}&jurisdiction=${result.jurisdiction}&trackers=${result.findings.trackerCount > 0 ? 'google_analytics' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
-                🍪 Cookie-Banner generieren
+                <img src="/ablage.png" alt="" width={14} height={14} /> Cookie-Banner generieren
               </Link>
               <Link href="/checkout" style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.green, color: '#fff', padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
                 <img src="/icon-sicherheit.png" alt="Datenschutz" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />Datenschutzerklärung – CHF 79
