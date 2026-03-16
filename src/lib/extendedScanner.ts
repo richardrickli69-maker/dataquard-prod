@@ -5,6 +5,7 @@
 import { isValidUrl } from '@/lib/scanner';
 import { analyzeForAiContent, type AiAuditResult } from '@/lib/visualAiService';
 import { detectCookieBanner } from '@/lib/cookieBannerDetector';
+import { detectJsRendering, type JsRenderingResult } from '@/lib/jsRenderingDetector';
 
 export interface ExtendedScanResult {
   compliance: {
@@ -16,6 +17,8 @@ export interface ExtendedScanResult {
     hasCookieBanner: boolean;
     /** Name des erkannten CMP-Anbieters, z.B. "CookieBot" */
     cookieBannerProvider?: string;
+    /** JS-Rendering-Erkennung (SPA-Hinweis) */
+    jsRendering?: JsRenderingResult;
   };
   optimization: {
     score: number;
@@ -355,6 +358,7 @@ export async function detectComplianceIssues(
   cookieBannerProvider: string | null;
   trackersFound: string[];
   missingElements: string[];
+  jsRendering: JsRenderingResult;
 }> {
   let html = '';
   try {
@@ -375,6 +379,9 @@ export async function detectComplianceIssues(
   const cookieBannerResult = detectCookieBanner(html);
   const hasCookieBanner = cookieBannerResult.detected;
   const cookieBannerProvider = cookieBannerResult.provider;
+
+  // JS-Rendering-Erkennung (SPA-Seiten → Scan-Ergebnisse möglicherweise unvollständig)
+  const jsRendering = detectJsRendering(html);
 
   const hasPrivacyPolicy =
     html.includes('name="privacy-policy"') ||
@@ -403,6 +410,7 @@ export async function detectComplianceIssues(
       ...(!hasPrivacyPolicy ? ['Privacy Policy'] : []),
       ...(!hasCookieBanner ? ['Cookie Banner'] : []),
     ],
+    jsRendering,
   };
 }
 
@@ -711,6 +719,7 @@ export async function performExtendedScan(
       trackersFound: complianceCheck.trackersFound,
       hasCookieBanner: complianceCheck.hasCookieBanner,
       cookieBannerProvider: complianceCheck.cookieBannerProvider ?? undefined,
+      jsRendering: complianceCheck.jsRendering,
     },
     optimization: {
       score: optimizationScore,

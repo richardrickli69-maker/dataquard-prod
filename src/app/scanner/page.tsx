@@ -66,6 +66,14 @@ const G = {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+interface JsRenderingInfo {
+  isLikelyJsRendered: boolean;
+  confidence: 'high' | 'medium' | 'low';
+  scanReliability: string;
+  detectedFramework: string | null;
+  signals: string[];
+}
+
 interface ScanResult {
   url: string;
   scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
@@ -74,6 +82,7 @@ interface ScanResult {
     ssl: boolean; mobile: boolean; impressum: boolean;
     impressumVollstaendig: boolean; impressumPflichtangaben: string[];
   };
+  jsRendering?: JsRenderingInfo;
   jurisdiction: 'nDSG' | 'DSGVO' | 'BEIDES';
   insights: string[];
   recommendations: string[];
@@ -241,6 +250,7 @@ export default function ScannerPage() {
           impressumVollstaendig: scan?.trust?.impressumComplete ?? false,
           impressumPflichtangaben: scan?.trust?.impressumMissing ?? [],
         },
+        jsRendering: scan?.compliance?.jsRendering ?? undefined,
         jurisdiction,
         insights: scan?.insights ?? [],
         recommendations: scan?.recommendations ?? [],
@@ -377,29 +387,77 @@ export default function ScannerPage() {
               </div>
             </div>
 
+            {/* JS-Rendering-Hinweis (nur wenn erkannt) */}
+            {result.jsRendering?.isLikelyJsRendered && (result.jsRendering.confidence === 'high' || result.jsRendering.confidence === 'medium') && (
+              <div style={{
+                background: '#fefce8',
+                border: `1px solid ${G.yellow}`,
+                borderLeft: `4px solid ${G.yellow}`,
+                borderRadius: 10,
+                padding: '14px 18px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontSize: 20, lineHeight: 1 }}>⚠️</span>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 14, color: '#92400e', marginBottom: 4 }}>
+                      Diese Website verwendet JavaScript-Rendering
+                      {result.jsRendering.detectedFramework ? ` (${result.jsRendering.detectedFramework})` : ''}
+                    </p>
+                    <p style={{ fontSize: 13, color: '#78350f', lineHeight: 1.5, marginBottom: 6 }}>
+                      Einige Inhalte werden erst im Browser geladen und konnten nicht vollständig analysiert werden.
+                      Die Ergebnisse zu Cookie-Banner, Datenschutzerklärung und Tracker-Erkennung könnten unvollständig sein.
+                    </p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                        background: result.jsRendering.confidence === 'high' ? '#dc2626' : '#f59e0b',
+                        color: '#fff',
+                      }}>
+                        Scan-Zuverlässigkeit: {result.jsRendering.scanReliability}
+                      </span>
+                      <span style={{ fontSize: 12, color: '#92400e' }}>
+                        🔜 Vollständiger JS-Scan kommt bald
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Befunde */}
             <div style={card}>
               <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <img src="/diagramm.png" alt="Befunde" width={16} height={16} /> Befunde
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {([
+                {(() => {
+                  // JS-Rendering aktiv wenn medium oder high confidence
+                  const jsActive = result.jsRendering?.isLikelyJsRendered &&
+                    (result.jsRendering.confidence === 'high' || result.jsRendering.confidence === 'medium');
+                  const jsHint = <span style={{ color: G.textMuted, fontSize: 12 }}> (JavaScript-Rendering)</span>;
+                  return ([
                   {
                     label: 'Datenschutzerklärung',
                     ok: result.findings.datenschutz,
-                    bad: <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
+                    bad: jsActive
+                      ? <><IconWarn /> Nicht erkennbar{jsHint}</>
+                      : <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
                     good: <><IconOK /> Vorhanden</>,
                   },
                   {
                     label: 'Cookie Banner',
                     ok: result.findings.cookieBanner,
-                    bad: <><IconErr /> Fehlt</>,
+                    bad: jsActive
+                      ? <><IconWarn /> Nicht erkennbar{jsHint}</>
+                      : <><IconErr /> Fehlt</>,
                     good: <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>,
                   },
                   {
                     label: 'Tracker gefunden',
                     ok: result.findings.trackerCount <= 4,
-                    bad: <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
+                    bad: jsActive
+                      ? <><IconWarn /> Möglicherweise mehr{jsHint}</>
+                      : <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
                     good: <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
                   },
                   {
@@ -449,14 +507,15 @@ export default function ScannerPage() {
                     bad: <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
                     good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
                   }] : []),
-                ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode }>).map((row, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
-                    <span style={{ color: G.textMuted, fontSize: 14, width: 180, flexShrink: 0 }}>{row.label}:</span>
-                    <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      {row.ok ? row.good : row.bad}
-                    </span>
-                  </div>
-                ))}
+                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode }>).map((row, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
+                      <span style={{ color: G.textMuted, fontSize: 14, width: 180, flexShrink: 0 }}>{row.label}:</span>
+                      <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {row.ok ? row.good : row.bad}
+                      </span>
+                    </div>
+                  ));
+                })()}
                 {/* Unvollständige Impressum-Angaben */}
                 {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
                   <div style={{ marginTop: 12, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>
