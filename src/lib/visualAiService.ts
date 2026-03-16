@@ -278,9 +278,11 @@ function buildResult(signals: AiSignal[], fallbackSummary?: string): AiAuditResu
 
   if (declarations.length > 0 && hardRisks.length === 0) {
     // Fall 1: KI korrekt deklariert, keine undeklarierten Risiken → hoher Compliance-Score
-    // Formel: 50 (Basis) + Deklarationen*15 + AvgKonfidenz*20 → 80–100%
-    const avgConf = declarations.reduce((s, sig) => s + sig.confidence, 0) / declarations.length;
-    realityScore = Math.min(100, Math.round(50 + declarations.length * 15 + avgConf * 20));
+    // Formel: 50 (Basis) + Deklarationen*10 + MaxKonfidenz*40 → ~90–100%
+    // Beispiel 1 Deklaration @ 0.95: 50 + 10 + 38 = 98
+    // Beispiel 2 Deklarationen @ max 0.95: 50 + 20 + 38 = 108 → capped 100
+    const maxConf = Math.max(...declarations.map(s => s.confidence));
+    realityScore = Math.min(100, Math.round(50 + declarations.length * 10 + maxConf * 40));
     requiresDisclosure = false;
     summaryParts.push(`KI-Nutzung korrekt deklariert — ${declarations.length} Deklarations-Signal(e) erkannt.`);
     summaryParts.push('EU AI Act Art. 50: Anforderungen erfüllt.');

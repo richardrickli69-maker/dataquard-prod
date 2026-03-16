@@ -422,7 +422,6 @@ export default function ScannerPage() {
                       : <><IconWarn /> Vorhanden, aber unvollständig</>,
                   },
                   {
-                    // FIX 7: AI-Trust Zeile positiv/neutral formuliert mit Anker-Link
                     label: 'KI-Inhalte (AI-Trust)',
                     ok: !result.aiTrust.requiresDisclosure,
                     bad: (
@@ -434,7 +433,10 @@ export default function ScannerPage() {
                         </a>
                       </span>
                     ),
-                    good: <><IconOK /> Keine KI-Inhalts-Signale erkannt</>,
+                    // Unterscheide: deklarierte KI (positiv) vs. keine KI (neutral)
+                    good: result.aiTrust.signals.length > 0
+                      ? <><IconOK /> KI-Nutzung transparent deklariert (EU AI Act konform)</>
+                      : <><IconOK /> Keine KI-Inhalte erkannt</>,
                   },
                   ...(result.imageAnalysis ? [{
                     label: (
