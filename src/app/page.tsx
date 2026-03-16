@@ -1,3 +1,46 @@
+/*
+ * ══════════════════════════════════════════
+ * DATAQUARD DESIGN TOKENS
+ * ══════════════════════════════════════════
+ *
+ * FARBEN:
+ *   Primär (CTA/Akzent):    #22c55e (Electric Green)
+ *   Primär Hover:            #16a34a (Dunkleres Grün)
+ *   Hintergrund:             #ffffff (Weiss)
+ *   Text Dunkel:             #1a1a2e
+ *   Text Mittel:             #555566
+ *   Text Hell:               #888899
+ *   Border:                  #e2e4ea
+ *   Card-BG:                 #f1f2f6
+ *
+ * TYPOGRAFIE:
+ *   H1:            fontSize 46, fontWeight 900
+ *   H2:            fontSize 24–30, fontWeight 800
+ *   H3:            fontSize 18–20, fontWeight 700
+ *   Section-Label: fontSize 12, fontWeight 700, uppercase
+ *   Body:          fontSize 16
+ *   Small:         fontSize 14
+ *   Micro:         fontSize 12
+ *
+ * ICONS:
+ *   Inline/Badges:  20–24px
+ *   Checkmarks:     16px
+ *   Card-Icons:     36–48px
+ *   Section-Header: 40px
+ *   Tabellen:       24px
+ *
+ * BUTTONS:
+ *   Primär:    bg #22c55e, color white, padding '13px 32px', borderRadius 12, hover #16a34a
+ *   Sekundär:  border '2px solid #22c55e', color #22c55e, padding '13px 32px', borderRadius 12
+ *   Font:      fontWeight 700, fontSize 16
+ *
+ * LOGOS (Navbar):
+ *   Desktop: shield 80px, text 48px
+ *   Tablet:  shield 64px, text 36px
+ *   Mobile:  shield 52px, text 28px
+ * ══════════════════════════════════════════
+ */
+
 // src/app/page.tsx
 // ÄNDERUNGEN:
 // - 4-Säulen-Analyse: AI-Trust als 4. Säule (KI-Bild-Erkennung & Deepfake-Check, EU AI Act Art. 50)
@@ -149,12 +192,11 @@ export default function HomePage() {
       <section id="hero-scanner" style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
             NEU ab 2026: AI-Trust Säule — EU AI Act Art. 50 macht KI-Kennzeichnung zur Pflicht. Dataquard prüft Ihre Website automatisch auf KI-Bilder &amp; Deepfakes.
           </div>
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.redBg, border: `1px solid ${G.redBorder}`, fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 20, marginBottom: 28, color: G.red }}>
-          ⚠ nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000
+          <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} /> nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000
         </div>
         <h1 style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text }}>
           Ihre KMU-Website ist{' '}
@@ -182,12 +224,13 @@ export default function HomePage() {
             </div>
           </div>
         )}
-        <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 12, color: G.textMuted, flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🇨🇭" size={14} /> Schweizer Produkt</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={14} /> Daten in Zürich</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={14} /> nDSG/DSGVO</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={14} /> AI-Trust</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={14} /> Ergebnis in 60 Sek.</span>
+        {/* Trust-Badges */}
+        <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 20, fontSize: 14, color: G.textMuted, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🇨🇭" size={24} /> Schweizer Produkt</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={24} /> Daten in Zürich</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={24} /> nDSG/DSGVO</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> AI-Trust</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={24} /> Ergebnis in 60 Sek.</span>
         </div>
       </section>
 
@@ -201,10 +244,10 @@ export default function HomePage() {
             { i: '🤖', t: 'AI-Trust', s: 'KI-Bilder & Deepfake-Check' },
           ].map((b, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '8px 16px', borderRight: idx < 3 ? `1px solid ${G.border}` : 'none' }}>
-              <IconEl ic={b.i} size={26} />
+              <IconEl ic={b.i} size={48} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: G.text }}>{b.t}</div>
-                <div style={{ fontSize: 11, color: G.textMuted }}>{b.s}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: G.text }}>{b.t}</div>
+                <div style={{ fontSize: 14, color: G.textMuted }}>{b.s}</div>
               </div>
             </div>
           ))}
@@ -231,12 +274,12 @@ export default function HomePage() {
                 <div style={{ width: 62, height: 62, borderRadius: '50%', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${a.color}`, background: `${a.color}12`, boxShadow: `0 0 20px ${a.color}20` }}>
                   <span style={{ fontSize: 22, fontWeight: 900, color: a.color }}>{a.score}</span>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: G.text }}>{a.label}</div>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', margin: '6px auto 0', background: a.color, boxShadow: `0 0 8px ${a.color}` }} />
+                <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{a.label}</div>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', margin: '6px auto 0', background: a.color, boxShadow: `0 0 8px ${a.color}` }} />
               </div>
             ))}
           </div>
-          <div style={{ background: G.bgLight, borderRadius: 12, padding: '14px 16px', fontSize: 12, color: G.textSec, lineHeight: 1.8 }}>
+          <div style={{ background: G.bgLight, borderRadius: 12, padding: '14px 16px', fontSize: 14, color: G.textSec, lineHeight: 1.8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
@@ -261,13 +304,13 @@ export default function HomePage() {
           ].map(c => (
             <div key={c.t} style={{ background: G.bgWhite, borderRadius: 16, padding: 26, border: `1px solid ${G.border}`, position: 'relative', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.tag === 'KI-SICHERHEIT' ? `linear-gradient(90deg, ${G.violet}, transparent)` : `linear-gradient(90deg, ${G.green}, transparent)` }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, letterSpacing: 2 }}>{c.tag}</span>
-              <div style={{ margin: '10px 0 6px' }}><IconEl ic={c.ic} size={32} /></div>
-              <h3 style={{ fontSize: 17, fontWeight: 800 }}>{c.t}</h3>
-              <div style={{ fontSize: 12, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, marginBottom: 12, fontWeight: 600 }}>{c.s}</div>
-              <p style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6, marginBottom: 14 }}>{c.d}</p>
+              <span style={{ fontSize: 12, fontWeight: 700, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, letterSpacing: 2 }}>{c.tag}</span>
+              <div style={{ margin: '10px 0 6px' }}><IconEl ic={c.ic} size={48} /></div>
+              <h3 style={{ fontSize: 20, fontWeight: 800 }}>{c.t}</h3>
+              <div style={{ fontSize: 14, color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green, marginBottom: 12, fontWeight: 600 }}>{c.s}</div>
+              <p style={{ fontSize: 14, color: G.textSec, lineHeight: 1.6, marginBottom: 14 }}>{c.d}</p>
               <div style={{ borderTop: `1px solid ${G.border}`, paddingTop: 10 }}>
-                {c.ch.map(x => <div key={x} style={{ fontSize: 12, color: G.text, padding: '3px 0', display: 'flex', gap: 6 }}><span style={{ color: c.tag === 'KI-SICHERHEIT' ? G.violet : G.green }}>✓</span>{x}</div>)}
+                {c.ch.map(x => <div key={x} style={{ fontSize: 14, color: G.text, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'center' }}><img src="/checkmark.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />{x}</div>)}
               </div>
             </div>
           ))}
@@ -339,7 +382,8 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
-            <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ marginTop: 12, padding: '12px 28px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, border: 'none', fontSize: 13, cursor: 'pointer' }}>Jetzt kostenlos prüfen →</button>
+            {/* CTA Button – Primär-Stil */}
+            <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ marginTop: 12, padding: '13px 32px', background: '#22c55e', color: '#fff', fontWeight: 700, borderRadius: 12, border: 'none', fontSize: 16, cursor: 'pointer', transition: 'background 0.2s' }}>Jetzt kostenlos prüfen →</button>
           </div>
         </div>
       </section>
@@ -425,8 +469,8 @@ export default function HomePage() {
               <div key={s.n} style={{ textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', background: G.greenBg, border: `2px solid ${G.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 18, fontWeight: 900, color: G.green }}>{s.n}</div>
                 <div style={{ marginBottom: 8 }}><IconEl ic={s.ic} size={48} /></div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{s.t}</h3>
-                <p style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6 }}>{s.d}</p>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{s.t}</h3>
+                <p style={{ fontSize: 14, color: G.textSec, lineHeight: 1.6 }}>{s.d}</p>
               </div>
             ))}
           </div>
@@ -498,7 +542,8 @@ export default function HomePage() {
         </div>
 
         <div style={{ textAlign: 'center' }}>
-          <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 10, border: 'none', fontSize: 14, cursor: 'pointer', boxShadow: `0 4px 14px ${G.green}40` }}>
+          {/* CTA Button – Primär-Stil */}
+          <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, border: 'none', fontSize: 16, cursor: 'pointer', boxShadow: `0 4px 14px ${G.green}40` }}>
             Jetzt Ihre Website prüfen — kostenlos →
           </button>
           <p style={{ fontSize: 11, color: G.textMuted, marginTop: 8 }}>Kein Risiko. Kein Abo. Sofort Ergebnis.</p>
@@ -517,13 +562,13 @@ export default function HomePage() {
           ].map(pl => (
             <div key={pl.n} style={{ padding: 22, borderRadius: 14, border: pl.hl ? `2px solid ${G.green}` : `1px solid ${G.border}`, background: G.bgWhite, position: 'relative', boxShadow: pl.hl ? `0 4px 20px ${G.greenBg}` : '0 2px 8px rgba(0,0,0,0.03)' }}>
               {pl.hl && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.green, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1 }}>EMPFOHLEN</div>}
-              <h3 style={{ fontSize: 15, fontWeight: 700 }}>{pl.n}</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 700 }}>{pl.n}</h3>
               <div style={{ fontSize: 24, fontWeight: 900, color: pl.hl ? G.green : G.text, margin: '8px 0 2px' }}>{pl.p}</div>
               <div style={{ fontSize: 10, color: G.textMuted, marginBottom: 4 }}>{pl.s}</div>
               <div style={{ fontSize: 11, color: G.textSec, marginBottom: 14 }}>{pl.d}</div>
-              {pl.f.map(f => <div key={f} style={{ fontSize: 11, color: G.text, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/checkmark.png" alt="Verfügbar" width={14} height={14} style={{ flexShrink: 0 }} />{f}</div>)}
-              {pl.m.map(f => <div key={f} style={{ fontSize: 11, color: G.textMuted, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/fehler.png" alt="Nicht verfügbar" width={14} height={14} style={{ flexShrink: 0, opacity: 0.45 }} />{f}</div>)}
-              <Link href={pl.l} style={{ display: 'block', textAlign: 'center', marginTop: 16, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 12, textDecoration: 'none', background: pl.hl ? G.green : 'transparent', color: pl.hl ? '#fff' : G.green, border: pl.hl ? 'none' : `2px solid ${G.green}` }}>{pl.c}</Link>
+              {pl.f.map(f => <div key={f} style={{ fontSize: 14, color: G.text, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/checkmark.png" alt="Verfügbar" width={14} height={14} style={{ flexShrink: 0 }} />{f}</div>)}
+              {pl.m.map(f => <div key={f} style={{ fontSize: 14, color: G.textMuted, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/fehler.png" alt="Nicht verfügbar" width={14} height={14} style={{ flexShrink: 0, opacity: 0.45 }} />{f}</div>)}
+              <Link href={pl.l} style={{ display: 'block', textAlign: 'center', marginTop: 16, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', background: pl.hl ? G.green : 'transparent', color: pl.hl ? '#fff' : G.green, border: pl.hl ? 'none' : `2px solid ${G.green}` }}>{pl.c}</Link>
             </div>
           ))}
         </div>
@@ -542,10 +587,10 @@ export default function HomePage() {
             <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 16 }}>pro Jahr</div>
             <div style={{ textAlign: 'left', marginBottom: 20 }}>
               {['✓ 24/7 Monitoring (250 Bilder)', '✓ Deepfake-Erkennung', '✓ EU AI Act Art. 50', '✓ Shield-Badge', '✓ E-Mail-Alerts', '✓ Quartals-Report'].map(f => (
-                <div key={f} style={{ fontSize: 12, color: G.text, padding: '3px 0', display: 'flex', gap: 6 }}><span style={{ color: G.violet }}>{f.startsWith('✓') ? '' : '✓'}</span>{f}</div>
+                <div key={f} style={{ fontSize: 14, color: G.text, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'center' }}><img src="/checkmark.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />{f.startsWith('✓') ? f.slice(1).trim() : f}</div>
               ))}
             </div>
-            <Link href="/checkout?plan=ai-trust" style={{ display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: 'none', background: G.violet, color: '#fff' }}>AI-Trust aktivieren →</Link>
+            <Link href="/checkout?plan=ai-trust" style={{ display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', background: G.violet, color: '#fff' }}>AI-Trust aktivieren →</Link>
             <p style={{ fontSize: 11, color: G.textMuted, marginTop: 10, textAlign: 'center' }}>Kombinierbar mit jedem Einmalkauf-Paket.</p>
           </div>
         </div>
@@ -555,7 +600,7 @@ export default function HomePage() {
       <section style={{ maxWidth: 800, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 24 }}>Dataquard vs. Wettbewerb — der einzige 4-Säulen-Check</h2>
         <div className="table-scroll" style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${G.border}` }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead><tr style={{ background: G.bgLight }}>
               <th style={{ padding: '12px 14px', textAlign: 'left', color: G.textMuted, fontWeight: 600 }}>Feature</th>
               <th style={{ padding: 12, textAlign: 'center', color: G.green, fontWeight: 800 }}>Dataquard</th>
@@ -579,12 +624,12 @@ export default function HomePage() {
                 <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
                   <td style={{ padding: '10px 14px', color: G.text }}>
                     {r[0].startsWith('🤖')
-                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><IconEl ic="🤖" size={16} />{r[0].replace(/^🤖\s*/, '')}</span>
+                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><IconEl ic="🤖" size={20} />{r[0].replace(/^🤖\s*/, '')}</span>
                       : r[0]}
                   </td>
-                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1] === '✅' ? <IconEl ic="✅" size={18} /> : r[1] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[1] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[1]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2] === '✅' ? <IconEl ic="✅" size={18} /> : r[2] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[2] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[2]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3] === '✅' ? <IconEl ic="✅" size={18} /> : r[3] === '❌' ? <img src="/fehler.png" alt="Nein" width={16} height={16} /> : r[3] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={16} height={16} /> : r[3]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>{r[1] === '✅' ? <IconEl ic="✅" size={24} /> : r[1] === '❌' ? <img src="/fehler.png" alt="Nein" width={24} height={24} /> : r[1] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={24} height={24} /> : r[1]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[2] === '✅' ? <IconEl ic="✅" size={24} /> : r[2] === '❌' ? <img src="/fehler.png" alt="Nein" width={24} height={24} /> : r[2] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={24} height={24} /> : r[2]}</td>
+                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>{r[3] === '✅' ? <IconEl ic="✅" size={24} /> : r[3] === '❌' ? <img src="/fehler.png" alt="Nein" width={24} height={24} /> : r[3] === '⚠️' ? <img src="/warnung.png" alt="Eingeschränkt" width={24} height={24} /> : r[3]}</td>
                 </tr>
               ))}
             </tbody>
@@ -595,7 +640,7 @@ export default function HomePage() {
       {/* ═══ 13. AGB ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 18, padding: '40px 32px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><img src="/ablage.png" alt="" width={26} height={26} style={{ display: 'inline-block' }} /> Allgemeine Geschäftsbedingungen</h2>
+          <h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><img src="/ablage.png" alt="" width={40} height={40} style={{ display: 'inline-block' }} /> Allgemeine Geschäftsbedingungen</h2>
           <p style={{ color: G.textSec, fontSize: 13, maxWidth: 500, margin: '0 auto 28px' }}>Transparenz ist uns wichtig. Unsere AGB regeln die Nutzung klar und fair – ohne Kleingedrucktes.</p>
           <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24, textAlign: 'left' }}>
             {[
@@ -605,13 +650,13 @@ export default function HomePage() {
               { ic: '⚖️', t: 'Haftung', d: 'Keine Rechtsberatung. Anwalt empfohlen.' },
             ].map(a => (
               <div key={a.t} style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: 16 }}>
-                <div style={{ marginBottom: 6 }}><IconEl ic={a.ic} size={22} /></div>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{a.t}</div>
-                <div style={{ fontSize: 11, color: G.textSec, lineHeight: 1.5 }}>{a.d}</div>
+                <div style={{ marginBottom: 6 }}><IconEl ic={a.ic} size={36} /></div>
+                <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{a.t}</div>
+                <div style={{ fontSize: 14, color: G.textSec, lineHeight: 1.5 }}>{a.d}</div>
               </div>
             ))}
           </div>
-          <Link href="/agb" style={{ display: 'inline-block', padding: '10px 24px', border: `2px solid ${G.green}`, color: G.green, borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>Vollständige AGB lesen →</Link>
+          <Link href="/agb" style={{ display: 'inline-block', padding: '13px 28px', border: `2px solid ${G.green}`, color: G.green, borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Vollständige AGB lesen →</Link>
         </div>
       </section>
 
@@ -627,10 +672,10 @@ export default function HomePage() {
             <div key={idx} style={{ background: G.bgWhite, borderRadius: 10, border: `1px solid ${G.border}`, overflow: 'hidden' }}>
               <button onClick={() => setOpenFAQ(openFAQ === idx ? null : idx)} style={{ width: '100%', padding: '14px 18px', textAlign: 'left', background: 'transparent', border: 'none', color: G.text, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>{faq.q}</span>
-                <span style={{ color: G.green, fontSize: 18, fontWeight: 700 }}>{openFAQ === idx ? '−' : '+'}</span>
+                <span style={{ color: G.green, fontSize: 20, fontWeight: 700 }}>{openFAQ === idx ? '−' : '+'}</span>
               </button>
               {openFAQ === idx && (
-                <div style={{ padding: '12px 18px', borderTop: `1px solid ${G.border}`, fontSize: 13, color: G.textSec, lineHeight: 1.7 }}>{faq.a}</div>
+                <div style={{ padding: '12px 18px', borderTop: `1px solid ${G.border}`, fontSize: 14, color: G.textSec, lineHeight: 1.7 }}>{faq.a}</div>
               )}
             </div>
           ))}
@@ -643,7 +688,7 @@ export default function HomePage() {
           <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Ist Ihre Website wirklich rechtssicher?</h2>
           <p style={{ color: G.textSec, fontSize: 14, marginBottom: 10 }}>Finden Sie es in 60 Sekunden heraus – kostenlos und ohne Anmeldung.</p>
           <p style={{ fontSize: 12, color: '#b45309', marginBottom: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><img src="/icon-recht.png" alt="" width={14} height={14} style={{ display: 'inline-block', flexShrink: 0 }} /> Das Schweizer nDSG ist seit 01.09.2023 in Kraft – ist Ihre Website konform?</p>
-          <Link href="/scanner" style={{ display: 'inline-block', padding: '15px 36px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 10, fontSize: 16, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>Jetzt kostenlos scannen →</Link>
+          <Link href="/scanner" style={{ display: 'inline-block', padding: '15px 36px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 16, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>Jetzt kostenlos scannen →</Link>
         </div>
       </section>
 

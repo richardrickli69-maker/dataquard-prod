@@ -1,3 +1,46 @@
+/*
+ * ══════════════════════════════════════════
+ * DATAQUARD DESIGN TOKENS
+ * ══════════════════════════════════════════
+ *
+ * FARBEN:
+ *   Primär (CTA/Akzent):    #22c55e (Electric Green)
+ *   Primär Hover:            #16a34a (Dunkleres Grün)
+ *   Hintergrund:             #ffffff (Weiss)
+ *   Text Dunkel:             #1a1a2e
+ *   Text Mittel:             #555566
+ *   Text Hell:               #888899
+ *   Border:                  #e2e4ea
+ *   Card-BG:                 #f1f2f6
+ *
+ * TYPOGRAFIE:
+ *   H1:            fontSize 46, fontWeight 900
+ *   H2:            fontSize 24–30, fontWeight 800
+ *   H3:            fontSize 18–20, fontWeight 700
+ *   Section-Label: fontSize 12, fontWeight 700, uppercase
+ *   Body:          fontSize 16
+ *   Small:         fontSize 14
+ *   Micro:         fontSize 12
+ *
+ * ICONS:
+ *   Inline/Badges:  20–24px
+ *   Checkmarks:     16px
+ *   Card-Icons:     36–48px
+ *   Section-Header: 40px
+ *   Tabellen:       24px
+ *
+ * BUTTONS:
+ *   Primär:    bg #22c55e, color white, padding '13px 32px', borderRadius 12, hover #16a34a
+ *   Sekundär:  border '2px solid #22c55e', color #22c55e, padding '13px 32px', borderRadius 12
+ *   Font:      fontWeight 700, fontSize 16
+ *
+ * LOGOS (Navbar):
+ *   Desktop: shield 80px, text 48px
+ *   Tablet:  shield 64px, text 36px
+ *   Mobile:  shield 52px, text 28px
+ * ══════════════════════════════════════════
+ */
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -184,14 +227,14 @@ export default function DashboardPage() {
             <p style={{ color: G.textMuted, fontSize: 13 }}>{user?.email}</p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/suche.png" alt="" width={14} height={14} /> Scannen</Link>
-            <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 8, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/diagramm.png" alt="" width={14} height={14} /> Upgrade</Link>
+            <Link href="/scanner" style={{ padding: '8px 16px', background: G.green, color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/suche.png" alt="" width={14} height={14} /> Scannen</Link>
+            <Link href="/checkout" style={{ padding: '8px 16px', border: `1px solid ${G.border}`, color: G.textSec, borderRadius: 10, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/diagramm.png" alt="" width={14} height={14} /> Upgrade</Link>
             {user?.email === ADMIN_EMAIL && (
-              <Link href="/admin" style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/energie.png" alt="" width={14} height={14} /> Admin</Link>
+              <Link href="/admin" style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}><img src="/energie.png" alt="" width={14} height={14} /> Admin</Link>
             )}
             <button
               onClick={async () => { await supabase.auth.signOut(); router.push('/auth'); }}
-              style={{ padding: '8px 16px', border: `1px solid rgba(220,38,38,0.3)`, color: G.red, background: 'transparent', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}
+              style={{ padding: '8px 16px', border: `1px solid rgba(220,38,38,0.3)`, color: G.red, background: 'transparent', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
             >
               Abmelden
             </button>
@@ -331,7 +374,7 @@ export default function DashboardPage() {
               ) : (
                 <div style={{ textAlign: 'center', padding: '16px 0' }}>
                   <p style={{ color: G.textMuted, marginBottom: 16 }}>Kein aktiver Zugang – Sie nutzen den Free-Plan.</p>
-                  <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
+                  <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
                 </div>
               )}
             </div>
@@ -401,7 +444,7 @@ export default function DashboardPage() {
             ) : (
               <div style={{ ...card, textAlign: 'center', padding: 32 }}>
                 <p style={{ color: G.textMuted, marginBottom: 16 }}>Verified Badge erfordert einen Starter- oder Professional-Plan.</p>
-                <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
+                <Link href="/checkout" style={{ padding: '10px 24px', background: G.green, color: '#fff', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Jetzt upgraden →</Link>
               </div>
             )}
 
@@ -544,7 +587,7 @@ export default function DashboardPage() {
                 <p style={{ fontSize: 12, color: '#888899', marginBottom: 18 }}>Jahres-Abo · Keine Einrichtungsgebühr · Kündbar</p>
                 <Link
                   href="/checkout?plan=ai-trust"
-                  style={{ display: 'inline-block', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+                  style={{ display: 'inline-block', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', padding: '12px 28px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
                 >
                   Jetzt für CHF 99/Jahr aktivieren →
                 </Link>

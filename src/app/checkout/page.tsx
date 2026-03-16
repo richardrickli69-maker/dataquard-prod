@@ -1,3 +1,46 @@
+/*
+ * ══════════════════════════════════════════
+ * DATAQUARD DESIGN TOKENS
+ * ══════════════════════════════════════════
+ *
+ * FARBEN:
+ *   Primär (CTA/Akzent):    #22c55e (Electric Green)
+ *   Primär Hover:            #16a34a (Dunkleres Grün)
+ *   Hintergrund:             #ffffff (Weiss)
+ *   Text Dunkel:             #1a1a2e
+ *   Text Mittel:             #555566
+ *   Text Hell:               #888899
+ *   Border:                  #e2e4ea
+ *   Card-BG:                 #f1f2f6
+ *
+ * TYPOGRAFIE:
+ *   H1:            fontSize 46, fontWeight 900
+ *   H2:            fontSize 24–30, fontWeight 800
+ *   H3:            fontSize 18–20, fontWeight 700
+ *   Section-Label: fontSize 12, fontWeight 700, uppercase
+ *   Body:          fontSize 16
+ *   Small:         fontSize 14
+ *   Micro:         fontSize 12
+ *
+ * ICONS:
+ *   Inline/Badges:  20–24px
+ *   Checkmarks:     16px
+ *   Card-Icons:     36–48px
+ *   Section-Header: 40px
+ *   Tabellen:       24px
+ *
+ * BUTTONS:
+ *   Primär:    bg #22c55e, color white, padding '13px 32px', borderRadius 12, hover #16a34a
+ *   Sekundär:  border '2px solid #22c55e', color #22c55e, padding '13px 32px', borderRadius 12
+ *   Font:      fontWeight 700, fontSize 16
+ *
+ * LOGOS (Navbar):
+ *   Desktop: shield 80px, text 48px
+ *   Tablet:  shield 64px, text 36px
+ *   Mobile:  shield 52px, text 28px
+ * ══════════════════════════════════════════
+ */
+
 // src/app/checkout/page.tsx
 'use client';
 
@@ -133,7 +176,7 @@ function CheckoutContent() {
         <Link href="/" style={{ color: G.green, fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>← Zurück</Link>
       </div>
 
-      {/* Plan Selection */}
+      {/* Plan-Auswahl */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
         {plans.map(plan => {
           const isSelected = selectedPlan === plan.id;
@@ -168,8 +211,8 @@ function CheckoutContent() {
               <div style={{ fontSize: 12, color: G.textMuted, marginBottom: 16 }}>{plan.interval}</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {plan.features.map(f => (
-                  <li key={f} style={{ display: 'flex', gap: 8, fontSize: 13, color: G.textSec }}>
-                    <span style={{ color: isViolet ? G.violet : G.green }}>✓</span>{f}
+                  <li key={f} style={{ display: 'flex', gap: 8, fontSize: 13, color: G.textSec, alignItems: 'center' }}>
+                    <img src="/checkmark.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />{f}
                   </li>
                 ))}
               </ul>
@@ -181,7 +224,7 @@ function CheckoutContent() {
                   color: '#fff',
                   width: '100%',
                   padding: '12px',
-                  borderRadius: 8,
+                  borderRadius: 10,
                   fontWeight: 700,
                   fontSize: 14,
                   border: 'none',
@@ -200,7 +243,7 @@ function CheckoutContent() {
         })}
       </div>
 
-      {/* Info box */}
+      {/* Info-Box */}
       {selectedPlan === 'impressum' && (
         <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 12, padding: '24px 28px', marginBottom: 16 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/dokument.png" alt="" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> Impressum Generator</h3>
@@ -222,7 +265,7 @@ function CheckoutContent() {
         </div>
       )}
 
-      {/* Order summary */}
+      {/* Bestellübersicht */}
       <div style={{ background: G.bgWhite, border: `1px solid ${isAiTrust ? G.violetBorder : G.border}`, borderRadius: 14, padding: '28px' }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><img src="/ablage.png" alt="" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} /> Bestellübersicht</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700, marginBottom: 8, color: G.text }}>
@@ -244,7 +287,7 @@ function CheckoutContent() {
         <button
           onClick={() => handlePayment()}
           disabled={loading}
-          style={{ width: '100%', padding: '14px', background: accentColor, color: '#fff', fontWeight: 700, border: 'none', borderRadius: 10, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
+          style={{ width: '100%', padding: '14px', background: accentColor, color: '#fff', fontWeight: 700, border: 'none', borderRadius: 12, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
         >
           {loading
             ? <><img src="/uhr.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Weiterleitung zu Stripe...</>
