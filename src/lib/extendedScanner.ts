@@ -1,9 +1,10 @@
 /**
- * Extended Scanner v2.1
+ * Extended Scanner v2.2
  * Compliance + Optimization + Security + AI Content Analysis
  */
 import { isValidUrl } from '@/lib/scanner';
 import { analyzeForAiContent, type AiAuditResult } from '@/lib/visualAiService';
+import { detectCookieBanner } from '@/lib/cookieBannerDetector';
 
 export interface ExtendedScanResult {
   compliance: {
@@ -13,6 +14,8 @@ export interface ExtendedScanResult {
     hasPrivacyPolicy: boolean;
     trackersFound: string[];
     hasCookieBanner: boolean;
+    /** Name des erkannten CMP-Anbieters, z.B. "CookieBot" */
+    cookieBannerProvider?: string;
   };
   optimization: {
     score: number;
@@ -349,6 +352,7 @@ export async function detectComplianceIssues(
 ): Promise<{
   needsPrivacyPolicy: boolean;
   hasCookieBanner: boolean;
+  cookieBannerProvider: string | null;
   trackersFound: string[];
   missingElements: string[];
 }> {
@@ -361,21 +365,16 @@ export async function detectComplianceIssues(
     });
     html = await res.text();
   } catch {
-    // Fallback: domain-heuristics
+    // Fallback: leeres HTML, alle Checks schlagen fehl
     html = '';
   }
 
   const htmlLow = html.toLowerCase();
 
-  const hasCookieBanner =
-    html.includes('cookie-consent-present') ||
-    htmlLow.includes('cookiebot') ||
-    htmlLow.includes('usercentrics') ||
-    htmlLow.includes('borlabs') ||
-    htmlLow.includes('cookiehub') ||
-    htmlLow.includes('osano') ||
-    htmlLow.includes('cookie_consent') ||
-    (htmlLow.includes('cookie') && (htmlLow.includes('consent') || htmlLow.includes('banner') || htmlLow.includes('akzeptieren')));
+  // Cookie-Banner-Erkennung via 5 Strategien (30+ CMP-Patterns)
+  const cookieBannerResult = detectCookieBanner(html);
+  const hasCookieBanner = cookieBannerResult.detected;
+  const cookieBannerProvider = cookieBannerResult.provider;
 
   const hasPrivacyPolicy =
     html.includes('name="privacy-policy"') ||
@@ -398,6 +397,7 @@ export async function detectComplianceIssues(
   return {
     needsPrivacyPolicy: !hasPrivacyPolicy,
     hasCookieBanner,
+    cookieBannerProvider,
     trackersFound: foundTrackers,
     missingElements: [
       ...(!hasPrivacyPolicy ? ['Privacy Policy'] : []),
@@ -710,6 +710,7 @@ export async function performExtendedScan(
       hasPrivacyPolicy: !complianceCheck.needsPrivacyPolicy,
       trackersFound: complianceCheck.trackersFound,
       hasCookieBanner: complianceCheck.hasCookieBanner,
+      cookieBannerProvider: complianceCheck.cookieBannerProvider ?? undefined,
     },
     optimization: {
       score: optimizationScore,

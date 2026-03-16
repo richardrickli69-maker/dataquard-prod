@@ -70,7 +70,7 @@ interface ScanResult {
   url: string;
   scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
   findings: {
-    datenschutz: boolean; cookieBanner: boolean; trackerCount: number;
+    datenschutz: boolean; cookieBanner: boolean; cookieBannerProvider?: string; trackerCount: number;
     ssl: boolean; mobile: boolean; impressum: boolean;
     impressumVollstaendig: boolean; impressumPflichtangaben: string[];
   };
@@ -233,6 +233,7 @@ export default function ScannerPage() {
         findings: {
           datenschutz: scan?.compliance?.hasPrivacyPolicy ?? false,
           cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
+          cookieBannerProvider: scan?.compliance?.cookieBannerProvider ?? undefined,
           trackerCount: scan?.optimization?.trackerCount ?? 0,
           ssl: scan?.trust?.hasSSL ?? scan?.optimization?.hasSSL ?? false,
           mobile: scan?.optimization?.isMobileFriendly ?? false,
@@ -393,7 +394,7 @@ export default function ScannerPage() {
                     label: 'Cookie Banner',
                     ok: result.findings.cookieBanner,
                     bad: <><IconErr /> Fehlt</>,
-                    good: <><IconOK /> Vorhanden</>,
+                    good: <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>,
                   },
                   {
                     label: 'Tracker gefunden',
