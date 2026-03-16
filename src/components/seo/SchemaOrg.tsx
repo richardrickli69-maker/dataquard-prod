@@ -54,6 +54,50 @@ export function OrganizationSchema() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
 }
 
+// KI-Transparenz nach EU AI Act Art. 50 — Schema.org WebPage + CreativeWork
+export function KiTransparenzSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Dataquard — Website Compliance & AI-Trust Check',
+    url: 'https://www.dataquard.ch',
+    description: 'Dataquard prüft Schweizer KMU-Websites auf Compliance, Performance, Security und KI-Inhalte nach EU AI Act Art. 50.',
+    about: {
+      '@type': 'SoftwareApplication',
+      name: 'Dataquard',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+    },
+    mainEntity: {
+      '@type': 'CreativeWork',
+      name: 'Dataquard Website-Inhalte',
+      creator: [
+        {
+          '@type': 'Organization',
+          name: 'Dataquard',
+          url: 'https://www.dataquard.ch',
+        },
+      ],
+      sdPublisher: {
+        '@type': 'Organization',
+        name: 'Dataquard',
+        url: 'https://www.dataquard.ch',
+      },
+      usageInfo: 'https://www.dataquard.ch/ki-transparenz',
+      conditionsOfAccess: 'Teile dieser Website wurden mit Unterstützung von KI-Technologie (Claude von Anthropic) erstellt. Alle KI-generierten Inhalte wurden manuell geprüft und freigegeben. Gemäss EU AI Act Art. 50 werden KI-generierte Inhalte transparent ausgewiesen.',
+      isAccessibleForFree: true,
+      inLanguage: 'de',
+      keywords: 'KI-Transparenz, EU AI Act Art. 50, KI-Kennzeichnung, Dataquard',
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://www.dataquard.ch/scanner?url={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
+}
+
 export function FaqPageSchema({ faqs }: { faqs: { question: string; answer: string }[] }) {
   const schema = {
     '@context': 'https://schema.org',

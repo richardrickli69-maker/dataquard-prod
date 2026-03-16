@@ -1,7 +1,7 @@
 // src/app/layout.tsx
 import CookieBanner from "@/components/CookieBanner/CookieBanner";
 import type { Metadata } from 'next';
-import { SoftwareApplicationSchema, OrganizationSchema } from '@/components/seo/SchemaOrg';
+import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema } from '@/components/seo/SchemaOrg';
 
 export const metadata: Metadata = {
   title: 'Dataquard – 4-Säulen-Analyse: Compliance, Performance, Security & AI-Trust',
@@ -18,8 +18,12 @@ export default function RootLayout({
       <head>
         <meta name="cookie-consent-present" content="true" />
         <meta name="privacy-policy" content="/datenschutz" />
+        {/* KI-Transparenz-Meta-Tags gemäss EU AI Act Art. 50 */}
+        <meta name="ai-content-declaration" content="Teile dieser Website wurden mit KI-Unterstützung (Anthropic Claude) erstellt. Alle Inhalte wurden manuell geprüft." />
+        <meta name="ai-policy" content="https://www.dataquard.ch/ki-transparenz" />
         <SoftwareApplicationSchema />
         <OrganizationSchema />
+        <KiTransparenzSchema />
       </head>
       <body>
         {children}

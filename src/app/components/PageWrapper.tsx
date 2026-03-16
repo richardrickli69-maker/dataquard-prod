@@ -13,8 +13,8 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
 
           {/* Oben: Startseite + Anmelden zentriert */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-            <Link href="/" style={{ padding: '6px 20px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 7, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: '#f8f9fb' }}>
-              🏠 Startseite
+            <Link href="/" style={{ padding: '6px 20px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 7, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: '#f8f9fb', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <img src="/haus.png" alt="" width={14} height={14} /> Startseite
             </Link>
             <Link href="/auth" style={{ padding: '6px 20px', border: '2px solid #22c55e', color: '#22c55e', borderRadius: 7, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
               Anmelden
@@ -35,10 +35,20 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
                 { l: 'Datenschutz', h: '/datenschutz' },
                 { l: 'Impressum', h: '/impressum' },
                 { l: 'AGB', h: '/agb' },
+                { l: 'KI-Transparenz', h: '/ki-transparenz' },
               ].map(n => (
                 <Link key={n.l} href={n.h} style={{ color: '#888899', textDecoration: 'none' }}>{n.l}</Link>
               ))}
             </div>
+          </div>
+
+          {/* KI-Transparenz-Hinweis gemäss EU AI Act Art. 50 */}
+          <div style={{ borderTop: '1px solid #e2e4ea', paddingTop: 12, marginTop: 12, fontSize: 11, color: '#94a3b8', display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap' }}>
+            <img src="/energie.png" alt="KI-Transparenz" width={14} height={14} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>
+              KI-Transparenz gemäss EU AI Act Art. 50: Teile dieser Website wurden mit Unterstützung von KI-Technologie erstellt und manuell geprüft.{' '}
+              <Link href="/ki-transparenz" style={{ color: '#22c55e', textDecoration: 'none' }}>Mehr erfahren</Link>
+            </span>
           </div>
 
         </div>
