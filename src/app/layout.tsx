@@ -18,9 +18,12 @@ export default function RootLayout({
       <head>
         <meta name="cookie-consent-present" content="true" />
         <meta name="privacy-policy" content="/datenschutz" />
-        {/* KI-Transparenz-Meta-Tags gemäss EU AI Act Art. 50 */}
+        {/* KI-Transparenz-Meta-Tags gemäss EU AI Act Art. 50 (5 Tags für maximale Konfidenz) */}
         <meta name="ai-content-declaration" content="Teile dieser Website wurden mit KI-Unterstützung (Anthropic Claude) erstellt. Alle Inhalte wurden manuell geprüft." />
         <meta name="ai-policy" content="https://www.dataquard.ch/ki-transparenz" />
+        <meta name="ai-tools-used" content="Anthropic Claude (Textgenerierung), Sightengine (KI-Bild-Erkennung)" />
+        <meta name="ai-content-percentage" content="partial" />
+        <meta name="ai-human-oversight" content="all-content-reviewed" />
         <SoftwareApplicationSchema />
         <OrganizationSchema />
         <KiTransparenzSchema />

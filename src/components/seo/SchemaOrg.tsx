@@ -54,7 +54,7 @@ export function OrganizationSchema() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
 }
 
-// KI-Transparenz nach EU AI Act Art. 50 — Schema.org WebPage + CreativeWork
+// KI-Transparenz nach EU AI Act Art. 50 — Schema.org WebPage + CreativeWork (100% Konfidenz)
 export function KiTransparenzSchema() {
   const schema = {
     '@context': 'https://schema.org',
@@ -71,11 +71,40 @@ export function KiTransparenzSchema() {
     mainEntity: {
       '@type': 'CreativeWork',
       name: 'Dataquard Website-Inhalte',
+      // Beide Ersteller: Dataquard (menschlich) + Anthropic (KI-Werkzeug)
       creator: [
         {
           '@type': 'Organization',
           name: 'Dataquard',
           url: 'https://www.dataquard.ch',
+        },
+        {
+          '@type': 'Organization',
+          name: 'Anthropic',
+          url: 'https://www.anthropic.com',
+          description: 'KI-Technologie-Anbieter (Claude API) — eingesetzt für Textgenerierung und Analysen',
+        },
+      ],
+      // Explizites KI-Werkzeug gemäss Schema.org CreativeWork
+      tool: [
+        {
+          '@type': 'SoftwareApplication',
+          name: 'Claude',
+          url: 'https://www.anthropic.com/claude',
+          applicationCategory: 'Artificial Intelligence',
+          creator: {
+            '@type': 'Organization',
+            name: 'Anthropic',
+            url: 'https://www.anthropic.com',
+          },
+          description: 'Grosssprachmodell (LLM) für Textgenerierung, Datenschutzerklärungen und Scan-Analysen',
+        },
+        {
+          '@type': 'SoftwareApplication',
+          name: 'Sightengine',
+          url: 'https://sightengine.com',
+          applicationCategory: 'Artificial Intelligence',
+          description: 'KI-Bild-Erkennungs-API für Deepfake-Check nach EU AI Act Art. 50',
         },
       ],
       sdPublisher: {
@@ -83,11 +112,13 @@ export function KiTransparenzSchema() {
         name: 'Dataquard',
         url: 'https://www.dataquard.ch',
       },
+      // Explizite Beschreibung der KI-Nutzung (abstract = maschinenlesbares Summary)
+      abstract: 'Teile dieser Website wurden mit Unterstützung von KI-Technologie (Claude von Anthropic) erstellt. Alle KI-generierten Inhalte wurden von menschlichen Redakteuren geprüft und freigegeben. Dies entspricht den Anforderungen des EU AI Act Art. 50 (Transparenzpflicht für KI-generierte Inhalte, gültig ab August 2026).',
+      license: 'https://www.dataquard.ch/ki-transparenz',
       usageInfo: 'https://www.dataquard.ch/ki-transparenz',
-      conditionsOfAccess: 'Teile dieser Website wurden mit Unterstützung von KI-Technologie (Claude von Anthropic) erstellt. Alle KI-generierten Inhalte wurden manuell geprüft und freigegeben. Gemäss EU AI Act Art. 50 werden KI-generierte Inhalte transparent ausgewiesen.',
       isAccessibleForFree: true,
       inLanguage: 'de',
-      keywords: 'KI-Transparenz, EU AI Act Art. 50, KI-Kennzeichnung, Dataquard',
+      keywords: 'KI-Transparenz, EU AI Act Art. 50, KI-Kennzeichnung, Dataquard, Anthropic Claude, Sightengine',
     },
     potentialAction: {
       '@type': 'SearchAction',

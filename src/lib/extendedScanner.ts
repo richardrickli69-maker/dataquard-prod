@@ -84,14 +84,31 @@ export async function checkPerformance(domain: string): Promise<{
     cls: number;
   };
 }> {
-  const isSlower = domain.includes('tracker') || domain.includes('analytics');
-  
+  // Echte Ladezeit messen (Server-to-Server Response Time)
+  const url = domain.startsWith('http') ? domain : `https://${domain}`;
+  const start = Date.now();
+  let loadTime = 2.5; // Fallback falls Fetch fehlschlägt
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      await res.text(); // Vollständigen Body lesen für realistische Messung
+      loadTime = (Date.now() - start) / 1000;
+    }
+  } catch { /* Fallback: 2.5s */ }
+
+  // Lighthouse-Score: lineare Annäherung basierend auf Ladezeit
+  const lighthouseScore = Math.max(0, Math.min(100, Math.round(100 - (Math.max(0, loadTime - 0.5)) * 18)));
+
   return {
-    loadTime: isSlower ? 4.2 : 2.8,
-    lighthouseScore: isSlower ? 58 : 82,
+    loadTime,
+    lighthouseScore,
     coreWebVitals: {
-      lcp: isSlower ? 2800 : 1500,
-      fid: isSlower ? 120 : 50,
+      lcp: Math.round(loadTime * 1000),
+      fid: loadTime < 1 ? 30 : loadTime < 2 ? 60 : 120,
       cls: 0.05,
     },
   };
@@ -169,6 +186,27 @@ export async function checkMetaTags(domain: string): Promise<{
   };
 }
 
+// Bekannte Drittanbieter-Tracker und ihre Domains
+const KNOWN_TRACKER_DOMAINS: Record<string, { name: string; category: 'analytics' | 'ads' | 'tracker' }> = {
+  'google-analytics.com': { name: 'Google Analytics', category: 'analytics' },
+  'googletagmanager.com': { name: 'Google Tag Manager', category: 'tracker' },
+  'connect.facebook.net': { name: 'Meta Pixel', category: 'ads' },
+  'analytics.tiktok.com': { name: 'TikTok Pixel', category: 'ads' },
+  'snap.licdn.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
+  'sc.lfeeder.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
+  'hotjar.com': { name: 'Hotjar', category: 'analytics' },
+  'clarity.ms': { name: 'Microsoft Clarity', category: 'analytics' },
+  'mouseflow.com': { name: 'Mouseflow', category: 'analytics' },
+  'fullstory.com': { name: 'FullStory', category: 'analytics' },
+  'segment.com': { name: 'Segment', category: 'tracker' },
+  'mixpanel.com': { name: 'Mixpanel', category: 'analytics' },
+  'intercom.io': { name: 'Intercom', category: 'tracker' },
+  'crisp.chat': { name: 'Crisp Chat', category: 'tracker' },
+  'cdn.jsdelivr.net': { name: 'jsDelivr CDN', category: 'tracker' },
+  'unpkg.com': { name: 'unpkg CDN', category: 'tracker' },
+  'cdnjs.cloudflare.com': { name: 'Cloudflare CDN', category: 'tracker' },
+};
+
 export async function analyzeThirdParty(domain: string): Promise<{
   totalScripts: number;
   trackers: string[];
@@ -177,21 +215,66 @@ export async function analyzeThirdParty(domain: string): Promise<{
   estimatedImpactMs: number;
   riskLevel: 'low' | 'medium' | 'high';
 }> {
-  const hasTrackers = !domain.includes('clean');
-  
-  const trackers = hasTrackers
-    ? ['Google Analytics', 'Meta Pixel', 'LinkedIn Insights']
-    : [];
-  
-  const totalScripts = hasTrackers ? 12 : 5;
-  
+  // Seiten-HTML laden und externe Scripts zählen
+  let pageHtml = '';
+  try {
+    const url = domain.startsWith('http') ? domain : `https://${domain}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) pageHtml = await res.text();
+  } catch { /* Fallback: keine Scripts */ }
+
+  // Basisdomain für Vergleich extrahieren
+  const baseDomain = domain
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+    .split(':')[0];
+
+  // Alle <script src="..."> Tags mit externer URL sammeln
+  const scriptTags = pageHtml.match(/<script[^>]+src=["'][^"']+["'][^>]*>/gi) ?? [];
+  const externalSrcs: string[] = [];
+  for (const tag of scriptTags) {
+    const srcMatch = tag.match(/src=["']([^"']+)["']/i);
+    if (!srcMatch) continue;
+    const src = srcMatch[1];
+    if (!src.startsWith('//') && !src.startsWith('http')) continue; // relativ = intern
+    const srcDomain = src.replace(/^https?:\/\//, '').replace(/^\/\//, '').split('/')[0];
+    // Interne Domains überspringen (inkl. www-Varianten)
+    if (srcDomain === baseDomain || srcDomain === `www.${baseDomain}` || srcDomain.endsWith(`.${baseDomain}`)) continue;
+    externalSrcs.push(src);
+  }
+
+  // Bekannte Tracker klassifizieren
+  const trackers: string[] = [];
+  const analytics: string[] = [];
+  const ads: string[] = [];
+  for (const src of externalSrcs) {
+    for (const [trackerDomain, info] of Object.entries(KNOWN_TRACKER_DOMAINS)) {
+      const alreadyFound = [...trackers, ...analytics, ...ads].includes(info.name);
+      if (!alreadyFound && src.toLowerCase().includes(trackerDomain)) {
+        if (info.category === 'analytics') analytics.push(info.name);
+        else if (info.category === 'ads') ads.push(info.name);
+        else trackers.push(info.name);
+        break;
+      }
+    }
+  }
+
+  const totalScripts = externalSrcs.length;
+  const riskLevel: 'low' | 'medium' | 'high' =
+    totalScripts <= 2 ? 'low' :
+    totalScripts <= 5 ? 'medium' : 'high';
+
   return {
     totalScripts,
-    trackers,
-    analytics: hasTrackers ? ['Google Analytics'] : [],
-    ads: hasTrackers ? ['Google Ads', 'Facebook Ads'] : [],
-    estimatedImpactMs: hasTrackers ? 2300 : 400,
-    riskLevel: hasTrackers ? 'high' : 'low',
+    trackers: [...trackers, ...analytics, ...ads],
+    analytics,
+    ads,
+    estimatedImpactMs: totalScripts * 150,
+    riskLevel,
   };
 }
 
@@ -304,12 +387,18 @@ export async function detectComplianceIssues(
     htmlLow.includes('ndsg') ||
     htmlLow.includes('dsgvo');
 
-  const hasTrackers = !domain.includes('clean');
+  // Echte Tracker-Erkennung aus geladener HTML
+  const foundTrackers: string[] = [];
+  for (const [trackerDomain, info] of Object.entries(KNOWN_TRACKER_DOMAINS)) {
+    if (htmlLow.includes(trackerDomain) && !foundTrackers.includes(info.name)) {
+      foundTrackers.push(info.name);
+    }
+  }
 
   return {
     needsPrivacyPolicy: !hasPrivacyPolicy,
     hasCookieBanner,
-    trackersFound: hasTrackers ? ['Google Analytics', 'Meta Pixel'] : [],
+    trackersFound: foundTrackers,
     missingElements: [
       ...(!hasPrivacyPolicy ? ['Privacy Policy'] : []),
       ...(!hasCookieBanner ? ['Cookie Banner'] : []),
@@ -580,9 +669,10 @@ export async function performExtendedScan(
     if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) complianceScore = Math.max(0, complianceScore - 10);
     if (sightengineResult.aiImagesFound > 0) complianceScore = Math.max(0, complianceScore - 5);
   }
-  const optimizationScore = Math.round(
-    ((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100
-  );
+  // Ladezeit-Basis (0–100) + Tracker-Abzug (je 3 externe Scripts -5 Punkte, max -30)
+  const loadTimeBase = Math.round(((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100);
+  const trackerPenalty = Math.min(30, thirdPartyCheck.totalScripts * 5);
+  const optimizationScore = Math.max(0, loadTimeBase - trackerPenalty);
   
   const trustScore = Math.round(
     (

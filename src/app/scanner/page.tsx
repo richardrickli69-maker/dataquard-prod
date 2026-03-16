@@ -154,6 +154,15 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
   );
 }
 
+// ─── Emoji-Bereiniger für API-Antwort-Texte ───────────────────────────────────
+// Entfernt alle Emojis aus API-generierten Strings (insights, recommendations)
+function stripEmojis(text: string): string {
+  return text.replace(
+    /[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u2000-\u206F]|[\u2300-\u23FF]|[\u2B00-\u2BFF]|[\u{E0020}-\u{E007F}]/gu,
+    ''
+  ).replace(/\s{2,}/g, ' ').trim();
+}
+
 // ─── Befund-Icon Helfer ────────────────────────────────────────────────────────
 
 function IconOK() {
@@ -466,7 +475,7 @@ export default function ScannerPage() {
                 </h2>
                 <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {result.insights.map((insight, i) => (
-                    <li key={i} style={{ fontSize: 14, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.border}` }}>{insight}</li>
+                    <li key={i} style={{ fontSize: 14, color: G.textSec, paddingLeft: 12, borderLeft: `2px solid ${G.border}` }}>{stripEmojis(insight)}</li>
                   ))}
                 </ul>
               </div>
@@ -482,7 +491,7 @@ export default function ScannerPage() {
                   {result.recommendations.map((rec, i) => (
                     <li key={i} style={{ fontSize: 14, color: G.textSec, display: 'flex', gap: 12 }}>
                       <span style={{ flexShrink: 0, width: 20, height: 20, background: G.greenBg, color: G.green, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
-                      <span>{rec.replace(/^\d+\.?\s*/, '')}</span>
+                      <span>{stripEmojis(rec.replace(/^\d+\.?\s*/, ''))}</span>
                     </li>
                   ))}
                 </ol>
