@@ -265,37 +265,54 @@ function buildResult(signals: AiSignal[], fallbackSummary?: string): AiAuditResu
     };
   }
 
-  // Unterscheide: explizite Deklarations-Signale (Compliance) vs. ambigue Signale (Risiko)
-  const attributionSignals = signals.filter(s => s.type === 'ai_attribution');
-  const riskSignals = signals.filter(s => s.type !== 'ai_attribution');
-
-  const avgConfidence = signals.reduce((s, sig) => s + sig.confidence, 0) / signals.length;
-  const maxConfidence = Math.max(...signals.map(s => s.confidence));
-
-  // deepfakeRisk nur aus nicht-Deklarations-Signalen ableiten
-  const riskMaxConf = riskSignals.length > 0 ? Math.max(...riskSignals.map(s => s.confidence)) : 0;
-  let deepfakeRisk: AiAuditResult['deepfakeRisk'] = 'none';
-  if (riskMaxConf >= 0.85) deepfakeRisk = 'high';
-  else if (riskMaxConf >= 0.70) deepfakeRisk = 'medium';
-  else if (riskMaxConf >= 0.55) deepfakeRisk = 'low';
+  // Explizite KI-Deklarationen (positiv — Compliance-Nachweis)
+  const declarations = signals.filter(s => s.type === 'ai_attribution');
+  // Starke Risiko-Signale: eindeutiger Nachweis undeklarierter KI (C2PA-Signatur, XMP-Metadaten)
+  const hardRisks = signals.filter(s => s.type === 'c2pa' || s.type === 'xmp');
+  // Ambigue Signale (meta_generator, watermark_hint, content_pattern) — weder positiv noch stark negativ
 
   let realityScore: number;
   let requiresDisclosure: boolean;
+  let deepfakeRisk: AiAuditResult['deepfakeRisk'] = 'none';
   const summaryParts: string[] = [];
 
-  if (riskSignals.length === 0 && attributionSignals.length > 0) {
-    // Nur Deklarations-Signale → KI-Nutzung korrekt ausgewiesen → hoher Compliance-Score
-    const maxAttrConf = Math.max(...attributionSignals.map(s => s.confidence));
-    realityScore = Math.round(50 + maxAttrConf * 50); // 83–98% für korrekte Deklaration
+  if (declarations.length > 0 && hardRisks.length === 0) {
+    // Fall 1: KI korrekt deklariert, keine undeklarierten Risiken → hoher Compliance-Score
+    // Formel: 50 (Basis) + Deklarationen*15 + AvgKonfidenz*20 → 80–100%
+    const avgConf = declarations.reduce((s, sig) => s + sig.confidence, 0) / declarations.length;
+    realityScore = Math.min(100, Math.round(50 + declarations.length * 15 + avgConf * 20));
     requiresDisclosure = false;
-    summaryParts.push(`KI-Nutzung korrekt deklariert — ${attributionSignals.length} Deklarations-Signal(e) erkannt.`);
+    summaryParts.push(`KI-Nutzung korrekt deklariert — ${declarations.length} Deklarations-Signal(e) erkannt.`);
     summaryParts.push('EU AI Act Art. 50: Anforderungen erfüllt.');
+
+  } else if (declarations.length > 0 && hardRisks.length > 0) {
+    // Fall 2: Deklaration vorhanden, aber auch eindeutige Risiken → mittlerer Score
+    const avgDeclConf = declarations.reduce((s, sig) => s + sig.confidence, 0) / declarations.length;
+    realityScore = Math.min(100, Math.round(50 + declarations.length * 10 + avgDeclConf * 10 - hardRisks.length * 10));
+    requiresDisclosure = true;
+    const maxConf = Math.max(...signals.map(s => s.confidence));
+    summaryParts.push(`KI-Deklaration vorhanden, aber ${hardRisks.length} undeklariertes Signal(e) erkannt.`);
+    summaryParts.push(`EU AI Act Art. 50: Deklaration prüfen (Konfidenz: ${Math.round(maxConf * 100)}%).`);
+    if (maxConf >= 0.85) deepfakeRisk = 'medium';
+    else if (maxConf >= 0.70) deepfakeRisk = 'low';
+
   } else {
-    // Ambigue oder nicht-deklarierte Signale → niedrigerer Score
-    realityScore = Math.round((1 - avgConfidence * 0.8) * 100);
-    requiresDisclosure = maxConfidence >= 0.65;
+    // Fall 3: Keine Deklaration — KI-Signale ohne Ausweisung → Score sinkt
+    // Formel: 50 (Basis) − Risiken*20 − AvgKonfidenz*20 → 0–49%
+    const allRisk = [...hardRisks, ...signals.filter(s => s.type !== 'ai_attribution')];
+    const maxConf = allRisk.length > 0 ? Math.max(...allRisk.map(s => s.confidence)) : 0;
+    const avgConf = allRisk.length > 0
+      ? allRisk.reduce((s, sig) => s + sig.confidence, 0) / allRisk.length
+      : 0;
+    realityScore = Math.max(0, Math.round(50 - allRisk.length * 15 - avgConf * 20));
+    requiresDisclosure = maxConf >= 0.65;
+
+    if (maxConf >= 0.85) deepfakeRisk = 'high';
+    else if (maxConf >= 0.70) deepfakeRisk = 'medium';
+    else if (maxConf >= 0.55) deepfakeRisk = 'low';
+
     if (requiresDisclosure) {
-      summaryParts.push(`${signals.length} KI-Signal(e) erkannt (Konfidenz: ${Math.round(maxConfidence * 100)}%).`);
+      summaryParts.push(`${signals.length} KI-Signal(e) erkannt (Konfidenz: ${Math.round(maxConf * 100)}%).`);
       summaryParts.push('EU AI Act Art. 50: Kennzeichnung empfohlen.');
     } else {
       summaryParts.push(`Schwache KI-Signale (${signals.length}x) – kein zwingender Handlungsbedarf.`);
