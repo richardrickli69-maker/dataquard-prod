@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
     const se = scanResult.sightengine;
     const imageAnalysis = se ? {
       total_images_scanned: se.imagesAnalysed,
+      total_images_found: se.totalImagesFound,
       ai_generated_count: se.aiImagesFound,
       deepfake_count: se.deepfakeCount,
       nudity_count: se.nudityCount,

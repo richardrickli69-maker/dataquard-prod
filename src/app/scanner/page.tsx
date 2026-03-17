@@ -98,6 +98,8 @@ interface ScanResult {
   };
   imageAnalysis?: {
     total_images_scanned: number;
+    /** Gesamt-Anzahl gefundener Bilder (vor Free-Tier-Limit von 5) */
+    total_images_found: number;
     ai_generated_count: number;
     deepfake_count: number;
     nudity_count: number;
@@ -639,10 +641,24 @@ export default function ScannerPage() {
             {result.imageAnalysis && result.imageAnalysis.total_images_scanned > 0 && (
               <div style={{ ...card, borderTop: `3px solid ${G.violet}` }}>
                 {/* FIX 6: suche.png statt Emoji */}
-                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <img src="/suche.png" alt="KI-Bild-Analyse" width={16} height={16} /> KI-Bild-Analyse
-                  <span style={{ fontSize: 11, fontWeight: 400, color: G.textMuted }}>({result.imageAnalysis.total_images_scanned} Bilder geprüft via Sightengine)</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: G.textMuted }}>
+                    ({result.imageAnalysis.total_images_scanned} von {result.imageAnalysis.total_images_found} Bildern geprüft via Sightengine)
+                  </span>
                 </h2>
+                {/* Upsell-Hinweis wenn mehr Bilder vorhanden als gescannt */}
+                {result.imageAnalysis.total_images_found > 5 && (
+                  <div style={{ marginBottom: 12, padding: '8px 12px', background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 8, fontSize: 12, color: G.textSec, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <IconWarn />
+                    <span>
+                      5 von {result.imageAnalysis.total_images_found} Bildern geprüft —{' '}
+                      <Link href="/checkout?plan=starter" style={{ color: G.green, fontWeight: 600, textDecoration: 'none' }}>
+                        für vollständigen Scan: Starter ab CHF 79
+                      </Link>
+                    </span>
+                  </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 12 }}>
                   {[
                     { label: 'KI-generiert', val: result.imageAnalysis.ai_generated_count, warn: result.imageAnalysis.ai_generated_count > 0 },

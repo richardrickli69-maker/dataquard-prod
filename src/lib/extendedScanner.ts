@@ -47,6 +47,8 @@ export interface ExtendedScanResult {
   /** Sightengine-Bildscan (KI-Bild, Deepfake, Nudity, Waffen) */
   sightengine: {
     imagesAnalysed: number;
+    /** Gesamt-Anzahl gefundener Bilder auf der Seite (vor Free-Tier-Limit) */
+    totalImagesFound: number;
     aiImagesFound: number;
     deepfakeCount: number;
     nudityCount: number;
@@ -128,32 +130,69 @@ export async function checkImpressum(domain: string): Promise<{
   hasAbout: boolean;
   foundPages: string[];
 }> {
-  const foundPages = [];
+  // Echtes HTML laden statt Stub
+  let html = '';
+  try {
+    const url = domain.startsWith('http') ? domain : `https://${domain}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) html = await res.text();
+  } catch { /* Fallback: leeres HTML, hasImpressum = false */ }
 
-  if (!domain.includes('no-legal')) {
-    foundPages.push('/impressum');
-    foundPages.push('/contact');
-  }
+  const htmlLow = html.toLowerCase();
 
-  const hasImpressum = foundPages.includes('/impressum');
-  const impressumMissing: string[] = [];
+  // Strategie 1: Link-href-Erkennung
+  // Prüft absolute Pfade (/impressum, /Impressum.htm) und relative URLs (href="Impressum.htm")
+  // Explizite Endzeichen vermeiden False Positive durch /impressum-generator
+  const hasImpressumHref =
+    htmlLow.includes('/impressum"') ||
+    htmlLow.includes("/impressum'") ||
+    htmlLow.includes('/impressum/') ||
+    htmlLow.includes('/impressum.') ||    // z.B. /Impressum.htm
+    htmlLow.includes('/impressum?') ||
+    htmlLow.includes('/impressum#') ||
+    htmlLow.includes('/imprint"') ||
+    htmlLow.includes("/imprint'") ||
+    htmlLow.includes('/imprint/') ||
+    htmlLow.includes('/imprint.') ||
+    htmlLow.includes('/legal-notice') ||
+    htmlLow.includes('/mentions-legales') ||
+    htmlLow.includes('/note-legali') ||
+    htmlLow.includes('href="impressum.') ||   // Relativ: href="Impressum.htm"
+    htmlLow.includes("href='impressum.") ||
+    htmlLow.includes('href="impressum"') ||   // Relativ: href="impressum"
+    htmlLow.includes("href='impressum'") ||
+    htmlLow.includes('href="imprint.') ||
+    htmlLow.includes("href='imprint.");
 
-  if (hasImpressum) {
-    if (!domain.includes('.ch')) {
-      impressumMissing.push('UID-/MWST-Nummer');
-    }
-    if (domain.includes('basic') || domain.includes('simple')) {
-      impressumMissing.push('Telefonnummer');
-      impressumMissing.push('Verantwortliche Person');
-    }
-  }
+  // Strategie 2: Link-Text-Erkennung (sichtbarer Linktext)
+  const hasImpressumText =
+    />\s*impressum\s*</i.test(html) ||
+    />\s*imprint\s*</i.test(html) ||
+    />\s*legal\s*notice\s*</i.test(html) ||
+    />\s*mentions\s*l[ée]gales\s*</i.test(html);
+
+  const hasImpressum = hasImpressumHref || hasImpressumText;
+  const foundPages = hasImpressum ? ['/impressum'] : [];
+
+  // Kontakt-Link erkennen
+  const hasContact =
+    htmlLow.includes('/kontakt') ||
+    htmlLow.includes('/contact') ||
+    htmlLow.includes('href="kontakt') ||
+    htmlLow.includes("href='kontakt") ||
+    />\s*kontakt\s*</i.test(html) ||
+    />\s*contact\s*</i.test(html);
 
   return {
     hasImpressum,
-    impressumComplete: hasImpressum && impressumMissing.length === 0,
-    impressumMissing,
-    hasContact: foundPages.includes('/contact'),
-    hasAbout: foundPages.includes('/about'),
+    // Benefit of doubt: vollständige Prüfung erfordert das Laden der Impressum-Seite selbst
+    impressumComplete: hasImpressum,
+    impressumMissing: [],
+    hasContact,
+    hasAbout: false,
     foundPages,
   };
 }
@@ -383,15 +422,41 @@ export async function detectComplianceIssues(
   // JS-Rendering-Erkennung (SPA-Seiten → Scan-Ergebnisse möglicherweise unvollständig)
   const jsRendering = detectJsRendering(html);
 
-  const hasPrivacyPolicy =
+  // Strategie 1: Link-href-Erkennung (absolut und relativ, inkl. .htm/.html)
+  // htmlLow ist bereits html.toLowerCase(), also case-insensitiv
+  const privacyByHref =
     html.includes('name="privacy-policy"') ||
-    htmlLow.includes('/datenschutz') ||
-    htmlLow.includes('/privacy') ||
+    htmlLow.includes('/datenschutz') ||               // /datenschutz, /Datenschutz.htm, ./datenschutz
+    htmlLow.includes('/privacy') ||                   // /privacy-policy, /privacy
     htmlLow.includes('/datenschutzerklaerung') ||
-    htmlLow.includes('privacy-policy') ||
-    (htmlLow.includes('datenschutz') && htmlLow.includes('personenbezogen')) ||
-    htmlLow.includes('ndsg') ||
-    htmlLow.includes('dsgvo');
+    htmlLow.includes('/data-protection') ||
+    htmlLow.includes('privacy-policy') ||             // Klassen- oder Meta-Attribute
+    htmlLow.includes('href="datenschutz') ||          // Relative URL: href="Datenschutz.htm"
+    htmlLow.includes("href='datenschutz") ||
+    htmlLow.includes('href="privacy') ||
+    htmlLow.includes("href='privacy");
+
+  // Strategie 2: Link-Text-Erkennung (sichtbarer Linktext)
+  const privacyByText =
+    />\s*datenschutz(?:erkl[äa]rung|hinweis(?:e)?)?\s*</i.test(html) ||
+    />\s*privacy(?:\s*policy)?\s*</i.test(html) ||
+    />\s*data\s*protection\s*</i.test(html);
+
+  // Strategie 3: Inhalt-Fallback (mind. 3 datenschutztypische Keywords = Datenschutzseite selbst)
+  const privacyKeywordCount = [
+    'personenbezogene daten',
+    'datenschutzbeauftragte',
+    'betroffenenrechte',
+    'recht auf auskunft',
+    'rechtsgrundlage',
+    'art. 6 dsgvo',
+    'art. 13 dsg',
+    'data protection officer',
+    'right to access',
+    'datenverarbeitung',
+  ].filter(k => htmlLow.includes(k)).length;
+
+  const hasPrivacyPolicy = privacyByHref || privacyByText || privacyKeywordCount >= 3;
 
   // Echte Tracker-Erkennung aus geladener HTML
   const foundTrackers: string[] = [];
@@ -538,6 +603,7 @@ interface SightengineImgResult {
 
 async function scanSiteImagesWithSightengine(url: string): Promise<{
   imagesAnalysed: number;
+  totalImagesFound: number;
   aiImagesFound: number;
   deepfakeCount: number;
   nudityCount: number;
@@ -559,7 +625,8 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     if (!res.ok) return null;
     const html = await res.text();
 
-    const imgUrls: string[] = [];
+    // Alle geeigneten Bilder sammeln (max. 50 für Total-Zählung)
+    const allImgUrls: string[] = [];
     const base = new URL(url);
     for (const match of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
       try {
@@ -567,11 +634,14 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
         if (src.startsWith('data:')) continue;
         const absUrl = new URL(src, base).href;
         if (/\.(jpe?g|png|webp)$/i.test(absUrl)) {
-          imgUrls.push(absUrl);
-          if (imgUrls.length >= 10) break;
+          allImgUrls.push(absUrl);
+          if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
         }
       } catch { /* skip */ }
     }
+    const totalImagesFound = allImgUrls.length;
+    // Free-Tier: max. 5 Bilder pro Scan
+    const imgUrls = allImgUrls.slice(0, 5);
     if (imgUrls.length === 0) return null;
 
     const scanOne = async (imageUrl: string): Promise<SightengineImgResult | null> => {
@@ -622,6 +692,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     const unsafeCount = details.filter(r => !r.safe).length;
     return {
       imagesAnalysed: details.length,
+      totalImagesFound,
       aiImagesFound,
       deepfakeCount,
       nudityCount,
