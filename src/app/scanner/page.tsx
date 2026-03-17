@@ -78,7 +78,13 @@ interface ScanResult {
   url: string;
   scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
   findings: {
-    datenschutz: boolean; cookieBanner: boolean; cookieBannerProvider?: string; trackerCount: number;
+    datenschutz: boolean;
+    cookieBanner: boolean;
+    cookieBannerProvider?: string;
+    /** Kontextabhängiger Status: vorhanden | fehlt_pflicht | nicht_erforderlich | nicht_erkennbar */
+    cookieBannerStatus: 'vorhanden' | 'fehlt_pflicht' | 'nicht_erforderlich' | 'nicht_erkennbar';
+    cookieBannerTrackerCount: number;
+    trackerCount: number;
     ssl: boolean; mobile: boolean; impressum: boolean;
     impressumVollstaendig: boolean; impressumPflichtangaben: string[];
   };
@@ -245,6 +251,8 @@ export default function ScannerPage() {
           datenschutz: scan?.compliance?.hasPrivacyPolicy ?? false,
           cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
           cookieBannerProvider: scan?.compliance?.cookieBannerProvider ?? undefined,
+          cookieBannerStatus: scan?.compliance?.cookieBannerAssessment?.status ?? 'fehlt_pflicht',
+          cookieBannerTrackerCount: scan?.compliance?.cookieBannerAssessment?.trackerCount ?? 0,
           trackerCount: scan?.optimization?.trackerCount ?? 0,
           ssl: scan?.trust?.hasSSL ?? scan?.optimization?.hasSSL ?? false,
           mobile: scan?.optimization?.isMobileFriendly ?? false,
@@ -448,11 +456,23 @@ export default function ScannerPage() {
                   },
                   {
                     label: 'Cookie Banner',
-                    ok: result.findings.cookieBanner,
-                    bad: jsActive
-                      ? <><IconWarn /> Nicht erkennbar{jsHint}</>
-                      : <><IconErr /> Fehlt</>,
-                    good: <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>,
+                    // Status bestimmt ok/nicht ok:
+                    // vorhanden → grün, nicht_erforderlich → grün (kein Banner nötig),
+                    // nicht_erkennbar → gelb (kein harter Verstoss), fehlt_pflicht → rot
+                    ok: result.findings.cookieBannerStatus !== 'fehlt_pflicht',
+                    bad: <><IconErr /> Fehlt – Pflicht wegen {result.findings.cookieBannerTrackerCount} erkannter Tracker!</>,
+                    good: (() => {
+                      switch (result.findings.cookieBannerStatus) {
+                        case 'vorhanden':
+                          return <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>;
+                        case 'nicht_erforderlich':
+                          return <><img src="/gruener-kreis.png" alt="Info" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} /> Nicht erforderlich (keine Tracker erkannt)</>;
+                        case 'nicht_erkennbar':
+                          return <><IconWarn /> Nicht erkennbar{jsHint}</>;
+                        default:
+                          return <><IconOK /> Vorhanden</>;
+                      }
+                    })(),
                   },
                   {
                     label: 'Tracker gefunden',

@@ -17,6 +17,8 @@ export interface ExtendedScanResult {
     hasCookieBanner: boolean;
     /** Name des erkannten CMP-Anbieters, z.B. "CookieBot" */
     cookieBannerProvider?: string;
+    /** Kontextabhängige Bewertung: nur Pflicht wenn Tracker vorhanden */
+    cookieBannerAssessment?: CookieBannerAssessment;
     /** JS-Rendering-Erkennung (SPA-Hinweis) */
     jsRendering?: JsRenderingResult;
   };
@@ -389,12 +391,69 @@ export async function checkMixedContent(domain: string, html?: string): Promise<
   };
 }
 
+/** Status der Cookie-Banner-Bewertung (kontextabhängig) */
+export type CookieBannerStatus = 'vorhanden' | 'fehlt_pflicht' | 'nicht_erforderlich' | 'nicht_erkennbar';
+
+export interface CookieBannerAssessment {
+  /** Bewertungs-Status */
+  status: CookieBannerStatus;
+  /** Begründung für den Status */
+  reason: string;
+  /** Anzahl gefundener Tracker (0 = kein Banner nötig) */
+  trackerCount: number;
+}
+
+/**
+ * Bewertet den Cookie-Banner-Status kontextabhängig.
+ * Ein fehlender Banner ist nur dann ein Verstoss wenn Tracker vorhanden sind.
+ */
+function assessCookieBanner(
+  bannerDetected: boolean,
+  trackerCount: number,
+  isJsRendered: boolean,
+): CookieBannerAssessment {
+  // JS-Rendering: Banner nicht zuverlässig erkennbar → kein harter Verstoss
+  if (isJsRendered && !bannerDetected) {
+    return {
+      status: 'nicht_erkennbar',
+      reason: 'JavaScript-Rendering – vollständige Analyse nicht möglich',
+      trackerCount,
+    };
+  }
+
+  // Banner vorhanden → immer korrekt, unabhängig von Trackern
+  if (bannerDetected) {
+    return {
+      status: 'vorhanden',
+      reason: 'Cookie-Banner erkannt',
+      trackerCount,
+    };
+  }
+
+  // Banner fehlt + Tracker vorhanden → Pflicht nach nDSG/DSGVO
+  if (trackerCount > 0) {
+    return {
+      status: 'fehlt_pflicht',
+      reason: `${trackerCount} Tracker erkannt – Cookie-Banner ist Pflicht nach nDSG/DSGVO`,
+      trackerCount,
+    };
+  }
+
+  // Banner fehlt + keine Tracker → nicht zwingend erforderlich
+  return {
+    status: 'nicht_erforderlich',
+    reason: 'Keine Tracker erkannt – Cookie-Banner nicht zwingend erforderlich',
+    trackerCount,
+  };
+}
+
 export async function detectComplianceIssues(
   domain: string
 ): Promise<{
   needsPrivacyPolicy: boolean;
   hasCookieBanner: boolean;
   cookieBannerProvider: string | null;
+  cookieBannerAssessment: CookieBannerAssessment;
   trackersFound: string[];
   missingElements: string[];
   jsRendering: JsRenderingResult;
@@ -466,14 +525,25 @@ export async function detectComplianceIssues(
     }
   }
 
+  // Kontextabhängige Bewertung: Banner nur Pflicht wenn Tracker vorhanden
+  const isJsRendered = jsRendering.isLikelyJsRendered &&
+    (jsRendering.confidence === 'high' || jsRendering.confidence === 'medium');
+  const cookieBannerAssessment = assessCookieBanner(
+    hasCookieBanner,
+    foundTrackers.length,
+    isJsRendered,
+  );
+
   return {
     needsPrivacyPolicy: !hasPrivacyPolicy,
     hasCookieBanner,
     cookieBannerProvider,
+    cookieBannerAssessment,
     trackersFound: foundTrackers,
     missingElements: [
       ...(!hasPrivacyPolicy ? ['Privacy Policy'] : []),
-      ...(!hasCookieBanner ? ['Cookie Banner'] : []),
+      // Cookie-Banner nur als "fehlend" melden wenn Pflicht besteht
+      ...(cookieBannerAssessment.status === 'fehlt_pflicht' ? ['Cookie Banner'] : []),
     ],
     jsRendering,
   };
@@ -738,10 +808,13 @@ export async function performExtendedScan(
   ]);
 
   const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
+  // cookieBannerOk: vorhanden, nicht erforderlich (keine Tracker) oder nicht erkennbar (JS)
+  // Nur 'fehlt_pflicht' zieht Punkte ab (Banner fehlt obwohl Tracker erkannt)
+  const cookieBannerOk = complianceCheck.cookieBannerAssessment.status !== 'fehlt_pflicht';
   let complianceScore =
-    hasPrivacyPolicy && complianceCheck.hasCookieBanner ? 85 :
+    hasPrivacyPolicy && cookieBannerOk ? 85 :
     hasPrivacyPolicy ? 65 :
-    complianceCheck.hasCookieBanner ? 50 : 40;
+    cookieBannerOk ? 50 : 40;
   // Bild-Sicherheit beeinflusst Compliance (EU AI Act / Datenschutz)
   if (sightengineResult) {
     if (sightengineResult.deepfakeCount > 0) complianceScore = Math.max(0, complianceScore - 15);
@@ -790,6 +863,7 @@ export async function performExtendedScan(
       trackersFound: complianceCheck.trackersFound,
       hasCookieBanner: complianceCheck.hasCookieBanner,
       cookieBannerProvider: complianceCheck.cookieBannerProvider ?? undefined,
+      cookieBannerAssessment: complianceCheck.cookieBannerAssessment,
       jsRendering: complianceCheck.jsRendering,
     },
     optimization: {
