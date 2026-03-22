@@ -7,6 +7,22 @@ import { analyzeForAiContent, type AiAuditResult } from '@/lib/visualAiService';
 import { detectCookieBanner } from '@/lib/cookieBannerDetector';
 import { detectJsRendering, type JsRenderingResult } from '@/lib/jsRenderingDetector';
 
+/**
+ * Browser-ähnliche Fetch-Optionen für Website-Scans.
+ * Verhindert ECONNRESET / 403 bei strikten Webservern die Bot-User-Agents blocken.
+ */
+function buildScanFetchInit(timeoutMs: number): RequestInit {
+  return {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'de-CH,de;q=0.9,en;q=0.8',
+    },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(timeoutMs),
+  };
+}
+
 export interface ExtendedScanResult {
   compliance: {
     score: number;
@@ -100,10 +116,7 @@ export async function checkPerformance(domain: string): Promise<{
   let loadTime = 2.5; // Fallback falls Fetch fehlschlägt
 
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-      signal: AbortSignal.timeout(10000),
-    });
+    const res = await fetch(url, buildScanFetchInit(10000));
     if (res.ok) {
       await res.text(); // Vollständigen Body lesen für realistische Messung
       loadTime = (Date.now() - start) / 1000;
@@ -136,10 +149,7 @@ export async function checkImpressum(domain: string): Promise<{
   let html = '';
   try {
     const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-      signal: AbortSignal.timeout(8000),
-    });
+    const res = await fetch(url, buildScanFetchInit(8000));
     if (res.ok) html = await res.text();
   } catch { /* Fallback: leeres HTML, hasImpressum = false */ }
 
@@ -288,10 +298,7 @@ export async function analyzeThirdParty(domain: string): Promise<{
   let pageHtml = '';
   try {
     const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-      signal: AbortSignal.timeout(8000),
-    });
+    const res = await fetch(url, buildScanFetchInit(8000));
     if (res.ok) pageHtml = await res.text();
   } catch { /* Fallback: keine Scripts */ }
 
@@ -355,10 +362,7 @@ export async function checkOutdatedScripts(domain: string, html?: string): Promi
   if (!pageHtml) {
     try {
       const url = domain.startsWith('http') ? domain : `https://${domain}`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-        signal: AbortSignal.timeout(8000),
-      });
+      const res = await fetch(url, buildScanFetchInit(8000));
       pageHtml = await res.text();
     } catch {
       return { outdatedScripts: [], riskLevel: 'low' };
@@ -387,10 +391,7 @@ export async function checkMixedContent(domain: string, html?: string): Promise<
   if (!pageHtml) {
     try {
       const url = domain.startsWith('http') ? domain : `https://${domain}`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-        signal: AbortSignal.timeout(8000),
-      });
+      const res = await fetch(url, buildScanFetchInit(8000));
       pageHtml = await res.text();
     } catch {
       return { hasMixedContent: false, mixedContentWarnings: [], riskLevel: 'low' };
@@ -483,10 +484,7 @@ export async function detectComplianceIssues(
   let html = '';
   try {
     const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-      signal: AbortSignal.timeout(8000),
-    });
+    const res = await fetch(url, buildScanFetchInit(8000));
     html = await res.text();
   } catch {
     // Fallback: leeres HTML, alle Checks schlagen fehl
@@ -554,10 +552,7 @@ export async function detectComplianceIssues(
         const impressumUrl = impressumPath.startsWith('http')
           ? impressumPath
           : new URL(impressumPath, baseUrl.endsWith('/') ? baseUrl : baseUrl + '/').href;
-        const impressumRes = await fetch(impressumUrl, {
-          headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-          signal: AbortSignal.timeout(6000),
-        });
+        const impressumRes = await fetch(impressumUrl, buildScanFetchInit(6000));
         if (impressumRes.ok) {
           const impHtml = await impressumRes.text();
           const impHtmlLow = impHtml.toLowerCase();
@@ -753,10 +748,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
   if (!apiUser || !apiSecret) return null;
 
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
-      signal: AbortSignal.timeout(8000),
-    });
+    const res = await fetch(url, buildScanFetchInit(8000));
     if (!res.ok) return null;
     const html = await res.text();
 
