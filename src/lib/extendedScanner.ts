@@ -166,6 +166,8 @@ export async function checkImpressum(domain: string): Promise<{
     htmlLow.includes("href='impressum.") ||
     htmlLow.includes('href="impressum"') ||   // Relativ: href="impressum"
     htmlLow.includes("href='impressum'") ||
+    htmlLow.includes('href="impressum/') ||   // Relativ mit Trailing Slash: href="impressum/"
+    htmlLow.includes("href='impressum/") ||
     htmlLow.includes('href="imprint.') ||
     htmlLow.includes("href='imprint.");
 
@@ -235,20 +237,40 @@ export async function checkMetaTags(domain: string): Promise<{
 
 // Bekannte Drittanbieter-Tracker und ihre Domains
 const KNOWN_TRACKER_DOMAINS: Record<string, { name: string; category: 'analytics' | 'ads' | 'tracker' }> = {
+  // Analytics
   'google-analytics.com': { name: 'Google Analytics', category: 'analytics' },
   'googletagmanager.com': { name: 'Google Tag Manager', category: 'tracker' },
-  'connect.facebook.net': { name: 'Meta Pixel', category: 'ads' },
-  'analytics.tiktok.com': { name: 'TikTok Pixel', category: 'ads' },
-  'snap.licdn.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
-  'sc.lfeeder.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
   'hotjar.com': { name: 'Hotjar', category: 'analytics' },
   'clarity.ms': { name: 'Microsoft Clarity', category: 'analytics' },
   'mouseflow.com': { name: 'Mouseflow', category: 'analytics' },
   'fullstory.com': { name: 'FullStory', category: 'analytics' },
   'segment.com': { name: 'Segment', category: 'tracker' },
   'mixpanel.com': { name: 'Mixpanel', category: 'analytics' },
+  // Meta / Facebook
+  'connect.facebook.net': { name: 'Meta Pixel', category: 'ads' },
+  'facebook.com/tr': { name: 'Meta Pixel (Tracking Pixel)', category: 'ads' },
+  'facebook.net': { name: 'Meta Pixel', category: 'ads' },
+  // Google Ads
+  'googleads.g.doubleclick.net': { name: 'Google Ads (Doubleclick)', category: 'ads' },
+  'doubleclick.net': { name: 'Google Doubleclick', category: 'ads' },
+  'adservice.google.com': { name: 'Google Ad Service', category: 'ads' },
+  // Bing / Microsoft
+  'bat.bing.com': { name: 'Microsoft UET (Bing Ads)', category: 'ads' },
+  // TikTok
+  'analytics.tiktok.com': { name: 'TikTok Pixel', category: 'ads' },
+  'static.ads-twitter.com': { name: 'Twitter/X Ads Pixel', category: 'ads' },
+  'analytics.twitter.com': { name: 'Twitter/X Analytics', category: 'analytics' },
+  // LinkedIn
+  'snap.licdn.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
+  'sc.lfeeder.com': { name: 'LinkedIn Insight Tag', category: 'tracker' },
+  'px.ads.linkedin.com': { name: 'LinkedIn Ads Pixel', category: 'ads' },
+  // Snapchat / Pinterest
+  'tr.snapchat.com': { name: 'Snapchat Pixel', category: 'ads' },
+  'ct.pinterest.com': { name: 'Pinterest Tag', category: 'ads' },
+  // Chat / Support
   'intercom.io': { name: 'Intercom', category: 'tracker' },
   'crisp.chat': { name: 'Crisp Chat', category: 'tracker' },
+  // CDNs (tracking-relevant)
   'cdn.jsdelivr.net': { name: 'jsDelivr CDN', category: 'tracker' },
   'unpkg.com': { name: 'unpkg CDN', category: 'tracker' },
   'cdnjs.cloudflare.com': { name: 'Cloudflare CDN', category: 'tracker' },
@@ -515,7 +537,50 @@ export async function detectComplianceIssues(
     'datenverarbeitung',
   ].filter(k => htmlLow.includes(k)).length;
 
-  const hasPrivacyPolicy = privacyByHref || privacyByText || privacyKeywordCount >= 3;
+  let hasPrivacyPolicy = privacyByHref || privacyByText || privacyKeywordCount >= 3;
+
+  // Fix 1: Impressum-Seite fetchen wenn kein Datenschutz-Link auf Homepage gefunden
+  // (viele Schweizer KMU kombinieren Impressum + Datenschutzerklärung auf einer Seite)
+  if (!hasPrivacyPolicy) {
+    try {
+      const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+      // Impressum-URL aus Homepage-HTML extrahieren
+      const impressumMatch =
+        html.match(/href=['"]([^'"]*impressum[^'"]*)['"]/i) ??
+        html.match(/href=['"]([^'"]*imprint[^'"]*)['"]/i) ??
+        html.match(/href=['"]([^'"]*legal[^'"]*)['"]/i);
+      if (impressumMatch) {
+        const impressumPath = impressumMatch[1];
+        const impressumUrl = impressumPath.startsWith('http')
+          ? impressumPath
+          : new URL(impressumPath, baseUrl.endsWith('/') ? baseUrl : baseUrl + '/').href;
+        const impressumRes = await fetch(impressumUrl, {
+          headers: { 'User-Agent': 'Dataquard-Scanner/2.0' },
+          signal: AbortSignal.timeout(6000),
+        });
+        if (impressumRes.ok) {
+          const impHtml = await impressumRes.text();
+          const impHtmlLow = impHtml.toLowerCase();
+          // Datenschutz-Keywords auf Impressum-Seite zählen
+          const impPrivacyCount = [
+            'personenbezogene daten',
+            'datenschutzbeauftragte',
+            'betroffenenrechte',
+            'recht auf auskunft',
+            'rechtsgrundlage',
+            'art. 6 dsgvo',
+            'art. 13 dsg',
+            'data protection officer',
+            'right to access',
+            'datenverarbeitung',
+          ].filter(k => impHtmlLow.includes(k)).length;
+          if (impPrivacyCount >= 2) hasPrivacyPolicy = true;
+          // Explizite Datenschutz-Überschrift auf der Impressum-Seite
+          if (/>\s*datenschutz/i.test(impHtml)) hasPrivacyPolicy = true;
+        }
+      }
+    } catch { /* Fallback: Datenschutz bleibt nicht erkannt */ }
+  }
 
   // Echte Tracker-Erkennung aus geladener HTML
   const foundTrackers: string[] = [];
