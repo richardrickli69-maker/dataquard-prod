@@ -505,8 +505,9 @@ export default function ScannerPage() {
                   {
                     label: 'KI-Inhalte (AI-Trust)',
                     ok: !result.aiTrust.requiresDisclosure,
-                    // Violett als AI-Trust Markenfarbe für den Ampel-Punkt
+                    // Violett als AI-Trust Markenfarbe für Ampel-Punkt und Text
                     dotColor: G.violet,
+                    textColor: G.violet,
                     bad: (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
@@ -531,13 +532,13 @@ export default function ScannerPage() {
                     bad: <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
                     good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
                   }] : []),
-                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode; dotColor?: string }>).map((row, idx) => (
+                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode; dotColor?: string; textColor?: string }>).map((row, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
                       {/* Ampel-Punkt: farbiger Kreis für schnellen Status-Überblick */}
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: row.dotColor ?? (row.ok ? G.green : G.red), flexShrink: 0, marginTop: 5 }} />
                       <span style={{ color: G.textMuted, fontSize: 14, width: 174, flexShrink: 0 }}>{row.label}</span>
-                      {/* Beschreibungstext: flex statt inline-flex für konsistentes Linksbündig */}
-                      <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flex: 1 }}>
+                      {/* Beschreibungstext: flex-start für korrekte Ausrichtung bei mehrzeiligem Text */}
+                      <span style={{ fontSize: 14, color: row.textColor ?? (row.ok ? G.green : G.red), display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap', flex: 1 }}>
                         {row.ok ? row.good : row.bad}
                       </span>
                     </div>
