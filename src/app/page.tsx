@@ -608,14 +608,14 @@ export default function HomePage() {
             <tbody>
               {/* Neue Reihenfolge: Compliance, Performance, Security, Preis, AI-Trust, KI-Bilder, Deepfake, Daten */}
               {[
-                ['Compliance (nDSG + DSGVO)', '✅', '❌', '❌'],
+                ['Compliance (nDSG + DSGVO)', '✅', '✅', '✅'],
                 ['Performance-Check', '✅', '❌', '❌'],
                 ['Security-Check', '✅', '❌', '❌'],
                 ['Preis', 'ab CHF 19.–/Mt.', 'CHF 55/J.', '€ 144+/J.'],
                 ['🤖 AI-Trust (EU AI Act Art. 50)', '✅', '❌', '❌'],
                 ['🤖 KI-Bild-Erkennung', '✅', '❌', '❌'],
                 ['🤖 Deepfake-Check', '✅', '❌', '❌'],
-                ['Daten in der Schweiz', '✅', '❌', '❌'],
+                ['Daten in der Schweiz', '✅', '✅', '❌'],
               ].map((r, i) => (
                 <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
                   <td style={{ padding: '10px 14px', color: G.text }}>
