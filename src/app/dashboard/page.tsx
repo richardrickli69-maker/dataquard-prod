@@ -91,7 +91,9 @@ interface Subscription {
   plan: string;
   status: string;
   stripe_customer_id: string;
-  valid_until: string;
+  stripe_subscription_id?: string;
+  current_period_end?: string;
+  interval?: string;
   created_at: string;
   ai_trust_active?: boolean;
   ai_trust_expires_at?: string;
@@ -136,9 +138,11 @@ export default function DashboardPage() {
       .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(3);
     if (auditData) setAuditLog(auditData);
 
+    // Nur Starter/Professional laden – alte 'ai-trust' Einzel-Einträge ignorieren
     const { data: subData } = await supabase
       .from('subscriptions').select('*').eq('user_id', userId)
-      .eq('status', 'active').order('created_at', { ascending: false }).limit(1).single();
+      .eq('status', 'active').in('plan', ['starter', 'professional'])
+      .order('created_at', { ascending: false }).limit(1).single();
     if (subData) setSubscription(subData);
 
     const { data: scanData } = await supabase
@@ -195,10 +199,9 @@ export default function DashboardPage() {
   }[status] || G.textMuted);
 
   const getPlanLabel = (plan: string) => ({
-    starter: '🟢 Starter – CHF 79',
-    professional: '🔵 Professional – CHF 149',
+    starter: '🟢 Starter – CHF 19.–/Mt. (CHF 228.–/Jahr)',
+    professional: '🔵 Professional – CHF 39.–/Mt. (CHF 468.–/Jahr)',
     enterprise: '🟣 Enterprise',
-    impressum: '📄 Impressum Only – CHF 19',
   }[plan] || plan);
 
   const card: React.CSSProperties = {
@@ -246,8 +249,8 @@ export default function DashboardPage() {
           {[
             { label: 'Policies', value: policies.length, icon: '/dokument.png' },
             { label: 'Letzter Scan', value: latestScan ? new Date().toLocaleDateString('de-CH') : '–', icon: '/suche.png' },
-            { label: 'Plan', value: subscription ? `${subscription.plan.toUpperCase()}${subscription.ai_trust_active ? ' + AI-Trust' : ''}` : 'FREE', icon: '/icon-zahlung.png' },
-            { label: 'Aktive Abos', value: (subscription?.plan ? 1 : 0) + (subscription?.ai_trust_active ? 1 : 0), icon: '/icon-schutz.png' },
+            { label: 'Plan', value: subscription ? getPlanLabel(subscription.plan) : 'FREE', icon: '/icon-zahlung.png' },
+            { label: 'Aktives Abo', value: subscription?.plan ? 1 : 0, icon: '/icon-schutz.png' },
           ].map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: 'center', padding: 16 }}>
               <div style={{ marginBottom: 4 }}>
@@ -362,7 +365,8 @@ export default function DashboardPage() {
                   {[
                     { label: 'Plan', value: getPlanLabel(subscription.plan), highlight: true },
                     { label: 'Status', value: subscription.status, color: getStatusColor(subscription.status) },
-                    ...(subscription.valid_until ? [{ label: 'Gültig bis', value: new Date(subscription.valid_until).toLocaleDateString('de-CH') }] : []),
+                    { label: 'Abrechnung', value: 'Jahresabo' },
+                    ...(subscription.current_period_end ? [{ label: 'Nächste Verlängerung', value: new Date(subscription.current_period_end).toLocaleDateString('de-CH') }] : []),
                     { label: 'Kunde seit', value: new Date(subscription.created_at).toLocaleDateString('de-CH') },
                   ].map(({ label, value, highlight, color }) => (
                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${G.border}`, paddingBottom: 12 }}>
@@ -382,8 +386,19 @@ export default function DashboardPage() {
             {!subscription && (
               <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: 28, textAlign: 'center' }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: G.text, marginBottom: 8 }}>Bereit für mehr?</h3>
-                <p style={{ color: G.textSec, marginBottom: 20, fontSize: 14 }}>Starter ab CHF 79 – vollständige Compliance für Ihre Website.</p>
+                <p style={{ color: G.textSec, marginBottom: 20, fontSize: 14 }}>Starter ab CHF 19.–/Mt. – vollständige Compliance für Ihre Website.</p>
                 <Link href="/checkout" style={{ padding: '12px 32px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, fontSize: 15, textDecoration: 'none' }}>Jetzt starten →</Link>
+              </div>
+            )}
+
+            {/* Kündigung: Kontakt per E-Mail */}
+            {subscription && (
+              <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
+                <p style={{ color: G.textMuted, fontSize: 13, margin: 0 }}>
+                  Kündigung per E-Mail an{' '}
+                  <a href="mailto:support@dataquard.ch" style={{ color: G.green, fontWeight: 600, textDecoration: 'none' }}>support@dataquard.ch</a>
+                  {' '}· Das Abo läuft bis zum Ende der bezahlten Laufzeit.
+                </p>
               </div>
             )}
           </div>
@@ -424,7 +439,7 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {subscription && subscription.plan !== 'impressum' ? (
+            {subscription ? (
               <div style={card}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 14 }}>Badge generieren</h3>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -495,7 +510,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {badges.length === 0 && subscription && subscription.plan !== 'impressum' && (
+            {badges.length === 0 && subscription && (
               <div style={{ textAlign: 'center', color: G.textMuted, padding: 32 }}>
                 Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf &ldquo;Badge erstellen&rdquo;.
               </div>
