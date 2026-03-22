@@ -42,24 +42,71 @@
  */
 
 // src/app/components/Navbar.tsx
+// Smart Header: versteckt beim Runterscrollen, erscheint beim Hochscrollen
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
 
 export function Navbar() {
+  // true = Header nach oben wegschieben
+  const [hidden, setHidden] = useState(false);
+  // Letzten Scroll-Y-Wert für Richtungsvergleich speichern
+  const prevScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+
+      if (currentY < 80) {
+        // Ganz oben: Header immer sichtbar
+        setHidden(false);
+      } else if (currentY > prevScrollY.current) {
+        // Runterscrollen: Header verstecken
+        setHidden(true);
+      } else {
+        // Hochscrollen: Header zeigen
+        setHidden(false);
+      }
+
+      prevScrollY.current = currentY;
+    };
+
+    // { passive: true } für bessere Scroll-Performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
       <style>{`
+        /* ── Platzhalter: hält Platz für den fixed Header im Dokumentfluss ── */
+        .dq-navbar-placeholder {
+          height: 108px; /* Desktop: 80px Logo + 2×14px Padding */
+        }
+
+        /* ── Eigentliche Navbar: fixed, mit Slide-Transition ── */
         .dq-navbar {
           width: 100%;
-          position: sticky;
+          position: fixed;
           top: 0;
+          left: 0;
+          right: 0;
           z-index: 50;
           background: rgba(255,255,255,0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid #e2e4ea;
+          /* Smooth Slide-Animation */
+          transform: translateY(0);
+          transition: transform 300ms ease;
         }
+
+        /* Versteckter Zustand: Header nach oben schieben */
+        .dq-navbar.dq-navbar--hidden {
+          transform: translateY(-100%);
+        }
+
         .dq-navbar-inner {
           max-width: 860px;
           margin: 0 auto;
@@ -89,6 +136,9 @@ export function Navbar() {
 
         /* Tablet */
         @media (max-width: 768px) {
+          .dq-navbar-placeholder {
+            height: 88px; /* 64px Logo + 2×12px Padding */
+          }
           .dq-navbar-inner {
             padding: 12px 20px;
           }
@@ -102,6 +152,9 @@ export function Navbar() {
 
         /* Mobile klein */
         @media (max-width: 480px) {
+          .dq-navbar-placeholder {
+            height: 72px; /* 52px Logo + 2×10px Padding */
+          }
           .dq-navbar-inner {
             padding: 10px 16px;
           }
@@ -117,7 +170,10 @@ export function Navbar() {
         }
       `}</style>
 
-      <nav className="dq-navbar">
+      {/* Platzhalter verhindert Content-Sprung beim Wechsel zu fixed */}
+      <div className="dq-navbar-placeholder" aria-hidden="true" />
+
+      <nav className={`dq-navbar${hidden ? ' dq-navbar--hidden' : ''}`}>
         <div className="dq-navbar-inner">
           <Link href="/" className="dq-logo-link">
             <img
