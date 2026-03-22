@@ -505,6 +505,8 @@ export default function ScannerPage() {
                   {
                     label: 'KI-Inhalte (AI-Trust)',
                     ok: !result.aiTrust.requiresDisclosure,
+                    // Violett als AI-Trust Markenfarbe für den Ampel-Punkt
+                    dotColor: G.violet,
                     bad: (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
@@ -529,10 +531,13 @@ export default function ScannerPage() {
                     bad: <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
                     good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
                   }] : []),
-                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode }>).map((row, idx) => (
+                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode; dotColor?: string }>).map((row, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
-                      <span style={{ color: G.textMuted, fontSize: 14, width: 180, flexShrink: 0 }}>{row.label}:</span>
-                      <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      {/* Ampel-Punkt: farbiger Kreis für schnellen Status-Überblick */}
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: row.dotColor ?? (row.ok ? G.green : G.red), flexShrink: 0, marginTop: 5 }} />
+                      <span style={{ color: G.textMuted, fontSize: 14, width: 174, flexShrink: 0 }}>{row.label}</span>
+                      {/* Beschreibungstext: flex statt inline-flex für konsistentes Linksbündig */}
+                      <span style={{ fontSize: 14, color: row.ok ? G.green : G.red, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flex: 1 }}>
                         {row.ok ? row.good : row.bad}
                       </span>
                     </div>
@@ -653,7 +658,7 @@ export default function ScannerPage() {
                 textDecoration: 'none',
               }}>
                 <img src="/energie.png" alt="" width={16} height={16} />
-                AI-Trust Abo aktivieren — CHF 99/Jahr →
+                Professional – ab CHF 39/Mt. →
               </Link>
             </div>
 
@@ -674,7 +679,7 @@ export default function ScannerPage() {
                     <span>
                       5 von {result.imageAnalysis.total_images_found} Bildern geprüft —{' '}
                       <Link href="/checkout?plan=starter" style={{ color: G.green, fontWeight: 600, textDecoration: 'none' }}>
-                        für vollständigen Scan: Starter ab CHF 79
+                        für vollständigen Scan: Starter ab CHF 19/Mt.
                       </Link>
                     </span>
                   </div>
@@ -734,7 +739,7 @@ export default function ScannerPage() {
                 <img src="/ablage.png" alt="" width={14} height={14} /> Cookie-Banner generieren
               </Link>
               <Link href="/checkout" style={{ display: 'flex', alignItems: 'center', gap: 6, background: G.green, color: '#fff', padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-                <img src="/icon-sicherheit.png" alt="Datenschutz" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />Datenschutzerklärung – CHF 79
+                <img src="/icon-sicherheit.png" alt="Datenschutz" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />Datenschutzerklärung – Starter ab CHF 19/Mt.
               </Link>
             </div>
           </div>

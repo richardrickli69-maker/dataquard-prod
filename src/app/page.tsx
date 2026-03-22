@@ -417,26 +417,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 8. IMPRESSUM CTA ═══ */}
-      <section style={{ maxWidth: 800, margin: '0 auto', padding: '20px 24px' }}>
-        <div className="impressum-cta-inner" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: '28px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <img src="/dokument.png" alt="Dokument" width={32} height={32} />
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>Impressum fehlt auf Ihrer Website?</h3>
-            </div>
-            <p style={{ fontSize: 13, color: '#991b1b' }}>Ein fehlendes Impressum ist eine Ordnungswidrigkeit – bis CHF 50&apos;000 Bussgeld möglich.</p>
-            <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12, color: G.textSec, flexWrap: 'wrap' }}>
-              <span>✓ Schweiz (nDSG)</span><span>✓ Deutschland (DSGVO)</span><span>✓ Sofort einsatzbereit</span>
-            </div>
-          </div>
-          <div style={{ textAlign: 'center', flexShrink: 0 }}>
-            <div style={{ fontSize: 28, fontWeight: 900, color: G.green }}>CHF 19</div>
-            <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 10 }}>Einmalkauf · kein Abo</div>
-            <Link href="/impressum-generator" style={{ display: 'block', padding: '10px 22px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 8, fontSize: 12, textDecoration: 'none' }}>Impressum erstellen →</Link>
-          </div>
-        </div>
-      </section>
+      {/* ═══ 8. IMPRESSUM CTA entfernt — Impressum jetzt in Starter/Professional enthalten ═══ */}
 
       {/* ═══ 9. STATS ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px' }}>
@@ -554,47 +535,63 @@ export default function HomePage() {
       {/* ═══ 11. PREISE ═══ */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
         <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Transparent. Fair. Schweizer Qualität.</h2>
-        <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Einmalkauf · Keine versteckten Kosten</p>
+        <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Jährliche Abrechnung · Jederzeit kündbar</p>
         <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-          {[
-            { n: 'Free', p: 'CHF 0', s: 'immer kostenlos', d: 'Für den ersten Überblick', f: ['Website-Scan', 'Ampel-Score', 'Compliance-Bericht', 'Performance-Check', 'AI-Trust Vorschau (5 Bilder, 1 Seite)'], m: ['Datenschutzerklärung', 'Impressum', 'AI-Trust Details & Vollscan'], c: 'Kostenlos scannen', l: '/scanner' },
-            { n: 'Starter', p: 'CHF 79', s: 'Einmalkauf', d: 'Für Schweizer KMUs', f: ['Alles aus Free', 'Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner Generator', '1 Domain', 'AI-Trust Scan — 50 Bilder, gesamte Website'], m: [], c: 'Jetzt starten', l: '/checkout', hl: true },
-            { n: 'Professional', p: 'CHF 149', s: 'Einmalkauf', d: 'Für wachsende Teams', f: ['Datenschutzerklärung', 'Impressum Generator', 'Cookie-Banner (5 Domains)', 'Priority Support', 'AI-Trust Scan — 250 Bilder/Domain, 5 Domains', 'AI-Klausel für Datenschutzerklärung'], m: [], c: 'Professional wählen', l: '/checkout' },
-          ].map(pl => (
-            <div key={pl.n} style={{ padding: 22, borderRadius: 14, border: pl.hl ? `2px solid ${G.green}` : `1px solid ${G.border}`, background: G.bgWhite, position: 'relative', boxShadow: pl.hl ? `0 4px 20px ${G.greenBg}` : '0 2px 8px rgba(0,0,0,0.03)' }}>
-              {pl.hl && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.green, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1 }}>EMPFOHLEN</div>}
+          {([
+            {
+              n: 'Free', sub: 'Check', badge: null as string | null,
+              hl: false, best: false,
+              p: 'CHF 0.–', pMt: null as string | null, pYear: null as string | null,
+              pNote: 'immer kostenlos',
+              d: 'Für den ersten Überblick',
+              f: ['Website-Scan & Compliance-Bericht (Ampel-System)', 'Performance & Security-Check', 'Vorschau für 5 KI-Bilder'],
+              m: ['nDSG-Datenschutzerklärung & Impressum', 'Monatlicher Compliance-Report'],
+              c: 'Kostenlos scannen', l: '/scanner',
+            },
+            {
+              n: 'Starter', sub: 'Basis', badge: 'EMPFOHLEN' as string | null,
+              hl: true, best: false,
+              p: 'CHF 19.–', pMt: '/Mt.' as string | null, pYear: '(CHF 228.– / Jahr)' as string | null,
+              pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+              d: 'Für Schweizer KMUs',
+              f: ['Website-Scan & Compliance-Bericht', 'nDSG-Datenschutzerklärung & Impressum', 'Cookie-Banner inklusive', 'Autom. Scan für 50 KI-Bilder', 'Monatlicher Compliance-Report per E-Mail', 'SSL-Ablauf Warnung'],
+              m: [],
+              c: 'Jetzt starten', l: '/checkout',
+            },
+            {
+              n: 'Professional', sub: 'Sorglos', badge: 'BESTSELLER' as string | null,
+              hl: false, best: true,
+              p: 'CHF 39.–', pMt: '/Mt.' as string | null, pYear: '(CHF 468.– / Jahr)' as string | null,
+              pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+              d: 'Unser Bestseller',
+              f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Deepfake-Schutz & Echtzeit-Alerts', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
+              m: [],
+              c: 'Professional wählen', l: '/checkout',
+            },
+          ] as Array<{ n: string; sub: string; badge: string | null; hl: boolean; best: boolean; p: string; pMt: string | null; pYear: string | null; pNote: string; d: string; f: string[]; m: string[]; c: string; l: string }>).map(pl => (
+            <div key={pl.n} style={{ padding: 22, borderRadius: 14, border: (pl.hl || pl.best) ? `2px solid ${G.green}` : `1px solid ${G.border}`, background: G.bgWhite, position: 'relative', boxShadow: (pl.hl || pl.best) ? `0 4px 20px ${G.greenBg}` : '0 2px 8px rgba(0,0,0,0.03)' }}>
+              {/* Badge: EMPFOHLEN oder BESTSELLER */}
+              {pl.badge && (
+                <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.green, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1, whiteSpace: 'nowrap' }}>{pl.badge}</div>
+              )}
+              {/* Plan-Name + Sub-Label */}
               <h3 style={{ fontSize: 18, fontWeight: 700 }}>{pl.n}</h3>
-              <div style={{ fontSize: 24, fontWeight: 900, color: pl.hl ? G.green : G.text, margin: '8px 0 2px' }}>{pl.p}</div>
-              <div style={{ fontSize: 10, color: G.textMuted, marginBottom: 4 }}>{pl.s}</div>
+              <div style={{ fontSize: 11, color: (pl.hl || pl.best) ? G.green : G.textMuted, marginBottom: 6 }}>{pl.sub}</div>
+              {/* Preisanzeige: grosse Zahl + /Mt. inline + Jahrespreis darunter */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, margin: '8px 0 0' }}>
+                <span style={{ fontSize: pl.pMt ? 30 : 24, fontWeight: 900, color: (pl.hl || pl.best) ? G.green : G.text }}>{pl.p}</span>
+                {pl.pMt && <span style={{ fontSize: 13, color: G.textMuted }}>{pl.pMt}</span>}
+              </div>
+              {pl.pYear && <div style={{ fontSize: 12, color: G.textMuted, marginBottom: 2 }}>{pl.pYear}</div>}
+              <div style={{ fontSize: 10, color: G.textMuted, marginBottom: 14 }}>{pl.pNote}</div>
               <div style={{ fontSize: 11, color: G.textSec, marginBottom: 14 }}>{pl.d}</div>
               {pl.f.map(f => <div key={f} style={{ fontSize: 14, color: G.text, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/checkmark.png" alt="Verfügbar" width={14} height={14} style={{ flexShrink: 0 }} />{f}</div>)}
               {pl.m.map(f => <div key={f} style={{ fontSize: 14, color: G.textMuted, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}><img src="/fehler.png" alt="Nicht verfügbar" width={14} height={14} style={{ flexShrink: 0, opacity: 0.45 }} />{f}</div>)}
-              <Link href={pl.l} style={{ display: 'block', textAlign: 'center', marginTop: 16, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', background: pl.hl ? G.green : 'transparent', color: pl.hl ? '#fff' : G.green, border: pl.hl ? 'none' : `2px solid ${G.green}` }}>{pl.c}</Link>
+              <Link href={pl.l} style={{ display: 'block', textAlign: 'center', marginTop: 16, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', background: (pl.hl || pl.best) ? G.green : 'transparent', color: (pl.hl || pl.best) ? '#fff' : G.green, border: (pl.hl || pl.best) ? 'none' : `2px solid ${G.green}` }}>{pl.c}</Link>
             </div>
           ))}
         </div>
-        <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>Alle Preise in CHF inkl. MwSt. · Einmalkauf · Keine versteckten Kosten</p>
-
-        {/* AI-Trust Abo Add-On */}
-        <div style={{ marginTop: 40, textAlign: 'center' }}>
-          <p style={{ fontSize: 14, color: G.textSec, marginBottom: 20 }}>
-            Sie möchten laufenden Schutz? Das <strong style={{ color: G.violet }}>AI-Trust Abo</strong> überwacht Ihre Website dauerhaft.
-          </p>
-          <div style={{ maxWidth: 400, margin: '0 auto', padding: 28, borderRadius: 16, border: `2px solid ${G.violet}`, background: G.bgWhite, position: 'relative', boxShadow: `0 4px 24px ${G.violetBg}` }}>
-            <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: G.violet, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 12px', borderRadius: 20, letterSpacing: 1, whiteSpace: 'nowrap' }}>ADD-ON</div>
-            <div style={{ marginBottom: 6 }}><IconEl ic="🤖" size={28} /></div>
-            <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>AI-Trust Abo</h3>
-            <div style={{ fontSize: 26, fontWeight: 900, color: G.violet, margin: '8px 0 2px' }}>CHF 99</div>
-            <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 16 }}>pro Jahr</div>
-            <div style={{ textAlign: 'left', marginBottom: 20 }}>
-              {['✓ 24/7 Monitoring (250 Bilder)', '✓ Deepfake-Erkennung', '✓ EU AI Act Art. 50', '✓ Shield-Badge', '✓ E-Mail-Alerts', '✓ Quartals-Report'].map(f => (
-                <div key={f} style={{ fontSize: 14, color: G.text, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'center' }}><img src="/checkmark.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />{f.startsWith('✓') ? f.slice(1).trim() : f}</div>
-              ))}
-            </div>
-            <Link href="/checkout?plan=ai-trust" style={{ display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none', background: G.violet, color: '#fff' }}>AI-Trust aktivieren →</Link>
-            <p style={{ fontSize: 11, color: G.textMuted, marginTop: 10, textAlign: 'center' }}>Kombinierbar mit jedem Einmalkauf-Paket.</p>
-          </div>
-        </div>
+        <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>Alle Preise in CHF inkl. MwSt. · Jährliche Abrechnung · Jederzeit kündbar</p>
       </section>
 
       {/* ═══ 12. VERGLEICH ═══ */}
@@ -609,18 +606,16 @@ export default function HomePage() {
               <th style={{ padding: 12, textAlign: 'center', color: G.textMuted }}>iubenda</th>
             </tr></thead>
             <tbody>
+              {/* Neue Reihenfolge: Compliance, Performance, Security, Preis, AI-Trust, KI-Bilder, Deepfake, Daten */}
               {[
-                ['Compliance-Check', '✅', '✅', '✅'],
+                ['Compliance (nDSG + DSGVO)', '✅', '❌', '❌'],
                 ['Performance-Check', '✅', '❌', '❌'],
                 ['Security-Check', '✅', '❌', '❌'],
+                ['Preis', 'ab CHF 19.–/Mt.', 'CHF 55/J.', '€ 144+/J.'],
+                ['🤖 AI-Trust (EU AI Act Art. 50)', '✅', '❌', '❌'],
                 ['🤖 KI-Bild-Erkennung', '✅', '❌', '❌'],
-                ['🤖 Deepfake-Check (EU AI Act)', '✅', '❌', '❌'],
-                ['Schweizer nDSG', '✅', '✅', '⚠️'],
-                ['Auto-Scan & Pre-fill', '✅', '✅', '❌'],
-                ['Cookie-Banner Generator', '✅', '❌', '⚠️'],
-                ['Laufende KI-Überwachung', 'CHF 99/J.', '❌', '❌'],
-                ['Preis (Einmalkauf)', 'ab CHF 79', 'CHF 55/J.', '€ 144+/J.'],
-                ['Daten in Schweiz', '✅', '⚠️', '❌'],
+                ['🤖 Deepfake-Check', '✅', '❌', '❌'],
+                ['Daten in der Schweiz', '✅', '❌', '❌'],
               ].map((r, i) => (
                 <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
                   <td style={{ padding: '10px 14px', color: G.text }}>
