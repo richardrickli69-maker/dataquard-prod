@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      const plan = session.metadata?.plan;
+      // metadata.plan (neue Sessions) oder metadata.product (alte Sessions, Fallback)
+      const plan = session.metadata?.plan ?? session.metadata?.product;
       const userId = session.metadata?.user_id;
       const customerEmail = session.customer_details?.email ?? session.customer_email;
       const amountTotal = (session.amount_total ?? 0) / 100;
