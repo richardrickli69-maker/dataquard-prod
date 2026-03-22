@@ -48,13 +48,14 @@ export async function POST(request: NextRequest) {
   // Subscription prüfen (STARTER oder PROFESSIONAL)
   const { data: sub } = await supabaseAdmin
     .from('subscriptions')
-    .select('plan')
+    .select('plan, current_period_end')
     .eq('user_id', user.id)
     .eq('status', 'active')
+    .in('plan', ['starter', 'professional'])
     .limit(1)
     .maybeSingle();
 
-  if (!sub || sub.plan === 'impressum') {
+  if (!sub) {
     return NextResponse.json(
       { error: 'Verified Badge erfordert einen Starter- oder Professional-Plan' },
       { status: 403 }
@@ -74,12 +75,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ badge_id: existing.id, already_exists: true });
   }
 
+  // expires_at aus Abo-Laufzeit ableiten, Fallback +1 Jahr
+  const expiresAt = sub.current_period_end
+    ? new Date(sub.current_period_end).toISOString()
+    : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
   // Neuen Badge erstellen
   const { data: badge, error: insertError } = await supabaseAdmin
     .from('verified_badges')
     .insert({
       user_id: user.id,
       website_url: website_url.trim(),
+      expires_at: expiresAt,
     })
     .select('id')
     .single();

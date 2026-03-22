@@ -521,7 +521,7 @@ export default function DashboardPage() {
         {/* Tab: AI-Trust */}
         {activeTab === 'aitrust' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {subscription?.ai_trust_active ? (
+            {(subscription?.plan === 'starter' || subscription?.plan === 'professional') ? (
               <>
                 {/* Status-Anzeige */}
                 <div style={{ background: '#0F1B2D', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
