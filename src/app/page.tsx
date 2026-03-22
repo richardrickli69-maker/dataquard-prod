@@ -530,7 +530,6 @@ export default function HomePage() {
           <button onClick={() => { document.getElementById('hero-scanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => document.getElementById('hero-url-input')?.focus(), 500); }} style={{ padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, border: 'none', fontSize: 16, cursor: 'pointer', boxShadow: `0 4px 14px ${G.green}40` }}>
             Jetzt Ihre Website prüfen — kostenlos →
           </button>
-          <p style={{ fontSize: 11, color: G.textMuted, marginTop: 8 }}>Kein Risiko. Kein Abo. Sofort Ergebnis.</p>
         </div>
       </section>
 
