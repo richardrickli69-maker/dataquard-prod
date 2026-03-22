@@ -45,7 +45,7 @@
 // ÄNDERUNGEN:
 // - 4-Säulen-Analyse: AI-Trust als 4. Säule (KI-Bild-Erkennung & Deepfake-Check, EU AI Act Art. 50)
 // - Header-Banner, Hero, Trust-Badges, Ampel, Säulen, Scan-Preview, Pricing, Vergleich, Stats, FAQ aktualisiert
-// - AI-Trust Abo Add-On Karte (CHF 99/J., violett)
+// - AI-Trust Abo Add-On Karte (ab CHF 39/Mt., im Professional-Plan enthalten)
 'use client';
 
 import Link from 'next/link';
@@ -152,7 +152,7 @@ export default function HomePage() {
   };
 
   const faqs = [
-    { q: 'Was kostet ein Datenschutzanwalt?', a: 'Ein Datenschutzanwalt verlangt CHF 1\'500 bis 3\'500 für eine massgeschneiderte Erklärung. Mit Dataquard erhalten Sie das gleiche Ergebnis für CHF 79 – in 3 Minuten.' },
+    { q: 'Was kostet ein Datenschutzanwalt?', a: 'Ein Datenschutzanwalt verlangt CHF 1\'500 bis 3\'500 für eine massgeschneiderte Erklärung. Mit Dataquard erhalten Sie das gleiche Ergebnis ab CHF 19.–/Mt. – in 3 Minuten.' },
     { q: 'Was passiert wenn ich keine Datenschutzerklärung habe?', a: 'Nach dem Schweizer nDSG (in Kraft seit 01.09.2023) drohen Bussen bis CHF 250\'000. Für EU-Kunden gilt die DSGVO mit Bussen bis 4% des weltweiten Jahresumsatzes.' },
     { q: 'Gilt das nDSG auch für Einzelunternehmer?', a: 'Ja – das nDSG gilt für alle Unternehmen die Personendaten von Schweizer Einwohnern bearbeiten, unabhängig von Grösse oder Rechtsform.' },
     { q: 'Wie unterscheidet sich Dataquard von kostenlosen Generatoren?', a: 'Kostenlose Generatoren erstellen eine generische Vorlage ohne Ihre Website zu analysieren. Dataquard scannt automatisch alle Drittanbieter und erstellt eine massgeschneiderte Erklärung.' },
@@ -160,7 +160,7 @@ export default function HomePage() {
     { q: 'Ist die generierte Policy wirklich nDSG/DSGVO-konform?', a: 'Ja. Über 40 juristisch validierte Textbausteine (P1–P7, W1–W8, D1–D12, etc.) speziell für nDSG und DSGVO. Keine generischen KI-Texte – präzise, vollständig und rechtssicher.' },
     { q: 'Brauche ich technische Fähigkeiten?', a: 'Nein! Sie brauchen nur Ihre Domain-Adresse. Der Rest ist vollautomatisch.' },
     { q: 'Welche Daten sammelt Dataquard?', a: 'Nur die Informationen die Sie uns geben (Domain, Unternehmensname). Daten bleiben in der Schweiz.' },
-    { q: 'Wie viel Bussgeld droht bei DSGVO/nDSG-Verstössen?', a: 'Bis CHF 250\'000 bei nDSG und bis € 20 Mio. bei DSGVO. Mit Dataquard sind Sie in Minuten konform.' },
+    { q: 'Wie viel Bussgeld droht bei DSGVO/nDSG-Verstössen?', a: 'Bis CHF 250\'000 bei nDSG und bis € 20 Mio. oder 4% des weltweiten Jahresumsatzes bei DSGVO. Mit Dataquard sind Sie in Minuten konform.' },
     { q: 'Kann ich die Policy bearbeiten?', a: 'Ja! Sie erhalten eine Markdown/HTML-Version die Sie problemlos anpassen können.' },
     { q: 'Gibt es eine Geld-zurück-Garantie?', a: 'Ja! Innerhalb der ersten 14 Tage nach Abschluss können Sie Ihr Abo ohne Angabe von Gründen kündigen und erhalten eine volle Rückerstattung. Nach Ablauf der 14 Tage läuft Ihr Abo bis zum Ende der bezahlten Laufzeit.' },
     { q: 'Was ist der EU AI Act Art. 50?', a: 'Der EU AI Act ist das weltweit erste umfassende KI-Gesetz. Artikel 50 verlangt, dass KI-generierte Inhalte als solche gekennzeichnet werden müssen. Für Schweizer KMU mit EU-Kunden gilt: Wer KI-Bilder auf seiner Website verwendet, muss diese transparent kennzeichnen — sonst drohen Bussgelder.' },
@@ -284,7 +284,8 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
+            {/* Violetter Punkt als AI-Trust Markenfarbe */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0, boxShadow: '0 0 6px #8B5CF660' }} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
           </div>
         </div>
       </section>
@@ -492,7 +493,7 @@ export default function HomePage() {
               </div>
             ))}
             <div style={{ marginTop: 16, padding: '12px 14px', background: '#fee2e2', borderRadius: 10, fontSize: 12, color: '#991b1b', fontWeight: 600, textAlign: 'center' }}>
-              <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. (DSGVO)
+              <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. oder 4% des Jahresumsatzes (DSGVO)
             </div>
           </div>
 
@@ -504,10 +505,11 @@ export default function HomePage() {
               <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard — automatisch korrekt</h3>
             </div>
             {[
-              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen.' },
+              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen — von Google Analytics über Meta Pixel bis zu versteckten Tracking-Pixeln in <noscript>-Tags. Über 35 Tracker-Patterns werden geprüft.' },
               { ic: '🚦', t: 'Richtige Jurisdiktion', d: 'Automatische Erkennung: nDSG, DSGVO oder beides — basierend auf Ihrer Domain, Ihrem Server und Ihren Besuchern.' },
-              { ic: '🔄', t: 'Immer aktuell', d: 'Neuer Tracker? Neues Plugin? Erneut scannen, Policy aktualisieren. Ihre DSE wächst mit Ihrer Website.' },
-              { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14 — mit allen Pflichtangaben, die ein Jurist erwarten würde.' },
+              { ic: '🔄', t: 'Immer aktuell', d: 'Neuer Tracker? Neues Plugin? Dataquard erkennt Änderungen automatisch. Im Starter-Plan erhalten Sie monatliche Compliance-Reports per E-Mail. Im Professional-Plan wird Ihre Datenschutzerklärung sogar vollautomatisch aktualisiert.' },
+              { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14. Zusätzlich: EU AI Act Art. 50 Konformität — Dataquard erkennt KI-generierte Bilder und Deepfakes auf Ihrer Website und sorgt für die gesetzlich vorgeschriebene Kennzeichnung.' },
+              { ic: '📊', t: '4-Säulen-Analyse', d: 'Dataquard ist der einzige Schweizer Website-Check, der gleichzeitig Compliance, Performance, Security und AI-Trust prüft. Kein anderes Tool bietet alle vier Säulen in einem Scan.' },
             ].map(r => (
               <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
                 <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
@@ -518,7 +520,7 @@ export default function HomePage() {
               </div>
             ))}
             <div style={{ marginTop: 16, padding: '12px 14px', background: `${G.green}12`, borderRadius: 10, fontSize: 12, color: G.green, fontWeight: 600, textAlign: 'center' }}>
-              ✓ Ab CHF 79 · Einmalkauf · Rechtssicher · In 3 Minuten fertig
+              ✓ Ab CHF 19.–/Mt. · Jährliche Abrechnung · Rechtssicher · In 3 Minuten fertig
             </div>
           </div>
         </div>
@@ -641,7 +643,7 @@ export default function HomePage() {
           <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24, textAlign: 'left' }}>
             {[
               { ic: '🔒', t: 'Datenschutz', d: 'Daten auf Schweizer Servern. Nie an Dritte.' },
-              { ic: '💳', t: 'Zahlung', d: 'Einmalkauf. Keine Verlängerung.' },
+              { ic: '💳', t: 'Zahlung', d: 'Jahresabo. Jederzeit kündbar.' },
               { ic: '↩️', t: '14 Tage Garantie', d: 'Geld zurück ohne Angabe von Gründen.' },
               { ic: '⚖️', t: 'Haftung', d: 'Keine Rechtsberatung. Anwalt empfohlen.' },
             ].map(a => (
