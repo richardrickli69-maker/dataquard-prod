@@ -50,10 +50,96 @@ interface FetchHtmlError {
 }
 
 /**
- * Lädt den HTML-Inhalt einer URL mit Retry-Logik.
- * - 15s Timeout beim ersten Versuch
+ * Baut den Cookie-String aus einem Set-Cookie-Header zusammen.
+ * Extrahiert nur Name=Value Paare, ignoriert Direktiven (Path, Domain, SameSite, …).
+ * Mehrere Cookies können komma-separiert ankommen ODER als einzelner Header.
+ */
+function parseCookies(existing: string, setCookieHeader: string): string {
+  // Split auf Kommas zwischen Cookie-Einträgen (nicht innerhalb von Expires-Dates)
+  // Heuristik: Split nur wenn kein Weekday-Kürzel danach folgt (Mon, Tue, …)
+  const entries = setCookieHeader.split(/,(?!\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun))/);
+  const newPairs = entries
+    .map(entry => entry.split(';')[0].trim())  // nur Name=Value
+    .filter(pair => pair.includes('='));
+  if (newPairs.length === 0) return existing;
+  const combined = existing ? `${existing}; ${newPairs.join('; ')}` : newPairs.join('; ');
+  return combined;
+}
+
+/**
+ * Führt einen einzelnen HTTP-Request mit manueller Redirect-Verfolgung durch.
+ * Cookies aus Set-Cookie Headers werden gesammelt und bei Redirects mitgeschickt.
+ * Verhindert den Redirect-Loop bei Cookie-basierten Paywall-Systemen (Tamedia/Piano).
+ *
+ * @param startUrl  - Zu ladende URL
+ * @param userAgent - Zu verwendender User-Agent
+ * @param timeoutMs - Timeout pro Request (nicht gesamt)
+ */
+async function fetchWithCookies(
+  startUrl: string,
+  userAgent: string,
+  timeoutMs: number,
+): Promise<Response & { finalUrl: string }> {
+  let currentUrl = startUrl;
+  let cookies = '';
+  const MAX_REDIRECTS = 5;
+
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    const headers: Record<string, string> = {
+      'User-Agent': userAgent,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'de-CH,de;q=0.9,en;q=0.5',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
+    };
+
+    // Gesammelte Cookies aus vorherigen Responses mitsenden
+    if (cookies) headers['Cookie'] = cookies;
+
+    const res = await fetch(currentUrl, {
+      headers,
+      redirect: 'manual',  // Redirects NICHT automatisch folgen
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
+    // Cookies aus der Antwort sammeln (Cookie-Jar-Simulation)
+    const setCookieHeader = res.headers.get('set-cookie');
+    if (setCookieHeader) {
+      cookies = parseCookies(cookies, setCookieHeader);
+    }
+
+    // Redirect (301, 302, 303, 307, 308)?
+    const isRedirect = res.status >= 300 && res.status < 400;
+    if (isRedirect) {
+      const location = res.headers.get('location');
+      if (!location) break; // Kein Location-Header → abbrechen
+      // Relative URL zu absoluter URL aufloesen
+      currentUrl = location.startsWith('http')
+        ? location
+        : new URL(location, currentUrl).href;
+      continue;
+    }
+
+    // Erfolgreiche Antwort oder Fehler zurückgeben
+    return Object.assign(res, { finalUrl: currentUrl });
+  }
+
+  // Max-Redirects überschritten — letzten Status als Fehler zurückgeben
+  throw new Error('redirect count exceeded');
+}
+
+/**
+ * Lädt den HTML-Inhalt einer URL mit Cookie-Persistenz und Retry-Logik.
+ * - Manuelle Redirect-Verfolgung mit Cookie-Jar (Fix für Tamedia/Piano Paywall)
+ * - 15s Timeout pro Versuch
  * - Retry mit Safari-UA bei 403
- * - HTTPS → HTTP Fallback bei Verbindungsfehler
+ * - HTTPS → HTTP Fallback bei Verbindungsfehlern
  * - Content-Validierung (Cloudflare, CAPTCHA, leerer Body)
  */
 async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchHtmlError> {
@@ -70,7 +156,8 @@ async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchH
     const userAgents = [UA_CHROME, UA_SAFARI];
     for (const ua of userAgents) {
       try {
-        const res = await fetch(url, buildScanFetchInit(15000, ua));
+        // Cookie-persistente Fetch-Funktion verwenden (kein Redirect-Loop bei Tamedia etc.)
+        const res = await fetchWithCookies(url, ua, 15000);
 
         if (res.status === 403 || res.status === 401) {
           // Beim ersten UA nochmal mit Safari versuchen
@@ -113,7 +200,10 @@ async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchH
 
         if (name === 'TimeoutError' || name === 'AbortError' || msg.includes('timeout')) {
           lastMessage = 'Die Website hat nicht innerhalb von 15 Sekunden geantwortet. Möglicherweise ist der Server überlastet oder blockiert Zugriffe.';
-          // Beim Timeout nicht mit anderem UA nochmal versuchen, direkt weiter zum HTTP-Fallback
+          break;
+        }
+        if (msg.includes('redirect count exceeded')) {
+          lastMessage = 'Die Website leitet zu oft weiter (Redirect-Loop). Dies kann auf eine Paywall oder Cookie-Pflicht hinweisen.';
           break;
         }
         if (msg.includes('ENOTFOUND') || msg.includes('getaddrinfo') || msg.includes('EAI_AGAIN')) {
@@ -124,7 +214,6 @@ async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchH
           break;
         }
         if (msg.includes('certificate') || msg.includes('SSL') || msg.includes('CERT_')) {
-          // Bei SSL-Fehler: HTTPS→HTTP Fallback versuchen
           lastMessage = 'SSL-Zertifikatsfehler. Die Website hat ein ungültiges oder abgelaufenes Zertifikat.';
           break;
         }
