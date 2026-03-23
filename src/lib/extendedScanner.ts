@@ -7,23 +7,142 @@ import { analyzeForAiContent, type AiAuditResult } from '@/lib/visualAiService';
 import { detectCookieBanner } from '@/lib/cookieBannerDetector';
 import { detectJsRendering, type JsRenderingResult } from '@/lib/jsRenderingDetector';
 
+/** Realistischer Chrome-User-Agent für Website-Scans */
+const UA_CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+/** Fallback-UA (Safari/macOS) bei 403 im Retry */
+const UA_SAFARI = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15';
+
 /**
  * Browser-ähnliche Fetch-Optionen für Website-Scans.
  * Verhindert ECONNRESET / 403 bei strikten Webservern die Bot-User-Agents blocken.
  */
-function buildScanFetchInit(timeoutMs: number): RequestInit {
+function buildScanFetchInit(timeoutMs: number, userAgent = UA_CHROME): RequestInit {
   return {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'de-CH,de;q=0.9,en;q=0.8',
+      'User-Agent': userAgent,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'de-CH,de;q=0.9,en;q=0.5',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
     },
     redirect: 'follow',
     signal: AbortSignal.timeout(timeoutMs),
   };
 }
 
+/** Ergebnis von fetchPageHtml */
+interface FetchHtmlResult {
+  html: string;
+  ok: true;
+}
+interface FetchHtmlError {
+  ok: false;
+  /** Fehler-Code für Frontend-Meldungen */
+  code: 'TIMEOUT' | 'BLOCKED' | 'NOT_FOUND' | 'DNS' | 'REFUSED' | 'SSL' | 'EMPTY' | 'CLOUDFLARE' | 'UNKNOWN';
+  /** Deutschsprachige Benutzer-Meldung */
+  message: string;
+}
+
+/**
+ * Lädt den HTML-Inhalt einer URL mit Retry-Logik.
+ * - 15s Timeout beim ersten Versuch
+ * - Retry mit Safari-UA bei 403
+ * - HTTPS → HTTP Fallback bei Verbindungsfehler
+ * - Content-Validierung (Cloudflare, CAPTCHA, leerer Body)
+ */
+async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchHtmlError> {
+  const urls = [inputUrl];
+  // HTTPS → HTTP Fallback als zweite Option
+  if (inputUrl.startsWith('https://')) {
+    urls.push(inputUrl.replace('https://', 'http://'));
+  }
+
+  let lastMessage = 'Der Scan konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.';
+
+  for (const url of urls) {
+    // Zwei Versuche: Chrome-UA, dann Safari-UA
+    const userAgents = [UA_CHROME, UA_SAFARI];
+    for (const ua of userAgents) {
+      try {
+        const res = await fetch(url, buildScanFetchInit(15000, ua));
+
+        if (res.status === 403 || res.status === 401) {
+          // Beim ersten UA nochmal mit Safari versuchen
+          if (ua === UA_CHROME) continue;
+          lastMessage = 'Die Website blockiert automatisierte Zugriffe. Dies betrifft meist grosse News-Portale mit Paywall oder Cloudflare-Schutz.';
+          break;
+        }
+
+        if (res.status === 404) {
+          return { ok: false, code: 'NOT_FOUND', message: 'Die Website wurde nicht gefunden. Bitte prüfen Sie die URL.' };
+        }
+
+        if (!res.ok) {
+          lastMessage = `Die Website hat mit einem Fehler geantwortet (HTTP ${res.status}).`;
+          break;
+        }
+
+        const html = await res.text();
+
+        // Cloudflare Challenge erkennen
+        if (html.includes('cf-browser-verification') || html.includes('challenge-platform') || html.includes('__cf_chl_')) {
+          return { ok: false, code: 'CLOUDFLARE', message: 'Die Website ist durch Cloudflare geschützt und blockiert automatisierte Zugriffe (z.B. bei aktivem Bot-Schutz oder Paywall).' };
+        }
+
+        // CAPTCHA erkennen
+        if ((html.includes('g-recaptcha') || html.includes('hcaptcha')) && html.length < 5000) {
+          return { ok: false, code: 'CLOUDFLARE', message: 'Die Website erfordert eine CAPTCHA-Verifizierung und kann nicht automatisch gescannt werden.' };
+        }
+
+        // Zu wenig Content (wahrscheinlich leere JS-Shell)
+        if (html.length < 400) {
+          return { ok: false, code: 'EMPTY', message: 'Die Website liefert keinen ausreichenden HTML-Inhalt. Sie wird möglicherweise vollständig per JavaScript geladen (Single-Page Application). Unser Scanner unterstützt aktuell serverseitig gerenderte Websites.' };
+        }
+
+        return { ok: true, html };
+
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const name = err instanceof Error ? err.name : '';
+
+        if (name === 'TimeoutError' || name === 'AbortError' || msg.includes('timeout')) {
+          lastMessage = 'Die Website hat nicht innerhalb von 15 Sekunden geantwortet. Möglicherweise ist der Server überlastet oder blockiert Zugriffe.';
+          // Beim Timeout nicht mit anderem UA nochmal versuchen, direkt weiter zum HTTP-Fallback
+          break;
+        }
+        if (msg.includes('ENOTFOUND') || msg.includes('getaddrinfo') || msg.includes('EAI_AGAIN')) {
+          return { ok: false, code: 'DNS', message: 'Die Domain konnte nicht aufgelöst werden. Bitte prüfen Sie die URL auf Tippfehler.' };
+        }
+        if (msg.includes('ECONNREFUSED')) {
+          lastMessage = 'Die Verbindung zur Website wurde abgelehnt. Der Server ist möglicherweise nicht erreichbar.';
+          break;
+        }
+        if (msg.includes('certificate') || msg.includes('SSL') || msg.includes('CERT_')) {
+          // Bei SSL-Fehler: HTTPS→HTTP Fallback versuchen
+          lastMessage = 'SSL-Zertifikatsfehler. Die Website hat ein ungültiges oder abgelaufenes Zertifikat.';
+          break;
+        }
+        lastMessage = 'Der Scan konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.';
+      }
+    }
+  }
+
+  return { ok: false, code: 'UNKNOWN', message: lastMessage };
+}
+
 export interface ExtendedScanResult {
+  /**
+   * Wenn der Haupt-Fetch der Seite fehlgeschlagen ist, enthält dieses Feld
+   * eine deutschsprachige Benutzer-Meldung. Die übrigen Felder enthalten
+   * dann Fallback-Werte (Partial Result).
+   */
+  fetchError?: string;
   compliance: {
     score: number;
     jurisdiction: string;
@@ -480,14 +599,19 @@ export async function detectComplianceIssues(
   trackersFound: string[];
   missingElements: string[];
   jsRendering: JsRenderingResult;
+  /** Fehler-Meldung wenn die Seite nicht geladen werden konnte */
+  fetchError?: string;
 }> {
+  const url = domain.startsWith('http') ? domain : `https://${domain}`;
+  const fetchResult = await fetchPageHtml(url);
   let html = '';
-  try {
-    const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, buildScanFetchInit(8000));
-    html = await res.text();
-  } catch {
-    // Fallback: leeres HTML, alle Checks schlagen fehl
+  let fetchError: string | undefined;
+
+  if (fetchResult.ok) {
+    html = fetchResult.html;
+  } else {
+    fetchError = fetchResult.message;
+    // Leeres HTML → alle HTML-basierten Checks schlagen fehl (Partial Result)
     html = '';
   }
 
@@ -606,6 +730,7 @@ export async function detectComplianceIssues(
       ...(cookieBannerAssessment.status === 'fehlt_pflicht' ? ['Cookie Banner'] : []),
     ],
     jsRendering,
+    fetchError,
   };
 }
 
@@ -912,6 +1037,7 @@ export async function performExtendedScan(
   );
 
   return {
+    fetchError: complianceCheck.fetchError,
     compliance: {
       score: complianceScore,
       jurisdiction: domain.includes('.ch') ? 'nDSG' : 'DSGVO',

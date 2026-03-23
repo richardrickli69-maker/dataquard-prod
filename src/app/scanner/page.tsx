@@ -76,6 +76,8 @@ interface JsRenderingInfo {
 
 interface ScanResult {
   url: string;
+  /** Wenn gesetzt: Seite konnte nicht vollständig geladen werden (Partial Result) */
+  fetchError?: string;
   scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
   findings: {
     datenschutz: boolean;
@@ -241,6 +243,7 @@ export default function ScannerPage() {
         : baseScore;
       setResult({
         url: scanUrl,
+        fetchError: scan?.fetchError ?? undefined,
         scores: {
           compliance: scan?.compliance?.score ?? 0,
           optimization: scan?.optimization?.score ?? 0,
@@ -295,7 +298,7 @@ export default function ScannerPage() {
             ← Zurück
           </button>
           <Link href="/checkout" style={{ background: G.green, color: '#fff', fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 20, textDecoration: 'none' }}>
-            Upgrade – CHF 79 Einmalkauf
+            Upgrade – CHF 19.–/Mt.
           </Link>
         </div>
       </div>
@@ -322,7 +325,22 @@ export default function ScannerPage() {
               ) : <><img src="/suche.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Analyse starten</>}
             </button>
           </div>
-          {error && <p style={{ marginTop: 10, color: G.red, fontSize: 13 }}>{error}</p>}
+          {error && (
+            <div style={{ marginTop: 12, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 12, padding: '14px 16px' }}>
+              <p style={{ color: G.red, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Scan nicht möglich</p>
+              <p style={{ color: G.textSec, fontSize: 13, marginBottom: 10 }}>{error}</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => { setError(''); setResult(null); setUrl(''); }}
+                  style={{ fontSize: 12, color: G.textSec, background: 'none', border: `1px solid ${G.border}`, borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
+                  Andere URL
+                </button>
+                <button onClick={handleScan}
+                  style={{ fontSize: 12, color: '#fff', background: G.green, border: 'none', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontWeight: 600 }}>
+                  Erneut versuchen
+                </button>
+              </div>
+            </div>
+          )}
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
 
@@ -396,6 +414,14 @@ export default function ScannerPage() {
                 <ScoreCircle score={result.scores.aiTrust} label="AI-Trust" icon="🤖" />
               </div>
             </div>
+
+            {/* Partial-Result-Warnung wenn Seite nicht vollständig geladen werden konnte */}
+            {result.fetchError && (
+              <div style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.4)', borderRadius: 12, padding: '14px 16px' }}>
+                <p style={{ color: '#92400e', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Eingeschränkter Scan</p>
+                <p style={{ color: G.textSec, fontSize: 13 }}>{result.fetchError} Einige Prüfungen (Datenschutzerklärung, Tracker, Cookie-Banner) konnten nicht durchgeführt werden — SSL und Basis-Analyse sind trotzdem verfügbar.</p>
+              </div>
+            )}
 
             {/* JS-Rendering-Hinweis (nur wenn erkannt) */}
             {result.jsRendering?.isLikelyJsRendered && (result.jsRendering.confidence === 'high' || result.jsRendering.confidence === 'medium') && (
