@@ -256,6 +256,93 @@ export async function checkPerformance(domain: string): Promise<{
   };
 }
 
+// ─── Link-Erkennungs-Hilfsfunktionen ──────────────────────────────────────────
+
+/**
+ * Prüft ob eine href-URL auf ein Impressum hinweist.
+ * Schliesst Generator/Tool-Seiten aus (z.B. /impressum-generator).
+ */
+function isImpressumUrl(href: string): boolean {
+  const lower = href.toLowerCase();
+  if (
+    !lower.includes('impressum') &&
+    !lower.includes('imprint') &&
+    !lower.includes('legal-notice') &&
+    !lower.includes('mentions-legales') &&
+    !lower.includes('note-legali')
+  ) return false;
+  // Generator/Tool-Seiten ausschliessen (False Positive verhindern)
+  if (
+    lower.includes('generator') ||
+    lower.includes('erstellen') ||
+    lower.includes('create') ||
+    lower.includes('-tool') ||
+    lower.includes('vorlage')
+  ) return false;
+  return true;
+}
+
+/**
+ * Prüft ob eine href-URL auf eine Datenschutzerklärung hinweist.
+ */
+function isPrivacyUrl(href: string): boolean {
+  const lower = href.toLowerCase();
+  return (
+    lower.includes('datenschutz') ||
+    lower.includes('privacy') ||
+    lower.includes('data-protection') ||
+    lower.includes('datenschutzerklaerung') ||
+    lower.includes('datenschutzrichtlinien') ||
+    lower.includes('datenschutzhinweise') ||
+    lower.includes('datenschutzbestimmungen') ||
+    lower.includes('politique-de-confidentialite') ||
+    lower.includes('informativa-sulla-privacy')
+  );
+}
+
+/**
+ * Extrahiert alle <a> Tags aus HTML-String und gibt href + sichtbaren Text zurück.
+ * Entfernt innere HTML-Tags aus dem Text (z.B. <span>Impressum</span> → "Impressum").
+ */
+function extractAllLinks(html: string): Array<{ href: string; text: string; ariaLabel: string }> {
+  const links: Array<{ href: string; text: string; ariaLabel: string }> = [];
+  // Matcht <a ...> bis </a>, auch über mehrere Zeilen
+  const pattern = /<a\s[^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(html)) !== null) {
+    const fullTag = match[0];
+    // href aus dem öffnenden Tag extrahieren
+    const hrefMatch = fullTag.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1];
+    // aria-label als Fallback-Text
+    const ariaMatch = fullTag.match(/aria-label=["']([^"']+)["']/i);
+    const ariaLabel = ariaMatch ? ariaMatch[1] : '';
+    // title als weiterer Fallback
+    const titleMatch = fullTag.match(/\btitle=["']([^"']+)["']/i);
+    const titleText = titleMatch ? titleMatch[1] : '';
+    // Sichtbaren Text: innere HTML-Tags entfernen, Whitespace normalisieren
+    const rawInner = match[1];
+    const text = rawInner
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    links.push({ href, text: text || titleText, ariaLabel });
+  }
+  return links;
+}
+
+/**
+ * Extrahiert den Footer-Bereich aus dem HTML.
+ * Gibt den Footer zurück (oder die letzten 25% des HTML als Fallback).
+ */
+function extractFooter(html: string): string {
+  const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/i);
+  if (footerMatch) return footerMatch[0];
+  // Fallback: letzten 25% des HTML
+  return html.slice(-Math.floor(html.length * 0.25));
+}
+
 export async function checkImpressum(domain: string): Promise<{
   hasImpressum: boolean;
   impressumComplete: boolean;
@@ -274,14 +361,14 @@ export async function checkImpressum(domain: string): Promise<{
 
   const htmlLow = html.toLowerCase();
 
-  // Strategie 1: Link-href-Erkennung
-  // Prüft absolute Pfade (/impressum, /Impressum.htm) und relative URLs (href="Impressum.htm")
+  // Strategie 1: Link-href-Erkennung (exakte End-Patterns, wie bisher)
+  // Prüft absolute Pfade (/impressum, /Impressum.htm) und relative URLs
   // Explizite Endzeichen vermeiden False Positive durch /impressum-generator
   const hasImpressumHref =
     htmlLow.includes('/impressum"') ||
     htmlLow.includes("/impressum'") ||
     htmlLow.includes('/impressum/') ||
-    htmlLow.includes('/impressum.') ||    // z.B. /Impressum.htm
+    htmlLow.includes('/impressum.') ||
     htmlLow.includes('/impressum?') ||
     htmlLow.includes('/impressum#') ||
     htmlLow.includes('/imprint"') ||
@@ -291,23 +378,52 @@ export async function checkImpressum(domain: string): Promise<{
     htmlLow.includes('/legal-notice') ||
     htmlLow.includes('/mentions-legales') ||
     htmlLow.includes('/note-legali') ||
-    htmlLow.includes('href="impressum.') ||   // Relativ: href="Impressum.htm"
+    htmlLow.includes('href="impressum.') ||
     htmlLow.includes("href='impressum.") ||
-    htmlLow.includes('href="impressum"') ||   // Relativ: href="impressum"
+    htmlLow.includes('href="impressum"') ||
     htmlLow.includes("href='impressum'") ||
-    htmlLow.includes('href="impressum/') ||   // Relativ mit Trailing Slash: href="impressum/"
+    htmlLow.includes('href="impressum/') ||
     htmlLow.includes("href='impressum/") ||
     htmlLow.includes('href="imprint.') ||
     htmlLow.includes("href='imprint.");
 
-  // Strategie 2: Link-Text-Erkennung (sichtbarer Linktext)
-  const hasImpressumText =
+  // Strategie 2: Link-Text-Erkennung (direktes Inline-Text-Pattern)
+  const hasImpressumTextInline =
     />\s*impressum\s*</i.test(html) ||
     />\s*imprint\s*</i.test(html) ||
     />\s*legal\s*notice\s*</i.test(html) ||
     />\s*mentions\s*l[ée]gales\s*</i.test(html);
 
-  const hasImpressum = hasImpressumHref || hasImpressumText;
+  // Strategie 3 (NEU): Alle <a> Tags durchsuchen — href-URL + sichtbarer Text + aria-label
+  // Dies erkennt URLs wie /impressum-basler-zeitung-413277192333 sowie verschachtelte Spans
+  const allLinks = extractAllLinks(html);
+  const hasImpressumByLink = allLinks.some(link => {
+    // URL prüfen (z.B. /impressum-basler-zeitung-...)
+    if (isImpressumUrl(link.href)) return true;
+    // Sichtbaren Link-Text prüfen (case-insensitive)
+    const textLow = link.text.toLowerCase();
+    if (textLow.includes('impressum') || textLow.includes('imprint') || textLow === 'legal notice') return true;
+    // aria-label prüfen
+    const ariaLow = link.ariaLabel.toLowerCase();
+    if (ariaLow.includes('impressum') || ariaLow.includes('imprint')) return true;
+    return false;
+  });
+
+  // Strategie 4 (NEU): Footer gezielt parsen — höchste Treffsicherheit
+  const footerHtml = extractFooter(html);
+  const footerLinks = extractAllLinks(footerHtml);
+  const hasImpressumInFooter = footerLinks.some(link => {
+    if (isImpressumUrl(link.href)) return true;
+    const textLow = link.text.toLowerCase();
+    return textLow.includes('impressum') || textLow.includes('imprint');
+  });
+
+  const hasImpressum =
+    hasImpressumHref ||
+    hasImpressumTextInline ||
+    hasImpressumByLink ||
+    hasImpressumInFooter;
+
   const foundPages = hasImpressum ? ['/impressum'] : [];
 
   // Kontakt-Link erkennen
@@ -317,7 +433,11 @@ export async function checkImpressum(domain: string): Promise<{
     htmlLow.includes('href="kontakt') ||
     htmlLow.includes("href='kontakt") ||
     />\s*kontakt\s*</i.test(html) ||
-    />\s*contact\s*</i.test(html);
+    />\s*contact\s*</i.test(html) ||
+    allLinks.some(l => {
+      const t = l.text.toLowerCase();
+      return t === 'kontakt' || t === 'contact' || t.startsWith('kontakt') || t.startsWith('contact');
+    });
 
   return {
     hasImpressum,
@@ -623,24 +743,40 @@ export async function detectComplianceIssues(
   const cookieBannerProvider = cookieBannerResult.provider;
 
   // JS-Rendering-Erkennung (SPA-Seiten → Scan-Ergebnisse möglicherweise unvollständig)
-  const jsRendering = detectJsRendering(html);
+  let jsRendering = detectJsRendering(html);
 
-  // Strategie 1: Link-href-Erkennung (absolut und relativ, inkl. .htm/.html)
-  // htmlLow ist bereits html.toLowerCase(), also case-insensitiv
+  // Zusätzliche JS-Rendering-Heuristik: wenig Textinhalt aber viele Script-Tags
+  if (!jsRendering.isLikelyJsRendered) {
+    const textContent = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const scriptCount = (html.match(/<script/gi) ?? []).length;
+    if (textContent.length < 5000 && scriptCount > 10) {
+      jsRendering = {
+        ...jsRendering,
+        isLikelyJsRendered: true,
+        confidence: 'medium',
+        scanReliability: 'eingeschränkt',
+        signals: [...jsRendering.signals, `Wenig Textinhalt (${textContent.length} Zeichen) bei ${scriptCount} Script-Tags`],
+      };
+    }
+  }
+
+  // ─── Datenschutz-Erkennung ────────────────────────────────────────────────────
+
+  // Strategie 1: Link-href-Erkennung (direkte String-Suche)
   const privacyByHref =
     html.includes('name="privacy-policy"') ||
     htmlLow.includes('/datenschutz') ||               // /datenschutz, /Datenschutz.htm, ./datenschutz
     htmlLow.includes('/privacy') ||                   // /privacy-policy, /privacy
     htmlLow.includes('/datenschutzerklaerung') ||
     htmlLow.includes('/data-protection') ||
-    htmlLow.includes('privacy-policy') ||             // Klassen- oder Meta-Attribute
-    htmlLow.includes('href="datenschutz') ||          // Relative URL: href="Datenschutz.htm"
+    htmlLow.includes('privacy-policy') ||
+    htmlLow.includes('href="datenschutz') ||
     htmlLow.includes("href='datenschutz") ||
     htmlLow.includes('href="privacy') ||
     htmlLow.includes("href='privacy");
 
-  // Strategie 2: Link-Text-Erkennung (sichtbarer Linktext)
-  const privacyByText =
+  // Strategie 2: Inline-Text-Erkennung (direktes ><text>< Pattern)
+  const privacyByTextInline =
     />\s*datenschutz(?:erkl[äa]rung|hinweis(?:e)?)?\s*</i.test(html) ||
     />\s*privacy(?:\s*policy)?\s*</i.test(html) ||
     />\s*data\s*protection\s*</i.test(html);
@@ -659,7 +795,36 @@ export async function detectComplianceIssues(
     'datenverarbeitung',
   ].filter(k => htmlLow.includes(k)).length;
 
-  let hasPrivacyPolicy = privacyByHref || privacyByText || privacyKeywordCount >= 3;
+  // Strategie 4 (NEU): Alle <a> Tags durchsuchen — href + sichtbarer Text + aria-label
+  // Erkennt z.B. /datenschutzerklaerung-954908797441 und verschachtelte Spans
+  const allLinksCompliance = extractAllLinks(html);
+  const privacyByLink = allLinksCompliance.some(link => {
+    if (isPrivacyUrl(link.href)) return true;
+    const textLow = link.text.toLowerCase();
+    if (
+      textLow.includes('datenschutz') ||
+      textLow.includes('privacy') ||
+      textLow.includes('data protection')
+    ) return true;
+    const ariaLow = link.ariaLabel.toLowerCase();
+    return ariaLow.includes('datenschutz') || ariaLow.includes('privacy');
+  });
+
+  // Strategie 5 (NEU): Footer gezielt parsen
+  const footerHtmlCompliance = extractFooter(html);
+  const footerLinksCompliance = extractAllLinks(footerHtmlCompliance);
+  const privacyInFooter = footerLinksCompliance.some(link => {
+    if (isPrivacyUrl(link.href)) return true;
+    const textLow = link.text.toLowerCase();
+    return textLow.includes('datenschutz') || textLow.includes('privacy');
+  });
+
+  let hasPrivacyPolicy =
+    privacyByHref ||
+    privacyByTextInline ||
+    privacyKeywordCount >= 3 ||
+    privacyByLink ||
+    privacyInFooter;
 
   // Fix 1: Impressum-Seite fetchen wenn kein Datenschutz-Link auf Homepage gefunden
   // (viele Schweizer KMU kombinieren Impressum + Datenschutzerklärung auf einer Seite)
