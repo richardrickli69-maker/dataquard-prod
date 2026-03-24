@@ -386,7 +386,7 @@ export function Navbar() {
           {/* Desktop: Mein Konto + CTA */}
           <div className="dq-nav-right">
             <Link
-              href={isLoggedIn ? '/dashboard' : '/auth/login'}
+              href={isLoggedIn ? '/dashboard' : '/auth'}
               className="dq-nav-account"
             >
               Mein Konto
@@ -417,7 +417,7 @@ export function Navbar() {
         <Link href="/faq" className="dq-mobile-link" onClick={closeMobile}>FAQ</Link>
         <div className="dq-mobile-divider" />
         <Link
-          href={isLoggedIn ? '/dashboard' : '/auth/login'}
+          href={isLoggedIn ? '/dashboard' : '/auth'}
           className="dq-mobile-account"
           onClick={closeMobile}
         >

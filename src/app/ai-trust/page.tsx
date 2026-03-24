@@ -27,6 +27,23 @@ const G = {
   violetBorder: 'rgba(139,92,246,0.25)',
 };
 
+// Icon-Mapping: Emoji → Custom PNG aus /public/
+const ICON_MAP: Record<string, string> = {
+  '🤖': '/badge-ai-trust.svg',
+  '⚖️': '/icon-recht.png',
+  '🛡️': '/icon-schutz.png',
+  '✅': '/checkmark.png',
+  '🔒': '/icon-sicherheit.png',
+  '🔄': '/icon-rueckfuehrung.png',
+  '💳': '/icon-zahlung.png',
+};
+
+function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
+  const src = ICON_MAP[ic];
+  if (!src) return <span style={{ fontSize: size * 0.87 }}>{ic}</span>;
+  return <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
+}
+
 export default function AiTrustPage() {
   return (
     <PageWrapper>
@@ -78,7 +95,7 @@ export default function AiTrustPage() {
               { icon: '⚖️', title: 'Kennzeichnungspflicht', desc: 'EU AI Act Art. 50 verlangt: KI-Inhalte müssen als solche erkennbar sein. Dataquard prüft Ihre Website und fügt automatisch die korrekte Klausel in Ihre Datenschutzerklärung ein.' },
             ].map(item => (
               <div key={item.title} style={{ background: G.bg, borderRadius: 14, padding: 24, border: `1px solid ${G.border}` }}>
-                <div style={{ fontSize: 36, marginBottom: 12 }}>{item.icon}</div>
+                <div style={{ marginBottom: 12 }}><IconEl ic={item.icon} size={48} /></div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8 }}>{item.title}</h3>
                 <p style={{ fontSize: 13, color: G.textSec, lineHeight: 1.6 }}>{item.desc}</p>
               </div>
