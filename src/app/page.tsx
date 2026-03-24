@@ -208,7 +208,7 @@ export default function HomePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={24} /> nDSG/DSGVO</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> AI-Trust</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={24} /> Ergebnis in 60 Sek.</span>
-          <Link href="/ki-transparenz" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
+          <Link href="/ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
         </div>
       </section>
 

@@ -378,7 +378,7 @@ export function Navbar() {
           {/* Desktop: Nav Links zentriert */}
           <div className="dq-nav-links">
             <Link href="/tools" className="dq-nav-link">Tools</Link>
-            <Link href="/ki-transparenz" className="dq-nav-link">AI-Trust</Link>
+            <Link href="/ai-trust" className="dq-nav-link">AI-Trust</Link>
             <Link href="/preise" className="dq-nav-link">Preise</Link>
             <Link href="/faq" className="dq-nav-link">FAQ</Link>
           </div>
@@ -412,7 +412,7 @@ export function Navbar() {
       {/* Mobile Overlay-Menü */}
       <div className={`dq-mobile-menu${mobileOpen ? ' dq-mobile-open' : ''}`}>
         <Link href="/tools" className="dq-mobile-link" onClick={closeMobile}>Tools</Link>
-        <Link href="/ki-transparenz" className="dq-mobile-link" onClick={closeMobile}>AI-Trust</Link>
+        <Link href="/ai-trust" className="dq-mobile-link" onClick={closeMobile}>AI-Trust</Link>
         <Link href="/preise" className="dq-mobile-link" onClick={closeMobile}>Preise</Link>
         <Link href="/faq" className="dq-mobile-link" onClick={closeMobile}>FAQ</Link>
         <div className="dq-mobile-divider" />
