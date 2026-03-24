@@ -71,10 +71,19 @@ const SCRIPT_SOURCE_PATTERNS: Array<{ pattern: RegExp; provider: string }> = [
   { pattern: /optanon/i, provider: 'OneTrust (Optanon)' },
   { pattern: /cc\.cdn\.civiccomputing/i, provider: 'Civic Cookie Control' },
   { pattern: /consent\.cookiebot\.com/i, provider: 'CookieBot (Usercentrics)' },
+  { pattern: /consentcdn\.cookiebot\.com/i, provider: 'CookieBot (Usercentrics)' },
   { pattern: /policy\.app\.usercentrics\.eu/i, provider: 'Usercentrics' },
   { pattern: /consent\.yahoo\.com/i, provider: 'Yahoo Consent' },
   { pattern: /fundingchoicesmessages\.google\.com/i, provider: 'Google Funding Choices' },
   { pattern: /cmp\.inmobi\.com/i, provider: 'InMobi CMP' },
+  // Cookiebot data-Attribute (kein src nötig)
+  { pattern: /data-cbid\s*=/i, provider: 'CookieBot (Usercentrics)' },
+  { pattern: /id\s*=\s*["']Cookiebot["']/i, provider: 'CookieBot (Usercentrics)' },
+  // Weitere Nischen-CMPs
+  { pattern: /silktide\.com/i, provider: 'Silktide' },
+  { pattern: /privacybee\.com/i, provider: 'PrivacyBee' },
+  { pattern: /eprivacycookiesolution\.com/i, provider: 'ePrivacy' },
+  { pattern: /windcave.*consent/i, provider: 'Windcave CMP' },
 ];
 
 /** Inline-Script-Pattern für Cookie-Banner-Initialisierung */
@@ -169,6 +178,20 @@ export function detectCookieBanner(html: string): CookieBannerResult {
         detectionMethod: 'script-source',
         confidence: 'high',
         details: `${provider} Script erkannt`,
+      };
+    }
+  }
+
+  // Strategie 1.5: Gesamtes HTML auf CMP-Domain-Referenzen prüfen
+  // Fängt auch <link rel="preload">, data-src, inline JS-Erzeugung, noscript auf
+  for (const { pattern, provider } of SCRIPT_SOURCE_PATTERNS) {
+    if (pattern.test(html)) {
+      return {
+        detected: true,
+        provider,
+        detectionMethod: 'script-source',
+        confidence: 'high',
+        details: `${provider} Referenz im HTML erkannt`,
       };
     }
   }
