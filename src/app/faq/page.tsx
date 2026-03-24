@@ -1,5 +1,5 @@
 // src/app/faq/page.tsx
-// FAQ-Seite — 4 Kategorien, keine Duplikate, Schema.org FAQPage Markup
+// FAQ-Seite — 4 Kategorien, keine Duplikate, Styling wie /preise, Schema.org FAQPage
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -10,6 +10,20 @@ export const metadata: Metadata = {
   title: 'FAQ – nDSG, DSGVO & EU AI Act für Schweizer KMU | Dataquard',
   description: 'Häufige Fragen zu Datenschutz, nDSG-Konformität und EU AI Act Art. 50 für Schweizer Unternehmen – beantwortet von Dataquard.',
   alternates: { canonical: 'https://www.dataquard.ch/faq' },
+};
+
+// Design Tokens — identisch zu /preise
+const G = {
+  green: '#22c55e',
+  greenBg: 'rgba(34,197,94,0.08)',
+  greenBorder: 'rgba(34,197,94,0.25)',
+  bg: '#f8f9fb',
+  bgWhite: '#ffffff',
+  bgLight: '#f1f2f6',
+  border: '#e2e4ea',
+  text: '#1a1a2e',
+  textSec: '#555566',
+  textMuted: '#888899',
 };
 
 // ─── FAQ-Daten in 4 Kategorien ───────────────────────────────────────────────
@@ -116,20 +130,6 @@ const FAQ_CATEGORIES = [
 // Alle Items flach für Schema.org
 const ALL_FAQ_ITEMS = FAQ_CATEGORIES.flatMap(c => c.items);
 
-// ─── Accordion-Komponente ────────────────────────────────────────────────────
-
-function FaqAccordion({ faq }: { faq: { question: string; answer: string } }) {
-  return (
-    <details className="group rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm transition hover:border-gray-300">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-semibold text-gray-900">
-        <span>{faq.question}</span>
-        <span className="mt-0.5 flex-shrink-0 text-gray-400 transition group-open:rotate-180">▾</span>
-      </summary>
-      <p className="mt-4 text-sm leading-relaxed text-gray-600">{faq.answer}</p>
-    </details>
-  );
-}
-
 // ─── Seite ───────────────────────────────────────────────────────────────────
 
 export default function FaqPage() {
@@ -137,49 +137,78 @@ export default function FaqPage() {
     <>
       <FaqPageSchema faqs={ALL_FAQ_ITEMS} />
       <PageWrapper>
-        {/* Hero */}
-        <section className="border-b border-gray-200 bg-white px-4 py-16 text-center">
-          <div className="mx-auto max-w-2xl">
-            <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-              Häufige Fragen
-            </span>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-gray-900">
-              Datenschutz & KI-Compliance<br />
-              <span className="text-gray-500">für Schweizer KMU</span>
-            </h1>
-            <p className="mt-4 text-lg text-gray-600">
-              Alles zu nDSG, DSGVO und EU AI Act Art. 50 – klar erklärt, ohne Juristendeutsch.
-            </p>
-          </div>
+        <style>{`
+          @media (max-width: 640px) {
+            .faq-mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+          }
+        `}</style>
+
+        {/* ═══ HERO ═══ */}
+        <section style={{ textAlign: 'center', padding: '56px 24px 40px', maxWidth: 700, margin: '0 auto' }}>
+          <span style={{ display: 'inline-block', background: G.greenBg, border: `1px solid ${G.greenBorder}`, color: G.green, fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, letterSpacing: 0.5, marginBottom: 20 }}>
+            HÄUFIGE FRAGEN
+          </span>
+          <h1 style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.12, marginBottom: 14, letterSpacing: -1, color: G.text }}>
+            Datenschutz & KI-Compliance{' '}
+            <span style={{ color: G.green }}>für Schweizer KMU.</span>
+          </h1>
+          <p style={{ fontSize: 16, color: G.textSec, lineHeight: 1.7 }}>
+            Alles zu nDSG, DSGVO und EU AI Act Art. 50 – klar erklärt, ohne Juristendeutsch.
+          </p>
         </section>
 
-        {/* FAQ Kategorien */}
-        <section className="mx-auto max-w-3xl px-4 py-16">
+        {/* ═══ FAQ KATEGORIEN ═══ */}
+        <section className="faq-mobile-padding" style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px 56px' }}>
           {FAQ_CATEGORIES.map((cat, ci) => (
-            <div key={cat.title} className={ci < FAQ_CATEGORIES.length - 1 ? 'mb-12' : 'mb-16'}>
-              <h2 className="mb-6 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-gray-400">
-                <img src={cat.icon} alt="" width={16} height={16} style={{ opacity: 0.7 }} />
-                {cat.title}
-              </h2>
-              <div className="space-y-4">
-                {cat.items.map((faq, i) => <FaqAccordion key={i} faq={faq} />)}
+            <div key={cat.title} style={{ marginBottom: ci < FAQ_CATEGORIES.length - 1 ? 48 : 0, borderTop: `1px solid ${G.border}`, paddingTop: 40 }}>
+
+              {/* Kategorie-Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                <img src={cat.icon} alt="" width={16} height={16} style={{ opacity: 0.75, flexShrink: 0 }} />
+                <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>
+                  {cat.title}
+                </span>
+              </div>
+
+              {/* Accordion Items */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {cat.items.map(faq => (
+                  <details
+                    key={faq.question}
+                    style={{ background: G.bgWhite, borderRadius: 12, border: `1px solid ${G.border}`, overflow: 'hidden' }}
+                  >
+                    <summary style={{ padding: '16px 18px', fontWeight: 600, fontSize: 14, color: G.text, cursor: 'pointer', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{faq.question}</span>
+                      <span style={{ color: G.green, fontSize: 18, flexShrink: 0, marginLeft: 12 }}>▾</span>
+                    </summary>
+                    <div style={{ padding: '12px 18px 16px', fontSize: 14, color: G.textSec, lineHeight: 1.7, borderTop: `1px solid ${G.border}` }}>
+                      {faq.answer}
+                    </div>
+                  </details>
+                ))}
               </div>
             </div>
           ))}
+        </section>
 
-          {/* Bottom CTA */}
-          <div className="rounded-2xl bg-gray-900 p-8 text-center">
-            <h3 className="text-2xl font-bold text-white">Ihre Website jetzt prüfen</h3>
-            <p className="mt-2 text-gray-400">Kostenloser Scan – Ergebnis in 60 Sekunden.</p>
-            <Link
-              href="/scanner"
-              className="mt-6 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-white transition hover:bg-green-400"
-            >
+        {/* ═══ BOTTOM CTA ═══ */}
+        <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 10 }}>
+            Ihre Website jetzt prüfen — kostenlos.
+          </h2>
+          <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
+            Ergebnis in 60 Sekunden. Ohne Anmeldung. Ohne Kreditkarte.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/scanner" style={{ padding: '12px 28px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 12px rgba(34,197,94,0.3)' }}>
               Jetzt kostenlos scannen →
+            </Link>
+            <Link href="/preise" style={{ padding: '12px 28px', border: `2px solid ${G.green}`, color: G.green, fontWeight: 700, borderRadius: 10, fontSize: 15, textDecoration: 'none' }}>
+              Preise ansehen →
             </Link>
           </div>
         </section>
+
       </PageWrapper>
     </>
   );

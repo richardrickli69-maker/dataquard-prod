@@ -34,8 +34,12 @@ function buildSvg(websiteUrl: string, isValid: boolean): string {
   <rect x="0" y="0" width="200" height="10" rx="10" ry="10" fill="${borderColor}"/>
   <rect x="0" y="5" width="200" height="5" fill="${borderColor}"/>
 
-  <!-- Logo -->
-  <image href="https://www.dataquard.ch/logo.png" x="82" y="16" width="36" height="36"/>
+  <!-- Logo: eingebettetes SVG-Schild (kein externer Fetch nötig) -->
+  <g transform="translate(82, 14)">
+    <path d="M18 2L3 7.5V18c0 7 6.5 11.5 15 14.5 8.5-3 15-7.5 15-14.5V7.5Z" fill="${borderColor}" opacity="0.15"/>
+    <path d="M18 4L5 9v9c0 5.5 5 9 13 11.5 8-2.5 13-6 13-11.5V9Z" fill="${borderColor}" opacity="0.25"/>
+    <text x="18" y="24" text-anchor="middle" font-size="11" font-weight="900" font-family="'Segoe UI',Arial,sans-serif" fill="${borderColor}">DQ</text>
+  </g>
 
   <!-- Brand name -->
   <text x="100" y="66" text-anchor="middle" class="brand">Dataquard</text>
