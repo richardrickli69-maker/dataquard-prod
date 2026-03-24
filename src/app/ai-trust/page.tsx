@@ -32,6 +32,7 @@ const ICON_MAP: Record<string, string> = {
   '🤖': '/badge-ai-trust.svg',
   '⚖️': '/icon-recht.png',
   '🛡️': '/icon-schutz.png',
+  '🎭': '/icon-schutz.png',
   '✅': '/checkmark.png',
   '🔒': '/icon-sicherheit.png',
   '🔄': '/icon-rueckfuehrung.png',
