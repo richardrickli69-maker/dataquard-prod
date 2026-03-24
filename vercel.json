@@ -11,5 +11,11 @@
       "destination": "https://www.dataquard.ch/$1",
       "permanent": true
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/compliance-report",
+      "schedule": "0 7 * * 1"
+    }
   ]
 }
