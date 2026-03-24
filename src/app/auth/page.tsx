@@ -21,6 +21,25 @@ const G = {
   redBorder: 'rgba(220,38,38,0.15)',
 };
 
+// Englische Supabase-Fehlermeldungen auf Deutsch übersetzen
+function getGermanError(msg: string): string {
+  const map: Record<string, string> = {
+    'Invalid login credentials': 'E-Mail oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe.',
+    'Email not confirmed': 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.',
+    'User not found': 'Es gibt kein Konto mit dieser E-Mail-Adresse.',
+    'Too many requests': 'Zu viele Versuche. Bitte warten Sie einen Moment.',
+    'Email rate limit exceeded': 'Zu viele Anfragen. Bitte versuchen Sie es in einer Stunde erneut.',
+    'Invalid email or password': 'E-Mail oder Passwort ist falsch.',
+    'Signup requires a valid password': 'Bitte geben Sie ein gültiges Passwort ein.',
+    'Password should be at least': 'Das Passwort muss mindestens 6 Zeichen lang sein.',
+    'User already registered': 'Diese E-Mail-Adresse ist bereits registriert.',
+  };
+  for (const [eng, deu] of Object.entries(map)) {
+    if (msg.includes(eng)) return deu;
+  }
+  return 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+}
+
 function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,11 +65,12 @@ function AuthPageInner() {
   }, [isAuthenticated, router]);
 
   const handleResetPassword = async () => {
-    if (!email) { setError('Bitte E-Mail-Adresse eingeben'); return; }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) { setError('Bitte E-Mail-Adresse eingeben'); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
       redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
     });
-    if (error) { setError(error.message); } else { setResetSent(true); setError(''); }
+    if (error) { setError(getGermanError(error.message)); } else { setResetSent(true); setError(''); }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -58,8 +78,8 @@ function AuthPageInner() {
     setError('');
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { setError(error.message); } else { setIsAuthenticated(true); }
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) { setError(getGermanError(error.message)); } else { setIsAuthenticated(true); }
     } catch { setError('Ein Fehler ist beim Anmelden aufgetreten'); }
     finally { setIsLoading(false); }
   };
@@ -69,8 +89,8 @@ function AuthPageInner() {
     setError('');
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) { setError(error.message); } else { setIsAuthenticated(true); }
+      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+      if (error) { setError(getGermanError(error.message)); } else { setIsAuthenticated(true); }
     } catch { setError('Ein Fehler ist bei der Registrierung aufgetreten'); }
     finally { setIsLoading(false); }
   };
