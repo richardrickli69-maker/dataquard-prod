@@ -471,11 +471,16 @@ export default function DashboardPage() {
                   const isValid = badge.is_active && !isExpired;
                   return (
                     <div key={badge.id} style={card}>
-                      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                        <img src={`/api/badges/${badge.id}/image`} alt="Verified Badge" width={200} height={120}
-                          style={{ borderRadius: 8, border: `1px solid ${G.border}`, flexShrink: 0 }} />
+                      {/* Badge Vorschau */}
+                      <div style={{ marginBottom: 16, padding: 16, background: G.bgLight, borderRadius: 10, border: `1px solid ${G.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={`/api/badges/${badge.id}/image`}
+                          alt="Dataquard Verified Badge"
+                          style={{ maxWidth: 200, height: 'auto', display: 'block' }}
+                        />
+                      </div>
 
-                        <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             <span style={{ background: isValid ? G.greenBg : 'rgba(220,38,38,0.08)', color: isValid ? G.green : G.red, border: `1px solid ${isValid ? G.greenBorder : 'rgba(220,38,38,0.2)'}`, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
                               {isValid ? '✓ Aktiv' : '✗ Inaktiv/Abgelaufen'}
@@ -503,7 +508,6 @@ export default function DashboardPage() {
                             {badgeCopied ? '✅ Kopiert!' : '📋 Code kopieren'}
                           </button>
                         </div>
-                      </div>
                     </div>
                   );
                 })}
