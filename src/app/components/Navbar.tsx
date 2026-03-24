@@ -43,16 +43,41 @@
 
 // src/app/components/Navbar.tsx
 // Smart Header: versteckt beim Runterscrollen, erscheint beim Hochscrollen
+// Navigation: Tools | AI-Trust | Preise | FAQ | Mein Konto | [Kostenlos scannen]
 'use client';
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
 export function Navbar() {
   // true = Header nach oben wegschieben
   const [hidden, setHidden] = useState(false);
   // Letzten Scroll-Y-Wert für Richtungsvergleich speichern
   const prevScrollY = useRef(0);
+  // Hamburger-Menü auf Mobile
+  const [mobileOpen, setMobileOpen] = useState(false);
+  // Eingeloggt-Status für "Mein Konto" Link
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Supabase Auth-Status prüfen
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session);
+    });
+
+    // Auth-Änderungen live verfolgen (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,12 +102,15 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Mobile-Menü schliessen wenn geklickt
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <>
       <style>{`
         /* ── Platzhalter: hält Platz für den fixed Header im Dokumentfluss ── */
         .dq-navbar-placeholder {
-          height: 108px; /* Desktop: 80px Logo + 2×14px Padding */
+          height: 72px;
         }
 
         /* ── Eigentliche Navbar: fixed, mit Slide-Transition ── */
@@ -93,7 +121,7 @@ export function Navbar() {
           left: 0;
           right: 0;
           z-index: 50;
-          background: rgba(255,255,255,0.85);
+          background: rgba(255,255,255,0.95);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid #e2e4ea;
@@ -108,64 +136,221 @@ export function Navbar() {
         }
 
         .dq-navbar-inner {
-          max-width: 860px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: 14px 24px;
+          padding: 0 24px;
+          height: 72px;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: space-between;
+          gap: 8px;
         }
+
+        /* Logo */
         .dq-logo-link {
           text-decoration: none;
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
+          flex-shrink: 0;
         }
         .dq-logo-shield {
-          height: 80px;
+          height: 52px;
           width: auto;
           object-fit: contain;
           flex-shrink: 0;
         }
         .dq-logo-text {
-          height: 48px;
+          height: 32px;
           width: auto;
           object-fit: contain;
           flex-shrink: 0;
         }
 
-        /* Tablet */
-        @media (max-width: 768px) {
-          .dq-navbar-placeholder {
-            height: 88px; /* 64px Logo + 2×12px Padding */
+        /* Desktop Nav Links */
+        .dq-nav-links {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex: 1;
+          justify-content: center;
+        }
+        .dq-nav-link {
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #555566;
+          text-decoration: none;
+          transition: color 0.15s, background 0.15s;
+          white-space: nowrap;
+        }
+        .dq-nav-link:hover {
+          color: #1a1a2e;
+          background: #f1f2f6;
+        }
+
+        /* Rechts: Mein Konto + CTA-Button */
+        .dq-nav-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        .dq-nav-account {
+          font-size: 13px;
+          font-weight: 500;
+          color: #888899;
+          text-decoration: none;
+          padding: 8px 10px;
+          border-radius: 8px;
+          transition: color 0.15s;
+          white-space: nowrap;
+        }
+        .dq-nav-account:hover {
+          color: #1a1a2e;
+        }
+        .dq-nav-cta {
+          display: inline-flex;
+          align-items: center;
+          padding: 8px 16px;
+          background: #22c55e;
+          color: #fff !important;
+          font-size: 13px;
+          font-weight: 700;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: background 0.15s;
+          white-space: nowrap;
+          border: none;
+          cursor: pointer;
+        }
+        .dq-nav-cta:hover {
+          background: #16a34a;
+        }
+
+        /* Hamburger Button (nur Mobile) */
+        .dq-hamburger {
+          display: none;
+          flex-direction: column;
+          justify-content: center;
+          gap: 5px;
+          width: 36px;
+          height: 36px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          flex-shrink: 0;
+        }
+        .dq-hamburger span {
+          display: block;
+          height: 2px;
+          background: #1a1a2e;
+          border-radius: 2px;
+          transition: transform 0.2s, opacity 0.2s;
+        }
+
+        /* Mobile Overlay-Menü */
+        .dq-mobile-menu {
+          display: none;
+          position: fixed;
+          top: 72px;
+          left: 0;
+          right: 0;
+          background: #fff;
+          border-bottom: 1px solid #e2e4ea;
+          z-index: 49;
+          padding: 16px 24px 24px;
+          flex-direction: column;
+          gap: 4px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .dq-mobile-menu.dq-mobile-open {
+          display: flex;
+        }
+        .dq-mobile-link {
+          display: block;
+          padding: 12px 14px;
+          font-size: 15px;
+          font-weight: 500;
+          color: #555566;
+          text-decoration: none;
+          border-radius: 8px;
+          transition: background 0.15s;
+        }
+        .dq-mobile-link:hover {
+          background: #f1f2f6;
+          color: #1a1a2e;
+        }
+        .dq-mobile-divider {
+          height: 1px;
+          background: #e2e4ea;
+          margin: 8px 0;
+        }
+        .dq-mobile-cta {
+          display: block;
+          text-align: center;
+          padding: 13px;
+          background: #22c55e;
+          color: #fff;
+          font-weight: 700;
+          font-size: 15px;
+          border-radius: 10px;
+          text-decoration: none;
+          margin-top: 8px;
+          transition: background 0.15s;
+        }
+        .dq-mobile-cta:hover {
+          background: #16a34a;
+        }
+        .dq-mobile-account {
+          display: block;
+          text-align: center;
+          padding: 10px;
+          color: #888899;
+          font-size: 14px;
+          font-weight: 500;
+          text-decoration: none;
+          border: 1px solid #e2e4ea;
+          border-radius: 8px;
+          margin-top: 4px;
+          transition: color 0.15s;
+        }
+        .dq-mobile-account:hover {
+          color: #1a1a2e;
+        }
+
+        /* Responsive: Tablet und kleiner */
+        @media (max-width: 860px) {
+          .dq-nav-links {
+            display: none;
           }
-          .dq-navbar-inner {
-            padding: 12px 20px;
+          .dq-nav-right {
+            display: none;
           }
-          .dq-logo-shield {
-            height: 64px;
-          }
-          .dq-logo-text {
-            height: 36px;
+          .dq-hamburger {
+            display: flex;
           }
         }
 
-        /* Mobile klein */
+        /* Kleines Mobile */
         @media (max-width: 480px) {
           .dq-navbar-placeholder {
-            height: 72px; /* 52px Logo + 2×10px Padding */
+            height: 64px;
           }
           .dq-navbar-inner {
-            padding: 10px 16px;
+            height: 64px;
+            padding: 0 16px;
           }
-          .dq-logo-link {
-            gap: 8px;
+          .dq-mobile-menu {
+            top: 64px;
           }
           .dq-logo-shield {
-            height: 52px;
+            height: 44px;
           }
           .dq-logo-text {
-            height: 28px;
+            height: 26px;
           }
         }
       `}</style>
@@ -175,7 +360,9 @@ export function Navbar() {
 
       <nav className={`dq-navbar${hidden ? ' dq-navbar--hidden' : ''}`}>
         <div className="dq-navbar-inner">
-          <Link href="/" className="dq-logo-link">
+
+          {/* Logo */}
+          <Link href="/" className="dq-logo-link" onClick={closeMobile}>
             <img
               src="/logo-dataquard.png"
               alt="Dataquard Logo"
@@ -187,8 +374,59 @@ export function Navbar() {
               className="dq-logo-text"
             />
           </Link>
+
+          {/* Desktop: Nav Links zentriert */}
+          <div className="dq-nav-links">
+            <Link href="/tools" className="dq-nav-link">Tools</Link>
+            <Link href="/ki-transparenz" className="dq-nav-link">AI-Trust</Link>
+            <Link href="/preise" className="dq-nav-link">Preise</Link>
+            <Link href="/faq" className="dq-nav-link">FAQ</Link>
+          </div>
+
+          {/* Desktop: Mein Konto + CTA */}
+          <div className="dq-nav-right">
+            <Link
+              href={isLoggedIn ? '/dashboard' : '/auth/login'}
+              className="dq-nav-account"
+            >
+              Mein Konto
+            </Link>
+            <Link href="/scanner" className="dq-nav-cta">
+              Kostenlos scannen →
+            </Link>
+          </div>
+
+          {/* Mobile: Hamburger Button */}
+          <button
+            className="dq-hamburger"
+            onClick={() => setMobileOpen(o => !o)}
+            aria-label={mobileOpen ? 'Menü schliessen' : 'Menü öffnen'}
+          >
+            <span style={{ transform: mobileOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+            <span style={{ opacity: mobileOpen ? 0 : 1 }} />
+            <span style={{ transform: mobileOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Overlay-Menü */}
+      <div className={`dq-mobile-menu${mobileOpen ? ' dq-mobile-open' : ''}`}>
+        <Link href="/tools" className="dq-mobile-link" onClick={closeMobile}>Tools</Link>
+        <Link href="/ki-transparenz" className="dq-mobile-link" onClick={closeMobile}>AI-Trust</Link>
+        <Link href="/preise" className="dq-mobile-link" onClick={closeMobile}>Preise</Link>
+        <Link href="/faq" className="dq-mobile-link" onClick={closeMobile}>FAQ</Link>
+        <div className="dq-mobile-divider" />
+        <Link
+          href={isLoggedIn ? '/dashboard' : '/auth/login'}
+          className="dq-mobile-account"
+          onClick={closeMobile}
+        >
+          Mein Konto
+        </Link>
+        <Link href="/scanner" className="dq-mobile-cta" onClick={closeMobile}>
+          Kostenlos scannen →
+        </Link>
+      </div>
     </>
   );
 }
