@@ -152,6 +152,12 @@ const ELEMENT_ID_PATTERNS: RegExp[] = [
   /data-cc["-\s]/i,
   // aria-label
   /aria-label\s*=\s*["'][^"']*cookie/i,
+  // Eigenentwicklungen: generische Section/Div IDs
+  /id\s*=\s*["']cookies["']/i,
+  /id\s*=\s*["']cookieDisclaimer["']/i,
+  /id\s*=\s*["']cleanCookieDisclaimer["']/i,
+  /RemoveCookieDisclaimer/i,
+  /id\s*=\s*["']cookie[-_]?(bar|strip|ribbon|hint|message|hint)["']/i,
 ];
 
 /** Meta-Tag / Link / Noscript-Pattern */
@@ -246,15 +252,21 @@ export function detectCookieBanner(html: string): CookieBannerResult {
   const htmlLow = html.toLowerCase();
   const hasCookieText =
     /diese website (verwendet|nutzt|benutzt) cookies/i.test(html) ||
-    /wir (verwenden|nutzen|benutzen) cookies/i.test(html) ||
-    /this (website|site) uses cookies/i.test(html) ||
+    /die (website|seite|app) (verwendet|nutzt|benutzt|setzt) cookies/i.test(html) ||
+    /wir (verwenden|nutzen|benutzen|setzen) cookies/i.test(html) ||
+    /this (website|site|app) uses cookies/i.test(html) ||
     /we use cookies/i.test(html) ||
     /nous utilisons des cookies/i.test(html) ||
     /utilizziamo i cookie/i.test(html) ||
-    /cookie[-\s]?(einstellungen|settings|preferences|richtlinien|policy)/i.test(html);
+    /cookie[-\s]?(einstellungen|settings|preferences|richtlinien|policy)/i.test(html) ||
+    /verwendung von cookies/i.test(html) ||
+    /nutzung von cookies/i.test(html) ||
+    /cookies? (akzeptieren|ablehnen|einschr[äa]nken|verwalten|zustimmen)/i.test(html);
 
   const hasAcceptButton =
-    />(akzeptieren|alle akzeptieren|accept all|accept|accepter|accettare|einverstanden|zustimmen|verstanden|got it|i agree|alle annehmen)<\//i.test(html);
+    />(akzeptieren|alle akzeptieren|accept all|accept|accepter|accettare|einverstanden|zustimmen|verstanden|got it|i agree|alle annehmen|ok|okay|schliessen|close|dismiss)<\//i.test(html) ||
+    // Generische OK-Buttons neben Cookie-Sektionen (z.B. id="cleanCookieDisclaimer")
+    /id=["'][^"']*cookie[^"']*["']/i.test(html) && />\s*ok\s*</i.test(html);
 
   if (hasCookieText && hasAcceptButton) {
     return {
