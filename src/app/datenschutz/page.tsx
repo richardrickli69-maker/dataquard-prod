@@ -63,7 +63,8 @@ export default function DatenschutzPage() {
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li>Bereitstellung des Website-Scan-Dienstes</li>
             <li>Generierung von Compliance-Dokumenten</li>
-            <li>Zahlungsabwicklung via Stripe</li>
+            <li>Verwaltung von Jahresabos und wiederkehrender Zahlungsabwicklung via Stripe</li>
+            <li>Versand von monatlichen Compliance-Reports per E-Mail</li>
             <li>Verbesserung unseres Dienstes (anonyme Analyse)</li>
           </ul>
         </Section>
@@ -73,9 +74,9 @@ export default function DatenschutzPage() {
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li><strong style={{ color: G.text }}>Supabase</strong> – Datenbank und Authentifizierung (Server: Zürich, Schweiz)</li>
             <li><strong style={{ color: G.text }}>Vercel</strong> – Hosting (Daten können auf EU-Servern verarbeitet werden)</li>
-            <li><strong style={{ color: G.text }}>Stripe</strong> – Zahlungsabwicklung (USA – Privacy Shield / SCCs)</li>
+            <li><strong style={{ color: G.text }}>Stripe</strong> – Zahlungsabwicklung inkl. wiederkehrende Zahlungen (USA – SCCs)</li>
             <li><strong style={{ color: G.text }}>Anthropic Claude API</strong> – KI-Analyse (USA – SCCs)</li>
-            <li><strong style={{ color: G.text }}>Resend</strong> – E-Mail-Versand (USA – SCCs)</li>
+            <li><strong style={{ color: G.text }}>Resend</strong> – E-Mail-Versand (EU, Region eu-west-1)</li>
           </ul>
         </Section>
 

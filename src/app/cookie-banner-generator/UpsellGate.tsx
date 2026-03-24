@@ -29,7 +29,7 @@ export default function UpsellGate() {
         </h2>
         <p style={{ color: "#555566", fontSize: 14, lineHeight: 1.65, marginBottom: "0.5rem" }}>
           Der Cookie-Banner Generator ist ab dem{" "}
-          <strong style={{ color: "#1a1a2e" }}>STARTER-Plan (CHF 79 Einmalkauf)</strong>{" "}
+          <strong style={{ color: "#1a1a2e" }}>STARTER-Plan (CHF 19.–/Mt.)</strong>{" "}
           verfügbar.
         </p>
         <p style={{ color: "#888899", fontSize: 13, marginBottom: "1.75rem" }}>
@@ -49,7 +49,7 @@ export default function UpsellGate() {
               boxShadow: "0 4px 14px rgba(34,197,94,0.25)",
             }}
           >
-            Jetzt kaufen – CHF 79 Einmalkauf
+            Jetzt abonnieren – CHF 19.–/Mt.
           </Link>
           <Link
             href="/checkout?plan=professional"
@@ -64,7 +64,7 @@ export default function UpsellGate() {
               background: "transparent",
             }}
           >
-            Professional – CHF 149 Einmalkauf
+            Professional – CHF 39.–/Mt.
           </Link>
         </div>
       </div>

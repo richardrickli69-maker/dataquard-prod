@@ -464,8 +464,8 @@ function DataschutzGeneratorInner() {
                     <button onClick={() => setStep(2)} style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 10, padding: '14px', fontSize: 14, fontWeight: 700, color: G.textSec, cursor: 'pointer' }}>
                       ← Bearbeiten
                     </button>
-                    <a href="/checkout?product=starter" style={{ background: G.green, borderRadius: 10, padding: '14px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      🔓 Freischalten – CHF 79
+                    <a href="/checkout?plan=starter" style={{ background: G.green, borderRadius: 10, padding: '14px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      🔓 Freischalten – CHF 19.–/Mt.
                     </a>
                   </>
                 )}
@@ -477,16 +477,13 @@ function DataschutzGeneratorInner() {
                 <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                   <div style={{ fontSize: 36 }}>🔒</div>
                   <div>
-                    <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8 }}>Dataquard Starter – CHF 79</h3>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8 }}>Dataquard Starter – CHF 19.–/Mt.</h3>
                     <p style={{ color: G.textSec, fontSize: 13, marginBottom: 16 }}>
                       Datenschutzerklärung + Impressum + Cookie-Analyse + Performance-Check + automatische Updates
                     </p>
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                      <a href="/checkout?product=starter" style={{ background: G.green, color: '#fff', fontWeight: 700, padding: '10px 20px', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>
-                        ⭐ Starter – CHF 79
-                      </a>
-                      <a href="/checkout?product=impressum" style={{ background: G.bgLight, color: G.textSec, fontWeight: 700, padding: '10px 20px', borderRadius: 8, fontSize: 13, textDecoration: 'none', border: `1px solid ${G.border}` }}>
-                        Nur Policy – CHF 19
+                      <a href="/checkout?plan=starter" style={{ background: G.green, color: '#fff', fontWeight: 700, padding: '10px 20px', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>
+                        ⭐ Starter – CHF 19.–/Mt.
                       </a>
                     </div>
                   </div>

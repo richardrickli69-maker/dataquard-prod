@@ -305,10 +305,9 @@ function ImpressumGeneratorInner() {
                   <div style={{ fontSize: 32 }}>💡</div>
                   <div>
                     <h3 style={{ fontWeight: 700, fontSize: 16, color: G.text, marginBottom: 6 }}>Noch mehr Schutz mit Dataquard Starter</h3>
-                    <p style={{ color: G.textSec, fontSize: 13, marginBottom: 12, lineHeight: 1.6 }}>Für CHF 79 (Einmalkauf) erhalten Sie: Impressum + Datenschutzerklärung + Cookie-Analyse + Performance-Check.</p>
+                    <p style={{ color: G.textSec, fontSize: 13, marginBottom: 12, lineHeight: 1.6 }}>Ab CHF 19.–/Mt. erhalten Sie: Impressum + Datenschutzerklärung + Cookie-Analyse + Performance-Check.</p>
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <a href="/checkout?product=impressum" style={{ background: G.bgLight, border: `1px solid ${G.border}`, color: G.text, fontWeight: 700, padding: '8px 16px', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>Nur Impressum – CHF 19</a>
-                      <a href="/checkout?product=starter" style={{ background: G.green, color: '#fff', fontWeight: 700, padding: '8px 16px', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>Starter – CHF 79 ⭐</a>
+                      <a href="/checkout?plan=starter" style={{ background: G.green, color: '#fff', fontWeight: 700, padding: '8px 16px', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>Starter – CHF 19.–/Mt. ⭐</a>
                     </div>
                   </div>
                 </div>

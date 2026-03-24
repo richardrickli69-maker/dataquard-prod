@@ -49,14 +49,13 @@ export default function AGBPage() {
               <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>2. Zahlung</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
-              <p>Alle Dataquard-Produkte werden als <strong style={{ color: G.text }}>Einmalkauf</strong> angeboten. Es entstehen keine automatischen Verlängerungen oder wiederkehrenden Gebühren.</p>
-              <p>Die aktuellen Preise:</p>
+              <p>Dataquard-Abos werden als <strong style={{ color: G.text }}>Jahresabo mit automatischer Verlängerung</strong> angeboten. Die Abrechnung erfolgt jährlich im Voraus.</p>
+              <p>Die aktuellen Preise (jährliche Abrechnung):</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <li style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>·</span> Impressum Generator: CHF 19 (einmalig)</li>
-                <li style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>·</span> Starter: CHF 79 (einmalig, 1 Domain)</li>
-                <li style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>·</span> Professional: CHF 149 (einmalig, bis 5 Domains)</li>
+                <li style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>·</span> Starter: CHF 19.–/Mt. (CHF 228.–/Jahr) – 1 Domain</li>
+                <li style={{ display: 'flex', gap: 8 }}><span style={{ color: G.green }}>·</span> Professional: CHF 39.–/Mt. (CHF 468.–/Jahr) – bis 5 Domains</li>
               </ul>
-              <p>Alle Preise verstehen sich in CHF inkl. MwSt. Die Zahlung erfolgt sicher über Stripe. Wir akzeptieren Kreditkarten und TWINT.</p>
+              <p>Alle Preise verstehen sich in CHF inkl. MwSt. Die Zahlung erfolgt sicher über Stripe. Wir akzeptieren Kreditkarten.</p>
               <p>Es gibt keine versteckten Kosten. Was Sie sehen, ist was Sie zahlen.</p>
             </div>
           </div>
@@ -75,8 +74,21 @@ export default function AGBPage() {
 
           <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <img src="/icon-rueckfuehrung.png" alt="Kündigung" width={32} height={32} />
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>4. Kündigung & automatische Verlängerung</h2>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
+              <p>Jahresabos verlängern sich automatisch um ein weiteres Jahr, sofern nicht rechtzeitig gekündigt wird.</p>
+              <p>Die Kündigung ist jederzeit im Dashboard unter «Abrechnung» möglich und wird zum Ende der bezahlten Laufzeit wirksam. Sie behalten den Zugang bis zum letzten bezahlten Tag.</p>
+              <p>Sie erhalten 30 Tage vor der automatischen Verlängerung eine E-Mail-Erinnerung an die hinterlegte Adresse.</p>
+              <p>Für Fragen zur Kündigung: <span style={{ color: G.green }}>support@dataquard.ch</span></p>
+            </div>
+          </div>
+
+          <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 16, padding: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <img src="/icon-recht.png" alt="Haftung" width={32} height={32} />
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>4. Haftung</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: G.text }}>5. Haftung</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: G.textSec, fontSize: 14, lineHeight: 1.7 }}>
               <p>Dataquard stellt Werkzeuge und Vorlagen zur Unterstützung bei der Datenschutz-Compliance bereit. Unsere generierten Dokumente basieren auf juristisch validierten Textbausteinen.</p>
