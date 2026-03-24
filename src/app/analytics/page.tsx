@@ -4,8 +4,28 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createBrowserClient } from '@supabase/ssr';
 import { PageWrapper } from '../components/PageWrapper';
+
+// Supabase Browser-Client (Session-persistierend)
+function getSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+interface Reminder {
+  id: string;
+  email: string;
+  domain: string;
+  status: string;
+  created_at: string;
+}
+
+interface Job {
+  status: string;
+}
 
 const G = {
   green: '#22c55e',
@@ -20,6 +40,7 @@ const G = {
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
   const [scansTotal, setScansTotal] = useState(0);
   const [remindersTotal, setRemindersTotal] = useState(0);
   const [remindersSent, setRemindersSent] = useState(0);
@@ -27,15 +48,23 @@ export default function AnalyticsPage() {
   const [batchJobsTotal, setBatchJobsTotal] = useState(0);
   const [batchJobsCompleted, setBatchJobsCompleted] = useState(0);
   const [lawAlertsTotal, setLawAlertsTotal] = useState(0);
-  const [recentReminders, setRecentReminders] = useState<any[]>([]);
+  const [recentReminders, setRecentReminders] = useState<Reminder[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
+      const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         window.location.href = '/auth';
         return;
       }
+      // Admin-Check: nur Admin-E-Mail darf diese Seite sehen
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      if (adminEmail && session.user.email !== adminEmail) {
+        window.location.href = '/dashboard';
+        return;
+      }
+      setAuthorized(true);
       await loadData(session.user.id);
       setLoading(false);
     };
@@ -43,6 +72,8 @@ export default function AnalyticsPage() {
   }, []);
 
   const loadData = async (userId: string) => {
+    const supabase = getSupabase();
+
     const { count: scans } = await supabase
       .from('scans').select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
@@ -51,16 +82,18 @@ export default function AnalyticsPage() {
     const { data: reminders } = await supabase
       .from('reminders').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(10);
     if (reminders) {
-      setRemindersTotal(reminders.length);
-      setRemindersSent(reminders.filter(r => r.status === 'sent').length);
-      setRemindersConverted(reminders.filter(r => r.status === 'converted').length);
-      setRecentReminders(reminders.slice(0, 5));
+      const typedReminders = reminders as Reminder[];
+      setRemindersTotal(typedReminders.length);
+      setRemindersSent(typedReminders.filter(r => r.status === 'sent').length);
+      setRemindersConverted(typedReminders.filter(r => r.status === 'converted').length);
+      setRecentReminders(typedReminders.slice(0, 5));
     }
 
     const { data: jobs } = await supabase.from('batch_jobs').select('*').eq('user_id', userId);
     if (jobs) {
-      setBatchJobsTotal(jobs.length);
-      setBatchJobsCompleted(jobs.filter(j => j.status === 'completed').length);
+      const typedJobs = jobs as Job[];
+      setBatchJobsTotal(typedJobs.length);
+      setBatchJobsCompleted(typedJobs.filter(j => j.status === 'completed').length);
     }
 
     const { count: alerts } = await supabase.from('law_alerts').select('*', { count: 'exact', head: true });
@@ -74,7 +107,7 @@ export default function AnalyticsPage() {
     unsubscribed: '#dc2626',
   }[status] || G.textMuted);
 
-  if (loading) {
+  if (loading || !authorized) {
     return (
       <PageWrapper>
         <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

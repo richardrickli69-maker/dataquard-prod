@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "dataquard.ch"
+        }
+      ],
+      "destination": "https://www.dataquard.ch/$1",
+      "permanent": true
+    }
+  ]
+}

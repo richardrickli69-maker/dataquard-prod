@@ -4,8 +4,11 @@ import type { Metadata } from 'next';
 import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema } from '@/components/seo/SchemaOrg';
 
 export const metadata: Metadata = {
-  title: 'Dataquard – 4-Säulen-Analyse: Compliance, Performance, Security & AI-Trust',
-  description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust (KI-Bild-Erkennung & Deepfake-Check nach EU AI Act Art. 50). Datenschutzerklärung & Impressum für KMU – nDSG/DSGVO-konform.',
+  title: {
+    default: 'Dataquard — Website Compliance & AI-Trust Check für Schweizer KMU',
+    template: '%s | Dataquard',
+  },
+  description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust — gleichzeitig geprüft, direkt behoben.',
 };
 
 export default function RootLayout({
