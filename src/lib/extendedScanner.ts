@@ -440,11 +440,11 @@ export async function checkImpressum(domain: string): Promise<{
   hasAbout: boolean;
   foundPages: string[];
 }> {
-  // Echtes HTML laden statt Stub
+  // Echtes HTML laden — Cookie-persistente Funktion für Paywall-Sites (Tamedia, Piano)
   let html = '';
   try {
     const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, buildScanFetchInit(8000));
+    const res = await fetchWithCookies(url, UA_CHROME, 8000);
     if (res.ok) html = await res.text();
   } catch { /* Fallback: leeres HTML, hasImpressum = false */ }
 
@@ -582,8 +582,32 @@ const KNOWN_TRACKER_DOMAINS: Record<string, { name: string; category: 'analytics
   'clarity.ms': { name: 'Microsoft Clarity', category: 'analytics' },
   'mouseflow.com': { name: 'Mouseflow', category: 'analytics' },
   'fullstory.com': { name: 'FullStory', category: 'analytics' },
-  'segment.com': { name: 'Segment', category: 'tracker' },
+  'segment.com': { name: 'Segment', category: 'analytics' },
   'mixpanel.com': { name: 'Mixpanel', category: 'analytics' },
+  'amplitude.com': { name: 'Amplitude', category: 'analytics' },
+  'heap.io': { name: 'Heap Analytics', category: 'analytics' },
+  // Publisher Analytics (Medienbranche)
+  'piano.io': { name: 'Piano Analytics', category: 'analytics' },
+  'tinypass.com': { name: 'Piano/Tinypass', category: 'analytics' },
+  'chartbeat.com': { name: 'Chartbeat', category: 'analytics' },
+  'static.chartbeat.com': { name: 'Chartbeat', category: 'analytics' },
+  'cdn.parsely.com': { name: 'Parse.ly', category: 'analytics' },
+  'api.parsely.com': { name: 'Parse.ly', category: 'analytics' },
+  // Error Monitoring
+  'browser.sentry-cdn.com': { name: 'Sentry', category: 'analytics' },
+  'sentry.io': { name: 'Sentry', category: 'analytics' },
+  'newrelic.com': { name: 'New Relic', category: 'analytics' },
+  'js-agent.newrelic.com': { name: 'New Relic', category: 'analytics' },
+  // A/B Testing / Personalisierung
+  'cdn.optimizely.com': { name: 'Optimizely', category: 'tracker' },
+  // Consent Management Platforms
+  'cdn.onetrust.com': { name: 'OneTrust', category: 'tracker' },
+  'cdn.cookielaw.org': { name: 'OneTrust CookieLaw', category: 'tracker' },
+  'consent.cookiebot.com': { name: 'Cookiebot', category: 'tracker' },
+  'consentcdn.cookiebot.com': { name: 'Cookiebot', category: 'tracker' },
+  'app.usercentrics.eu': { name: 'Usercentrics', category: 'tracker' },
+  'privacy-proxy.usercentrics.eu': { name: 'Usercentrics', category: 'tracker' },
+  'cmp.quantcast.com': { name: 'Quantcast CMP', category: 'tracker' },
   // Meta / Facebook
   'connect.facebook.net': { name: 'Meta Pixel', category: 'ads' },
   'facebook.com/tr': { name: 'Meta Pixel (Tracking Pixel)', category: 'ads' },
@@ -605,13 +629,17 @@ const KNOWN_TRACKER_DOMAINS: Record<string, { name: string; category: 'analytics
   // Snapchat / Pinterest
   'tr.snapchat.com': { name: 'Snapchat Pixel', category: 'ads' },
   'ct.pinterest.com': { name: 'Pinterest Tag', category: 'ads' },
+  // Medien-Embeds (DSGVO-relevant: externe Ressourcen)
+  'fonts.googleapis.com': { name: 'Google Fonts', category: 'tracker' },
+  'maps.googleapis.com': { name: 'Google Maps', category: 'tracker' },
+  'www.youtube.com/embed': { name: 'YouTube Embed', category: 'tracker' },
+  'youtube-nocookie.com': { name: 'YouTube (nocookie)', category: 'tracker' },
+  'player.vimeo.com': { name: 'Vimeo Embed', category: 'tracker' },
   // Chat / Support
   'intercom.io': { name: 'Intercom', category: 'tracker' },
   'crisp.chat': { name: 'Crisp Chat', category: 'tracker' },
-  // CDNs (tracking-relevant)
-  'cdn.jsdelivr.net': { name: 'jsDelivr CDN', category: 'tracker' },
-  'unpkg.com': { name: 'unpkg CDN', category: 'tracker' },
-  'cdnjs.cloudflare.com': { name: 'Cloudflare CDN', category: 'tracker' },
+  'widget.userlike.com': { name: 'Userlike Chat', category: 'tracker' },
+  'cdn.livechatinc.com': { name: 'LiveChat', category: 'tracker' },
 };
 
 export async function analyzeThirdParty(domain: string): Promise<{
@@ -626,7 +654,7 @@ export async function analyzeThirdParty(domain: string): Promise<{
   let pageHtml = '';
   try {
     const url = domain.startsWith('http') ? domain : `https://${domain}`;
-    const res = await fetch(url, buildScanFetchInit(8000));
+    const res = await fetchWithCookies(url, UA_CHROME, 8000);
     if (res.ok) pageHtml = await res.text();
   } catch { /* Fallback: keine Scripts */ }
 
