@@ -283,6 +283,8 @@ export interface ExtendedScanResult {
     allSafe: boolean;
     maxAiScore: number;
     deepfakeDetected: boolean;
+    /** Einzelne Bild-Ergebnisse für ai_detected_images Speicherung */
+    imageDetails: Array<{ url: string; ai_score: number }>;
   } | null;
 }
 
@@ -1149,6 +1151,8 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
   allSafe: boolean;
   maxAiScore: number;
   deepfakeDetected: boolean;
+  /** Einzelne Bild-Ergebnisse für ai_detected_images Speicherung */
+  imageDetails: Array<{ url: string; ai_score: number }>;
 } | null> {
   const apiUser = process.env.SIGHTENGINE_API_USER;
   const apiSecret = process.env.SIGHTENGINE_API_SECRET;
@@ -1235,6 +1239,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
       allSafe: unsafeCount === 0,
       maxAiScore: Math.max(...details.map(r => r.ai_score * 100)),
       deepfakeDetected: deepfakeCount > 0,
+      imageDetails: details.map(r => ({ url: r.url, ai_score: r.ai_score })),
     };
   } catch {
     return null;

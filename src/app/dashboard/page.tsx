@@ -116,7 +116,18 @@ export default function DashboardPage() {
   const [badgeLoading, setBadgeLoading] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
   const [aiTrustCopied, setAiTrustCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'billing' | 'massnahmen' | 'badge' | 'aitrust'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'policies' | 'billing' | 'massnahmen' | 'badge' | 'aitrust' | 'aishield'>('overview');
+
+  // AI-Shield States
+  const [shieldSettings, setShieldSettings] = useState<{
+    enabled: boolean;
+    badge_style: 'minimal' | 'standard' | 'detailed';
+    badge_color: string;
+    badge_position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  }>({ enabled: false, badge_style: 'standard', badge_color: '#8B5CF6', badge_position: 'top-left' });
+  const [aiImages, setAiImages] = useState<{ id: string; image_url: string; ai_probability: number; is_labeled: boolean }[]>([]);
+  const [shieldSaving, setShieldSaving] = useState(false);
+  const [snippetCopied, setSnippetCopied] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -157,6 +168,30 @@ export default function DashboardPage() {
       .from('verified_badges').select('id, website_url, issued_at, expires_at, is_active')
       .eq('user_id', userId).order('issued_at', { ascending: false });
     if (badgeData) setBadges(badgeData);
+
+    // AI-Shield Einstellungen laden
+    const { data: shieldData } = await supabase
+      .from('ai_shield_settings')
+      .select('enabled, badge_style, badge_color, badge_position')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (shieldData) {
+      setShieldSettings({
+        enabled: shieldData.enabled ?? false,
+        badge_style: shieldData.badge_style ?? 'standard',
+        badge_color: shieldData.badge_color ?? '#8B5CF6',
+        badge_position: shieldData.badge_position ?? 'top-left',
+      });
+    }
+
+    // Erkannte KI-Bilder laden
+    const { data: imagesData } = await supabase
+      .from('ai_detected_images')
+      .select('id, image_url, ai_probability, is_labeled')
+      .eq('user_id', userId)
+      .order('ai_probability', { ascending: false })
+      .limit(50);
+    if (imagesData) setAiImages(imagesData);
   };
 
   const generateBadge = async () => {
@@ -180,6 +215,41 @@ export default function DashboardPage() {
     } finally {
       setBadgeLoading(false);
     }
+  };
+
+  const saveShieldSettings = async (newSettings: typeof shieldSettings) => {
+    if (!user) return;
+    setShieldSaving(true);
+    try {
+      await supabase.from('ai_shield_settings').upsert(
+        { user_id: user.id, ...newSettings, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    } finally {
+      setShieldSaving(false);
+    }
+  };
+
+  const toggleImageLabel = async (imageId: string, newValue: boolean) => {
+    setAiImages(prev => prev.map(img => img.id === imageId ? { ...img, is_labeled: newValue } : img));
+    await supabase.from('ai_detected_images').update({ is_labeled: newValue }).eq('id', imageId);
+  };
+
+  const copyShieldSnippet = async (userId: string) => {
+    const code = `<!-- Dataquard AI-Trust Shield -->\n<script src="https://www.dataquard.ch/api/shield/${userId}.js" defer></script>`;
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = code;
+      el.style.cssText = 'position:fixed;opacity:0;';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+    setSnippetCopied(true);
+    setTimeout(() => setSnippetCopied(false), 2000);
   };
 
   const copyEmbedCode = (badgeId: string) => {
@@ -278,6 +348,7 @@ export default function DashboardPage() {
             { key: 'massnahmen', icon: '/ziel.png', label: 'Massnahmen' },
             { key: 'badge', icon: '/icon-schutz.png', label: 'Verified Badge' },
             { key: 'aitrust', icon: '/badge-ai-trust.svg', label: 'AI-Trust' },
+            { key: 'aishield', icon: '/badge-ai-trust.svg', label: 'AI-Shield' },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -556,6 +627,268 @@ export default function DashboardPage() {
             {badges.length === 0 && subscription && (
               <div style={{ textAlign: 'center', color: G.textMuted, padding: 32 }}>
                 Noch kein Badge erstellt. Geben Sie Ihre Website-URL ein und klicken Sie auf &ldquo;Badge erstellen&rdquo;.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: AI-Shield */}
+        {activeTab === 'aishield' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Header */}
+            <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 12, padding: 20 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: '#8B5CF6', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img src="/badge-ai-trust.svg" alt="" width={20} height={20} style={{ display: 'inline-block' }} />
+                AI-Shield — KI-Bilder Kennzeichnung
+              </h2>
+              <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6, margin: 0 }}>
+                Binden Sie ein JavaScript-Snippet in Ihre Website ein. Es erkennt KI-generierte Bilder automatisch und blendet ein Kennzeichnungs-Badge ein — konform nach EU AI Act Art. 50.
+              </p>
+            </div>
+
+            {/* KI-Bilder Liste */}
+            <div style={card}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img src="/ki-transparenz.png" alt="" width={18} height={18} style={{ display: 'inline-block' }} />
+                Erkannte KI-Bilder
+                {aiImages.length > 0 && (
+                  <span style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+                    {aiImages.length}
+                  </span>
+                )}
+              </h3>
+              <p style={{ color: G.textMuted, fontSize: 13, marginBottom: 16 }}>
+                Aus dem letzten Scan. Haken Sie ab, welche Bilder mit dem Badge gekennzeichnet werden sollen.
+              </p>
+
+              {aiImages.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: G.textMuted }}>
+                  <p style={{ marginBottom: 12, fontSize: 13 }}>Noch keine KI-Bilder erkannt. Führen Sie einen Website-Scan durch.</p>
+                  <a href="/scanner" style={{ padding: '8px 20px', background: G.green, color: '#fff', borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                    Website scannen →
+                  </a>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {aiImages.map((img) => {
+                    const pct = Math.round(img.ai_probability * 100);
+                    const barColor = pct >= 80 ? '#dc2626' : pct >= 60 ? '#eab308' : '#8B5CF6';
+                    return (
+                      <div key={img.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: G.bgLight, borderRadius: 8, border: `1px solid ${G.border}`, flexWrap: 'wrap' }}>
+                        {/* Thumbnail */}
+                        <img
+                          src={img.image_url}
+                          alt="KI-Bild"
+                          style={{ width: 80, height: 52, objectFit: 'cover', borderRadius: 6, flexShrink: 0, border: `1px solid ${G.border}` }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        {/* URL + Score */}
+                        <div style={{ flex: 1, minWidth: 120 }}>
+                          <div style={{ fontSize: 12, color: G.textSec, wordBreak: 'break-all', marginBottom: 4, lineHeight: 1.4 }}>
+                            {img.image_url.length > 60 ? '…' + img.image_url.slice(-57) : img.image_url}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ flex: 1, maxWidth: 120, height: 6, background: G.border, borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 99 }} />
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: barColor }}>KI: {pct}%</span>
+                          </div>
+                        </div>
+                        {/* Checkbox */}
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: subscription?.plan === 'professional' ? 'pointer' : 'not-allowed', opacity: subscription?.plan === 'professional' ? 1 : 0.5, flexShrink: 0 }}>
+                          <input
+                            type="checkbox"
+                            checked={img.is_labeled}
+                            disabled={subscription?.plan !== 'professional'}
+                            onChange={(e) => toggleImageLabel(img.id, e.target.checked)}
+                            style={{ width: 16, height: 16, accentColor: '#8B5CF6' }}
+                          />
+                          <span style={{ fontSize: 12, color: G.textSec }}>Kennzeichnen</span>
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Professional-only: Einstellungen + Snippet */}
+            {subscription?.plan === 'professional' ? (
+              <>
+                {/* Toggle + Einstellungen */}
+                <div style={card}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 16 }}>Badge-Einstellungen</h3>
+
+                  {/* Toggle */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${G.border}` }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: G.text }}>Kennzeichnung aktivieren</div>
+                      <div style={{ fontSize: 12, color: G.textMuted, marginTop: 2 }}>Badge wird auf KI-Bildern auf Ihrer Website eingeblendet</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const newSettings = { ...shieldSettings, enabled: !shieldSettings.enabled };
+                        setShieldSettings(newSettings);
+                        await saveShieldSettings(newSettings);
+                      }}
+                      style={{ padding: '7px 18px', background: shieldSettings.enabled ? '#8B5CF6' : G.bgLight, color: shieldSettings.enabled ? '#fff' : G.textSec, border: `1px solid ${shieldSettings.enabled ? '#8B5CF6' : G.border}`, borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.15s' }}
+                    >
+                      {shieldSaving ? '⏳' : shieldSettings.enabled ? '✓ Aktiv' : 'Inaktiv'}
+                    </button>
+                  </div>
+
+                  {/* Badge-Stil */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 8 }}>Badge-Stil</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {([
+                        { key: 'minimal', label: 'Minimal', desc: 'Nur "KI ✓"' },
+                        { key: 'standard', label: 'Standard', desc: '"KI-generiert ✓"' },
+                        { key: 'detailed', label: 'Ausführlich', desc: 'EU AI Act Art. 50' },
+                      ] as const).map(opt => (
+                        <button
+                          key={opt.key}
+                          onClick={async () => {
+                            const newSettings = { ...shieldSettings, badge_style: opt.key };
+                            setShieldSettings(newSettings);
+                            await saveShieldSettings(newSettings);
+                          }}
+                          style={{ padding: '8px 14px', background: shieldSettings.badge_style === opt.key ? 'rgba(139,92,246,0.12)' : G.bgLight, border: `1px solid ${shieldSettings.badge_style === opt.key ? '#8B5CF6' : G.border}`, borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
+                        >
+                          <div style={{ fontSize: 12, fontWeight: 700, color: shieldSettings.badge_style === opt.key ? '#8B5CF6' : G.text }}>{opt.label}</div>
+                          <div style={{ fontSize: 11, color: G.textMuted }}>{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Position */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 8 }}>Position</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {([
+                        { key: 'top-left', label: '↖ Oben links' },
+                        { key: 'top-right', label: '↗ Oben rechts' },
+                        { key: 'bottom-left', label: '↙ Unten links' },
+                        { key: 'bottom-right', label: '↘ Unten rechts' },
+                      ] as const).map(opt => (
+                        <button
+                          key={opt.key}
+                          onClick={async () => {
+                            const newSettings = { ...shieldSettings, badge_position: opt.key };
+                            setShieldSettings(newSettings);
+                            await saveShieldSettings(newSettings);
+                          }}
+                          style={{ padding: '7px 12px', background: shieldSettings.badge_position === opt.key ? 'rgba(139,92,246,0.12)' : G.bgLight, border: `1px solid ${shieldSettings.badge_position === opt.key ? '#8B5CF6' : G.border}`, borderRadius: 8, fontSize: 12, fontWeight: shieldSettings.badge_position === opt.key ? 700 : 400, color: shieldSettings.badge_position === opt.key ? '#8B5CF6' : G.textSec, cursor: 'pointer' }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Farbe */}
+                  <div style={{ marginBottom: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 8 }}>Badge-Farbe</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <input
+                        type="color"
+                        value={shieldSettings.badge_color}
+                        onChange={(e) => setShieldSettings(prev => ({ ...prev, badge_color: e.target.value }))}
+                        onBlur={async () => saveShieldSettings(shieldSettings)}
+                        style={{ width: 40, height: 32, border: `1px solid ${G.border}`, borderRadius: 6, cursor: 'pointer', padding: 2 }}
+                      />
+                      <span style={{ fontSize: 13, fontFamily: 'monospace', color: G.textSec }}>{shieldSettings.badge_color}</span>
+                      <button
+                        onClick={async () => {
+                          const newSettings = { ...shieldSettings, badge_color: '#8B5CF6' };
+                          setShieldSettings(newSettings);
+                          await saveShieldSettings(newSettings);
+                        }}
+                        style={{ padding: '4px 10px', background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 6, fontSize: 11, color: G.textMuted, cursor: 'pointer' }}
+                      >
+                        Standard
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live-Vorschau */}
+                {aiImages.length > 0 && (
+                  <div style={card}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 12 }}>Live-Vorschau</h3>
+                    <div style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
+                      <img
+                        src={aiImages[0].image_url}
+                        alt="Vorschau"
+                        style={{ maxWidth: 320, maxHeight: 200, objectFit: 'cover', borderRadius: 8, border: `1px solid ${G.border}`, display: 'block' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                      {/* Badge-Overlay-Simulation */}
+                      <div style={{
+                        position: 'absolute',
+                        ...(shieldSettings.badge_position === 'top-left' ? { top: 8, left: 8 } :
+                          shieldSettings.badge_position === 'top-right' ? { top: 8, right: 8 } :
+                          shieldSettings.badge_position === 'bottom-left' ? { bottom: 8, left: 8 } :
+                          { bottom: 8, right: 8 }),
+                        background: shieldSettings.badge_color,
+                        color: '#fff',
+                        padding: shieldSettings.badge_style === 'detailed' ? '5px 8px' : '3px 8px',
+                        borderRadius: 4,
+                        fontSize: 11,
+                        fontFamily: 'Arial, sans-serif',
+                        opacity: 0.92,
+                        maxWidth: shieldSettings.badge_style === 'detailed' ? 180 : undefined,
+                        lineHeight: 1.3,
+                        pointerEvents: 'none',
+                      }}>
+                        {shieldSettings.badge_style === 'minimal' ? 'KI ✓' :
+                         shieldSettings.badge_style === 'standard' ? 'KI-generiert ✓' :
+                         'KI-generiert — geprüft nach EU AI Act Art. 50'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* JS-Snippet */}
+                <div style={card}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: G.text, marginBottom: 8 }}>JS-Snippet für Ihre Website</h3>
+                  <p style={{ fontSize: 13, color: G.textMuted, marginBottom: 14 }}>
+                    Fügen Sie diesen Code einmalig in den <code style={{ background: G.bgLight, padding: '1px 5px', borderRadius: 4 }}>&lt;head&gt;</code> oder vor <code style={{ background: G.bgLight, padding: '1px 5px', borderRadius: 4 }}>&lt;/body&gt;</code> Ihrer Website ein:
+                  </p>
+                  <div style={{ background: '#111827', borderRadius: 8, padding: '12px 14px', fontFamily: 'monospace', fontSize: 12, color: '#22c55e', position: 'relative', lineHeight: 1.7 }}>
+                    <button
+                      onClick={() => user && copyShieldSnippet(user.id)}
+                      style={{ position: 'absolute', top: 10, right: 10, background: 'transparent', border: '1px solid #374151', borderRadius: 6, color: snippetCopied ? '#22c55e' : '#9ca3af', fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
+                    >
+                      {snippetCopied ? '✅ Kopiert!' : '📋 Kopieren'}
+                    </button>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', paddingRight: 80 }}>
+                      {`<!-- Dataquard AI-Trust Shield -->\n<script src="https://www.dataquard.ch/api/shield/${user?.id}.js" defer></script>`}
+                    </pre>
+                  </div>
+                  <p style={{ fontSize: 11, color: G.textMuted, marginTop: 10, marginBottom: 0 }}>
+                    Das Script lädt asynchron und blockiert Ihre Website nicht. Badge-Einstellungen werden stündlich aktualisiert.
+                  </p>
+                </div>
+              </>
+            ) : (
+              /* Starter: read-only mit Upsell */
+              <div style={{ border: '1px solid rgba(139,92,246,0.25)', borderRadius: 12, padding: 28, background: 'rgba(139,92,246,0.04)', textAlign: 'center' }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <img src="/badge-ai-trust.svg" alt="" width={20} height={20} style={{ display: 'inline-block' }} />
+                  Kennzeichnung aktivieren
+                </p>
+                <p style={{ fontSize: 13, color: G.textSec, marginBottom: 20, lineHeight: 1.6 }}>
+                  Die automatische KI-Kennzeichnung auf Ihrer Website (JS-Overlay, Badge-Einstellungen, EU AI Act Art. 50) ist exklusiv für den Professional-Plan.
+                </p>
+                <a
+                  href="/checkout?plan=professional"
+                  style={{ display: 'inline-block', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', padding: '12px 28px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+                >
+                  Upgrade auf Professional →
+                </a>
               </div>
             )}
           </div>

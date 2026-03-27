@@ -133,6 +133,28 @@ export async function POST(request: NextRequest) {
               detected_services_count: scanResult.compliance.trackersFound?.length ?? 0,
             },
           });
+
+          // Erkannte KI-Bilder in ai_detected_images speichern
+          const scanId: string | null = data?.[0]?.id ?? null;
+          const imageDetails = scanResult.sightengine?.imageDetails ?? [];
+          const aiImages = imageDetails
+            .filter(r => r.ai_score > 0)
+            .map(r => ({
+              user_id: userId,
+              scan_id: scanId,
+              image_url: r.url,
+              ai_probability: r.ai_score,
+              is_labeled: r.ai_score > 0.7,
+              detected_at: new Date().toISOString(),
+            }));
+          if (aiImages.length > 0) {
+            const { error: imgErr } = await supabaseAdmin
+              .from('ai_detected_images')
+              .upsert(aiImages, { onConflict: 'user_id,image_url' });
+            if (imgErr) {
+              console.error('[saveAiImages] Fehler:', imgErr.message);
+            }
+          }
         }
       }
     } catch (saveError) {
