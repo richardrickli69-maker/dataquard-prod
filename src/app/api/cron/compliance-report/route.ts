@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { performExtendedScan } from '@/lib/extendedScanner';
-import { sendComplianceReport, sendSslWarning } from '@/lib/emailService';
+import { sendComplianceReport, sendSslWarning, sendDseUpdateNotification, sendDseUpsellNotification } from '@/lib/emailService';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -55,6 +55,54 @@ function getIsoWeek(d: Date): number {
   return 1 + Math.round(
     ((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7
   );
+}
+
+/** Claude API: Neue Tracker-Abschnitte in bestehende DSE einfügen */
+async function updatePolicyWithNewTrackers(
+  existingContent: string,
+  addedTrackers: string[]
+): Promise<string | null> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error('[ComplianceReport] ANTHROPIC_API_KEY nicht gesetzt – DSE-Update übersprungen');
+    return null;
+  }
+
+  const trackerList = addedTrackers.join(', ');
+  const prompt = `Du bist ein Datenschutzexperte. Aktualisiere die folgende Datenschutzerklärung (DSE) indem du kurze Abschnitte für die neu entdeckten Drittanbieter-Dienste hinzufügst: ${trackerList}.
+
+Füge für jeden neuen Dienst einen knappen Abschnitt ein (Zweck, Anbieter, Datenkategorie, Rechtsgrundlage Art. 6 DSGVO oder nDSG Art. 31). Behalte Stil und Format der bestehenden DSE bei. Gib NUR den vollständigen aktualisierten DSE-Text zurück, ohne Einleitung oder Kommentar.
+
+Bestehende DSE:
+${existingContent.slice(0, 8000)}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[ComplianceReport] Claude API Fehler:', response.status);
+      return null;
+    }
+
+    const data = await response.json() as { content?: { type: string; text: string }[] };
+    const text = data.content?.find(b => b.type === 'text')?.text ?? null;
+    return text;
+  } catch (err) {
+    console.error('[ComplianceReport] Claude API Exception:', err);
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -163,6 +211,66 @@ export async function GET(request: NextRequest) {
               email,
               domain: lastScan.domain || lastScan.url,
               daysLeft: sslDaysLeft,
+            });
+            results.emailsSent++;
+          }
+        }
+
+        // DSE-Update (Professional) oder Upsell (Starter) bei neuen Trackern
+        if (addedTrackers.length > 0 && results.emailsSent < MAX_EMAILS_PER_RUN) {
+          if (sub.plan === 'professional') {
+            // Bestehende Policy laden
+            const { data: existingPolicies } = await supabaseAdmin
+              .from('policies')
+              .select('id, content, jurisdiction, version')
+              .eq('user_id', sub.user_id)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            const existingPolicy = existingPolicies?.[0];
+
+            if (existingPolicy?.content) {
+              // Claude API: neue Tracker in DSE einbauen
+              const updatedContent = await updatePolicyWithNewTrackers(
+                existingPolicy.content as string,
+                addedTrackers
+              );
+
+              if (updatedContent) {
+                const newVersion = ((existingPolicy.version as number | null) ?? 1) + 1;
+
+                const { error: policyErr } = await supabaseAdmin.from('policies').insert([{
+                  user_id: sub.user_id,
+                  jurisdiction: existingPolicy.jurisdiction ?? 'nDSG',
+                  content: updatedContent,
+                  format: 'markdown',
+                  auto_generated: true,
+                  version: newVersion,
+                  previous_version_id: existingPolicy.id,
+                  changes_summary: `Neue Dienste erkannt: ${addedTrackers.join(', ')}`,
+                }]);
+
+                if (policyErr) {
+                  console.error('[ComplianceReport] Policy-Speichern Fehler:', policyErr.message);
+                } else {
+                  const changesHtml = addedTrackers
+                    .map(t => `<p style="color:#374151;font-size:14px;margin:4px 0;">&#43; ${t.replace(/&/g, '&amp;')}</p>`)
+                    .join('');
+                  await sendDseUpdateNotification({
+                    email,
+                    domain: lastScan.domain || lastScan.url,
+                    changesHtml,
+                  });
+                  results.emailsSent++;
+                }
+              }
+            }
+          } else if (sub.plan === 'starter') {
+            // Starter: Upsell-E-Mail senden
+            await sendDseUpsellNotification({
+              email,
+              domain: lastScan.domain || lastScan.url,
+              addedTrackers,
             });
             results.emailsSent++;
           }

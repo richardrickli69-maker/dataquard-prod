@@ -427,6 +427,168 @@ export async function sendSslWarning({ email, domain, daysLeft }: SslWarningEmai
 
 // ─── Bestehende Reminder-Funktion ────────────────────────────────────────────
 
+// ─── DSE-Update Benachrichtigung (Professional: automatisch aktualisiert) ──────
+
+export async function sendDseUpdateNotification({
+  email,
+  domain,
+  changesHtml,
+}: {
+  email: string;
+  domain: string;
+  changesHtml: string;
+}): Promise<{ success: boolean; error?: unknown }> {
+  const domainEscaped = domain.replace(/&/g, '&amp;');
+  try {
+    const { error } = await getResend().emails.send({
+      from: 'Dataquard <info@dataquard.ch>',
+      to: email,
+      subject: `Ihre Datenschutzerkl&#228;rung wurde automatisch aktualisiert – ${domainEscaped}`,
+      html: `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>DSE automatisch aktualisiert</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <tr><td style="background:linear-gradient(135deg,#0b1829,#0d1f35);padding:28px 40px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;">
+          <span style="color:#22c55e;">Data</span><span style="color:#fff;">quard</span>
+        </div>
+        <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">Automatische DSE-Aktualisierung</div>
+      </td></tr>
+      <tr><td style="padding:36px 40px 24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">&#128196;</div>
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a2e;">DSE aktualisiert</h1>
+        <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
+          Ihre Datenschutzerkl&#228;rung f&#252;r <strong style="color:#1a1a2e;">${domainEscaped}</strong>
+          wurde automatisch auf die neueste Version aktualisiert.<br/>
+          Neue Tracker wurden erkannt und in der DSE ber&#252;cksichtigt.
+        </p>
+      </td></tr>
+      <tr><td style="padding:0 40px 28px;">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:18px 22px;">
+          <div style="font-size:13px;font-weight:700;color:#15803d;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;">&#196;nderungen</div>
+          ${changesHtml}
+        </div>
+      </td></tr>
+      <tr><td style="padding:0 40px 32px;text-align:center;">
+        <a href="https://www.dataquard.ch/dashboard"
+          style="display:inline-block;background:linear-gradient(135deg,#00e676,#00c853);color:#040c1c;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;">
+          DSE im Dashboard ansehen &#8594;
+        </a>
+      </td></tr>
+      <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;">
+          &#169; 2026 Dataquard &#183; Reinach BL, Schweiz &#183;
+          <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
+    });
+    if (error) {
+      console.error('[emailService] sendDseUpdateNotification Fehler:', error);
+      return { success: false, error };
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('[emailService] sendDseUpdateNotification Exception:', err);
+    return { success: false, error: err };
+  }
+}
+
+// ─── DSE-Upsell Benachrichtigung (Starter: neue Tracker, DSE veraltet) ─────────
+
+export async function sendDseUpsellNotification({
+  email,
+  domain,
+  addedTrackers,
+}: {
+  email: string;
+  domain: string;
+  addedTrackers: string[];
+}): Promise<{ success: boolean; error?: unknown }> {
+  const domainEscaped = domain.replace(/&/g, '&amp;');
+  const trackerListHtml = addedTrackers.map((t) =>
+    `<li style="color:#374151;font-size:14px;padding:3px 0;">+ ${t.replace(/&/g, '&amp;')}</li>`
+  ).join('');
+  try {
+    const { error } = await getResend().emails.send({
+      from: 'Dataquard <info@dataquard.ch>',
+      to: email,
+      subject: `Neue Tracker auf ${domainEscaped} – DSE-Update empfohlen`,
+      html: `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>DSE-Update empfohlen</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <tr><td style="background:linear-gradient(135deg,#0b1829,#0d1f35);padding:28px 40px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;">
+          <span style="color:#22c55e;">Data</span><span style="color:#fff;">quard</span>
+        </div>
+        <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">Compliance-Warnung</div>
+      </td></tr>
+      <tr><td style="padding:36px 40px 24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">&#9888;&#65039;</div>
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a2e;">Neue Tracker entdeckt</h1>
+        <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
+          Auf <strong style="color:#1a1a2e;">${domainEscaped}</strong> wurden neue Drittanbieter-Dienste erkannt.<br/>
+          Ihre Datenschutzerkl&#228;rung sollte aktualisiert werden.
+        </p>
+      </td></tr>
+      <tr><td style="padding:0 40px 24px;">
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:18px 22px;">
+          <div style="font-size:13px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:10px;">Neue Dienste</div>
+          <ul style="margin:0;padding-left:16px;">${trackerListHtml}</ul>
+        </div>
+      </td></tr>
+      <tr><td style="padding:0 40px 12px;">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;">
+          <p style="margin:0;font-size:14px;color:#1e40af;line-height:1.6;">
+            &#128161; Mit dem <strong>Professional-Plan</strong> wird Ihre DSE bei solchen &#196;nderungen
+            automatisch aktualisiert – Sie m&#252;ssen nichts manuell tun.
+          </p>
+        </div>
+      </td></tr>
+      <tr><td style="padding:16px 40px 32px;text-align:center;">
+        <a href="https://www.dataquard.ch/checkout"
+          style="display:inline-block;background:linear-gradient(135deg,#00e676,#00c853);color:#040c1c;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;margin-right:12px;">
+          Auf Professional upgraden &#8594;
+        </a>
+        <a href="https://www.dataquard.ch/dashboard"
+          style="display:inline-block;border:2px solid #22c55e;color:#22c55e;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">
+          DSE manuell aktualisieren
+        </a>
+      </td></tr>
+      <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;">
+          &#169; 2026 Dataquard &#183; Reinach BL, Schweiz &#183;
+          <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
+    });
+    if (error) {
+      console.error('[emailService] sendDseUpsellNotification Fehler:', error);
+      return { success: false, error };
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('[emailService] sendDseUpsellNotification Exception:', err);
+    return { success: false, error: err };
+  }
+}
+
 export async function sendReminderEmail(email: string) {
   try {
     const result = await getResend().emails.send({

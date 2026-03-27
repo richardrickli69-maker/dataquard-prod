@@ -30,6 +30,7 @@ const HANDLED_EVENTS = new Set([
   'customer.subscription.updated',
   'customer.subscription.deleted',
   'invoice.payment_failed',
+  'invoice.paid',
 ]);
 
 export async function POST(request: NextRequest) {
@@ -125,6 +126,10 @@ export async function POST(request: NextRequest) {
         currency,
         purchased_at: createdAt.toISOString(),
         created_at: new Date().toISOString(),
+        // KI-Bilder-Kontingent je Plan
+        ai_images_limit: plan === 'professional' ? 250 : 50,
+        ai_images_scanned: 0,
+        ai_images_reset_at: new Date().toISOString(),
       }, { onConflict: resolvedUserId ? 'user_id' : 'email' });
 
       if (upsertErr) {
@@ -275,6 +280,31 @@ export async function POST(request: NextRequest) {
           </div>`,
         });
         console.log(`[Webhook] Zahlungsfehlschlag-E-Mail gesendet an: ${customerEmail}`);
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // ─── invoice.paid ────────────────────────────────────────────────────────────
+    // Wird bei jeder erfolgreichen Jahresverlängerung ausgelöst → Kontingent zurücksetzen
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+
+      if (customerId) {
+        const { error: resetErr } = await supabaseAdmin.from('subscriptions')
+          .update({
+            ai_images_scanned: 0,
+            ai_images_reset_at: new Date().toISOString(),
+          })
+          .eq('stripe_customer_id', customerId)
+          .eq('status', 'active');
+
+        if (resetErr) {
+          console.error('[Webhook] invoice.paid Reset Fehler:', resetErr.message);
+        } else {
+          console.log(`[Webhook] KI-Bilder-Kontingent zurückgesetzt für customer=${customerId}`);
+        }
       }
 
       return NextResponse.json({ received: true });

@@ -98,6 +98,9 @@ interface Subscription {
   ai_trust_active?: boolean;
   ai_trust_expires_at?: string;
   ai_trust_stripe_subscription_id?: string;
+  ai_images_scanned?: number;
+  ai_images_limit?: number;
+  ai_images_reset_at?: string;
 }
 
 export default function DashboardPage() {
@@ -382,6 +385,42 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* KI-Bilder-Kontingent Fortschrittsbalken */}
+            {subscription && (
+              (() => {
+                const scanned = subscription.ai_images_scanned ?? 0;
+                const limit = subscription.ai_images_limit ?? 50;
+                const pct = limit > 0 ? Math.min(100, Math.round((scanned / limit) * 100)) : 0;
+                const barColor = pct >= 90 ? G.red : pct >= 70 ? G.yellow : G.green;
+                const resetDate = subscription.ai_images_reset_at
+                  ? new Date(subscription.ai_images_reset_at).toLocaleDateString('de-CH')
+                  : null;
+                return (
+                  <div style={card}>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src="/ki-transparenz.png" alt="KI" width={18} height={18} style={{ display: 'inline-block' }} />
+                      KI-Bilder Kontingent
+                    </h2>
+                    <p style={{ color: G.textMuted, fontSize: 13, marginBottom: 14 }}>
+                      Anzahl KI-gescannter Bilder (Sightengine) seit letzter Erneuerung
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, color: G.textSec }}>{scanned} / {limit} Bilder analysiert</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: barColor }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 10, background: G.bgLight, borderRadius: 99, overflow: 'hidden', border: `1px solid ${G.border}` }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 99, transition: 'width 0.4s ease' }} />
+                    </div>
+                    {resetDate && (
+                      <p style={{ fontSize: 12, color: G.textMuted, marginTop: 8, marginBottom: 0 }}>
+                        Zurückgesetzt am {resetDate} · erneuert sich jährlich mit dem Abo
+                      </p>
+                    )}
+                  </div>
+                );
+              })()
+            )}
 
             {!subscription && (
               <div style={{ background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 12, padding: 28, textAlign: 'center' }}>
