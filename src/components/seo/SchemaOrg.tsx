@@ -10,8 +10,8 @@ export function SoftwareApplicationSchema() {
     operatingSystem: 'Web',
     offers: [
       { '@type': 'Offer', name: 'FREE', price: '0', priceCurrency: 'CHF' },
-      { '@type': 'Offer', name: 'STARTER', price: '79', priceCurrency: 'CHF', billingIncrement: 'P1Y' },
-      { '@type': 'Offer', name: 'PROFESSIONAL', price: '199', priceCurrency: 'CHF', billingIncrement: 'P1Y' },
+      { '@type': 'Offer', name: 'STARTER', price: '228', priceCurrency: 'CHF', billingIncrement: 'P1Y' },
+      { '@type': 'Offer', name: 'PROFESSIONAL', price: '468', priceCurrency: 'CHF', billingIncrement: 'P1Y' },
     ],
     featureList: [
       'Compliance-Check (nDSG/DSGVO)',
@@ -119,6 +119,32 @@ export function KiTransparenzSchema() {
       isAccessibleForFree: true,
       inLanguage: 'de',
       keywords: 'KI-Transparenz, EU AI Act Art. 50, KI-Kennzeichnung, Dataquard, Anthropic Claude, Sightengine',
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://www.dataquard.ch/scanner?url={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
+}
+
+export function WebSiteSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Dataquard',
+    alternateName: 'Dataquard.ch',
+    url: 'https://www.dataquard.ch',
+    description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust.',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Dataquard',
+      url: 'https://www.dataquard.ch',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.dataquard.ch/logo-dataquard.png',
+      },
     },
     potentialAction: {
       '@type': 'SearchAction',
