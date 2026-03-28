@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import CookieBanner from "@/components/CookieBanner/CookieBanner";
+import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
 import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema, WebSiteSchema } from '@/components/seo/SchemaOrg';
 
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body>
         {children}
         <CookieBanner />
+        <Analytics />
       </body>
     </html>
   );
