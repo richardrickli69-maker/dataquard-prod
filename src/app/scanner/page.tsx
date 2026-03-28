@@ -279,8 +279,8 @@ export default function ScannerPage() {
         },
         imageAnalysis: data.data?.image_analysis ?? undefined,
       });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Scan fehlgeschlagen. Bitte versuchen Sie es erneut.');
+    } catch {
+      setError('Der Scanner ist momentan nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut.');
     } finally { setScanning(false); }
   };
 
@@ -650,6 +650,14 @@ export default function ScannerPage() {
                       </span>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Sightengine nicht verfügbar */}
+              {!result.aiTrust.sightengineActive && (
+                <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 10, fontSize: 13, color: G.textSec, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <img src="/warnung.png" alt="" width={16} height={16} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span>Die KI-Bild-Analyse ist momentan nicht verfügbar. Die übrigen Prüfungen wurden durchgeführt. Bitte scannen Sie später erneut für die vollständige Analyse.</span>
                 </div>
               )}
 
