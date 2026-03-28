@@ -46,7 +46,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageWrapper } from './components/PageWrapper';
 
@@ -120,7 +120,24 @@ export default function HomePage() {
   const [heroScanning, setHeroScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
+  const [serviceStatus, setServiceStatus] = useState<'loading' | 'ok' | 'degraded' | 'down'>('loading');
   const router = useRouter();
+
+  // Health-Check beim Laden: Dienste-Status prüfen
+  useEffect(() => {
+    fetch('/api/health')
+      .then(res => res.json())
+      .then((data: { operational: boolean; status: { scanner: boolean; sightengine: boolean; claude: boolean } }) => {
+        if (data.operational) {
+          setServiceStatus('ok');
+        } else if (data.status?.scanner) {
+          setServiceStatus('degraded');
+        } else {
+          setServiceStatus('down');
+        }
+      })
+      .catch(() => setServiceStatus('down'));
+  }, []);
 
   const handleHeroScan = async () => {
     if (!heroUrl.trim()) return;
@@ -184,9 +201,26 @@ export default function HomePage() {
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
           Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: <strong style={{ color: G.text }}>Compliance, Performance, Security und AI-Trust</strong> — gleichzeitig geprüft, direkt behoben. Erkennt automatisch <strong style={{ color: G.text }}>KI-generierte Bilder und Deepfakes</strong> nach EU AI Act Art. 50.
         </p>
-        <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
-          <input id="hero-url-input" type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} />
-          <button onClick={handleHeroScan} style={{ padding: '15px 24px', background: G.green, color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 13 }}>Jetzt kostenlos prüfen →</button>
+        {/* Status-Banner (nur bei Problemen) */}
+        {serviceStatus === 'down' && (
+          <div style={{ maxWidth: 520, margin: '0 auto 12px', padding: '10px 16px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <img src="/fehler.png" alt="" width={14} height={14} style={{ flexShrink: 0 }} />
+            <p style={{ color: G.red, fontSize: 13, fontWeight: 600, margin: 0 }}>
+              Der Scanner ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.
+            </p>
+          </div>
+        )}
+        {serviceStatus === 'degraded' && (
+          <div style={{ maxWidth: 520, margin: '0 auto 12px', padding: '10px 16px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/warnung.png" alt="" width={14} height={14} style={{ flexShrink: 0 }} />
+            <p style={{ color: '#92400e', fontSize: 13, margin: 0 }}>
+              Eingeschränkter Betrieb — KI-Bild-Analyse momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
+            </p>
+          </div>
+        )}
+        <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${serviceStatus === 'down' ? 'rgba(220,38,38,0.3)' : G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+          <input id="hero-url-input" type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && !heroScanning && serviceStatus !== 'down' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} disabled={serviceStatus === 'down'} />
+          <button onClick={handleHeroScan} disabled={heroScanning || serviceStatus === 'down'} style={{ padding: '15px 24px', background: (heroScanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (heroScanning || serviceStatus === 'down') ? G.textMuted : '#fff', fontWeight: 800, border: 'none', cursor: (heroScanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, opacity: serviceStatus === 'down' ? 0.5 : 1 }}>Jetzt kostenlos prüfen →</button>
         </div>
         {heroScanning && (
           <div style={{ maxWidth: 520, margin: '14px auto 0' }}>

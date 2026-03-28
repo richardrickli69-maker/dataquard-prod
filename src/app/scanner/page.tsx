@@ -202,6 +202,23 @@ export default function ScannerPage() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
+  const [serviceStatus, setServiceStatus] = useState<'loading' | 'ok' | 'degraded' | 'down'>('loading');
+
+  // Health-Check beim Laden: Dienste-Status prüfen
+  useEffect(() => {
+    fetch('/api/health')
+      .then(res => res.json())
+      .then((data: { operational: boolean; status: { scanner: boolean; sightengine: boolean; claude: boolean } }) => {
+        if (data.operational) {
+          setServiceStatus('ok');
+        } else if (data.status?.scanner) {
+          setServiceStatus('degraded');
+        } else {
+          setServiceStatus('down');
+        }
+      })
+      .catch(() => setServiceStatus('down'));
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -310,13 +327,31 @@ export default function ScannerPage() {
           <p style={{ color: G.textSec, fontSize: 14 }}>Compliance · Optimierung · Sicherheit · <span style={{ color: G.violet }}>AI-Trust</span></p>
         </div>
 
+        {/* Status-Banner (nur bei Problemen) */}
+        {serviceStatus === 'down' && (
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, textAlign: 'center', justifyContent: 'center' }}>
+            <img src="/fehler.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />
+            <p style={{ color: G.red, fontSize: 13, fontWeight: 600, margin: 0 }}>
+              Der Scanner ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.
+            </p>
+          </div>
+        )}
+        {serviceStatus === 'degraded' && (
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src="/warnung.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />
+            <p style={{ color: '#92400e', fontSize: 13, margin: 0 }}>
+              Eingeschränkter Betrieb — die KI-Bild-Analyse ist momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
+            </p>
+          </div>
+        )}
+
         {/* URL-Eingabe */}
         <div style={{ ...card, marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: G.textSec, marginBottom: 8 }}>Website-URL eingeben</label>
           <div style={{ display: 'flex', gap: 12 }}>
             <input type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()}
               placeholder="https://ihre-website.ch" style={inputStyle} />
-            <button onClick={handleScan} disabled={scanning} style={{ background: scanning ? G.bgLight : G.green, color: scanning ? G.textMuted : '#fff', padding: '12px 24px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: scanning ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+            <button onClick={handleScan} disabled={scanning || serviceStatus === 'down'} style={{ background: (scanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (scanning || serviceStatus === 'down') ? G.textMuted : '#fff', padding: '12px 24px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: (scanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', opacity: serviceStatus === 'down' ? 0.5 : 1 }}>
               {scanning ? (
                 <>
                   <span style={{ width: 16, height: 16, border: `2px solid ${G.green}`, borderTop: '2px solid transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
