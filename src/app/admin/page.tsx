@@ -31,6 +31,50 @@ interface AdminStats {
   planBreakdown: Record<string, number>;
 }
 
+interface RecentScan {
+  id: string;
+  created_at: string;
+  url: string;
+  jurisdiction: string;
+  ampel: string;
+  user_id: string | null;
+  user_email: string | null;
+}
+
+interface UserActivity {
+  id: string;
+  email: string;
+  plan: string;
+  created_at: string;
+  last_scan: string | null;
+  scan_count: number;
+}
+
+interface BehaviorData {
+  scans7d: number;
+  scans30d: number;
+  newUsers30d: number;
+  recentScans: RecentScan[];
+  userActivity: UserActivity[];
+}
+
+// Relatives Datum (z.B. "vor 2 Std.", "gestern", "vor 3 Tagen")
+function timeAgo(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH = Math.floor(diffMin / 60);
+  const diffD = Math.floor(diffH / 24);
+
+  if (diffMin < 1) return 'gerade eben';
+  if (diffMin < 60) return `vor ${diffMin} Min.`;
+  if (diffH < 24) return `vor ${diffH} Std.`;
+  if (diffD === 1) return 'gestern';
+  if (diffD < 30) return `vor ${diffD} Tagen`;
+  return date.toLocaleDateString('de-CH');
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -43,6 +87,8 @@ export default function AdminDashboard() {
   const [refundReason, setRefundReason] = useState('');
   const [refundLoading, setRefundLoading] = useState(false);
   const [refundResult, setRefundResult] = useState<RefundResult | null>(null);
+  const [behaviorData, setBehaviorData] = useState<BehaviorData | null>(null);
+  const [activitySearch, setActivitySearch] = useState('');
 
   useEffect(() => {
     const init = async () => {
@@ -52,7 +98,7 @@ export default function AdminDashboard() {
         return;
       }
       setAuthorized(true);
-      await loadAdminData();
+      await Promise.all([loadAdminData(), loadBehaviorData(session.access_token)]);
       setLoading(false);
     };
     init();
@@ -90,6 +136,21 @@ export default function AdminDashboard() {
         totalPolicies: policyCount || 0,
         planBreakdown,
       });
+    }
+  };
+
+  // Kundenverhalten-Daten via API-Route laden (Service Role, umgeht RLS)
+  const loadBehaviorData = async (token: string) => {
+    try {
+      const res = await fetch('/api/admin/behavior', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data: BehaviorData = await res.json();
+        setBehaviorData(data);
+      }
+    } catch {
+      // Fehler still ignorieren – Admin-Dashboard lädt trotzdem
     }
   };
 
@@ -170,7 +231,10 @@ export default function AdminDashboard() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Link href="/dashboard" style={{ padding: '8px 16px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>← Dashboard</Link>
-            <button onClick={loadAdminData} style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>↻ Aktualisieren</button>
+            <button onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              await Promise.all([loadAdminData(), session?.access_token ? loadBehaviorData(session.access_token) : Promise.resolve()]);
+            }} style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>↻ Aktualisieren</button>
           </div>
         </div>
       </div>
@@ -297,6 +361,167 @@ export default function AdminDashboard() {
             </table>
           )}
         </div>
+
+        {/* ═══ ABSCHNITT 1: Aktivitäts-Übersicht letzte 30 Tage ═══ */}
+        {behaviorData && (
+          <div style={{ marginTop: 28 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 14 }}>
+              📈 Aktivitäts-Übersicht
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+              {[
+                { label: 'Scans (7 Tage)', value: behaviorData.scans7d, color: '#22c55e', icon: '🔍' },
+                { label: 'Scans (30 Tage)', value: behaviorData.scans30d, color: '#3b82f6', icon: '📊' },
+                { label: 'Neue User (30 Tage)', value: behaviorData.newUsers30d, color: '#8b5cf6', icon: '👤' },
+                {
+                  label: 'Conversion-Rate',
+                  value: stats && stats.totalCustomers > 0
+                    ? `${((stats.totalPaidCustomers / stats.totalCustomers) * 100).toFixed(1)}%`
+                    : '–',
+                  color: '#f59e0b',
+                  icon: '💰',
+                },
+              ].map((s) => (
+                <div key={s.label} style={{ background: '#ffffff', border: '1px solid #e2e4ea', borderRadius: 12, padding: 20, borderLeft: `4px solid ${s.color}` }}>
+                  <div style={{ fontSize: 11, color: '#888899', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{s.icon} {s.label}</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ ABSCHNITT 2: Letzte Scans (Live-Feed) ═══ */}
+        {behaviorData && behaviorData.recentScans.length > 0 && (
+          <div style={{ marginTop: 28 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 14 }}>
+              🔄 Letzte Scans (Live-Feed)
+            </h2>
+            <div style={{ background: '#ffffff', border: '1px solid #e2e4ea', borderRadius: 12, overflow: 'hidden' }}>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e4ea', background: '#f8f9fb' }}>
+                    {['Datum', 'User', 'Gescannte URL', 'Jurisdiction', 'Ampel'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: '#888899', fontWeight: 600, fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {behaviorData.recentScans.map((scan, i) => {
+                    // Jurisdiction-Badge Farbe
+                    const jColors: Record<string, { bg: string; text: string }> = {
+                      nDSG:  { bg: 'rgba(34,197,94,0.08)',  text: '#16a34a' },
+                      DSGVO: { bg: 'rgba(234,179,8,0.08)',  text: '#ca8a04' },
+                      BEIDES:{ bg: 'rgba(220,38,38,0.08)',  text: '#dc2626' },
+                    };
+                    const jc = jColors[scan.jurisdiction] ?? jColors.nDSG;
+                    // Ampel-Farbe
+                    const ampelColor = scan.ampel === 'grün' ? '#22c55e' : scan.ampel === 'gelb' ? '#eab308' : '#ef4444';
+                    const ampelDot = scan.ampel === 'grün' ? '🟢' : scan.ampel === 'gelb' ? '🟡' : '🔴';
+                    return (
+                      <tr key={scan.id} style={{ borderBottom: '1px solid #f1f2f6', background: i % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                        <td style={{ padding: '10px 14px', color: '#888899', whiteSpace: 'nowrap', fontSize: 12 }}>{timeAgo(scan.created_at)}</td>
+                        <td style={{ padding: '10px 14px', color: '#555566', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {scan.user_email ?? (scan.user_id ? `${scan.user_id.slice(0, 8)}…` : '–')}
+                        </td>
+                        <td style={{ padding: '10px 14px', color: '#1a1a2e', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <a href={scan.url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+                            {scan.url.replace(/^https?:\/\//, '').slice(0, 40)}{scan.url.length > 40 ? '…' : ''}
+                          </a>
+                        </td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ background: jc.bg, color: jc.text, padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                            {scan.jurisdiction}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ color: ampelColor, fontWeight: 700, fontSize: 12 }}>{ampelDot} {scan.ampel}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ ABSCHNITT 3: Kunden-Aktivität ═══ */}
+        {behaviorData && behaviorData.userActivity.length > 0 && (
+          <div style={{ marginTop: 28, marginBottom: 40 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 14 }}>
+              👥 Kunden-Aktivität
+            </h2>
+            <div style={{ background: '#ffffff', border: '1px solid #e2e4ea', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e4ea', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input
+                  type="text"
+                  value={activitySearch}
+                  onChange={(e) => setActivitySearch(e.target.value)}
+                  placeholder="E-Mail suchen..."
+                  style={{ background: '#f8f9fb', border: '1px solid #e2e4ea', borderRadius: 8, padding: '7px 12px', fontSize: 13, color: '#1a1a2e', outline: 'none', width: 220 }}
+                />
+                <span style={{ fontSize: 12, color: '#888899' }}>
+                  {behaviorData.userActivity.filter(u => !activitySearch || u.email.toLowerCase().includes(activitySearch.toLowerCase())).length} User
+                </span>
+              </div>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e4ea', background: '#f8f9fb' }}>
+                    {['E-Mail', 'Plan', 'Registriert', 'Letzter Scan', 'Scans', 'Status'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: '#888899', fontWeight: 600, fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {behaviorData.userActivity
+                    .filter(u => !activitySearch || u.email.toLowerCase().includes(activitySearch.toLowerCase()))
+                    .map((u, i) => {
+                      // Aktivitäts-Status berechnen
+                      const now = Date.now();
+                      const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
+                      const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+                      const lastScanMs = u.last_scan ? new Date(u.last_scan).getTime() : 0;
+
+                      let statusLabel: string;
+                      let statusColor: string;
+                      let statusBg: string;
+                      if (!u.last_scan || lastScanMs < ninetyDaysAgo) {
+                        statusLabel = '🔴 Abgewandert';
+                        statusColor = '#dc2626';
+                        statusBg = 'rgba(220,38,38,0.08)';
+                      } else if (lastScanMs < thirtyDaysAgo) {
+                        statusLabel = '🟡 Inaktiv';
+                        statusColor = '#ca8a04';
+                        statusBg = 'rgba(234,179,8,0.08)';
+                      } else {
+                        statusLabel = '🟢 Aktiv';
+                        statusColor = '#16a34a';
+                        statusBg = 'rgba(34,197,94,0.08)';
+                      }
+
+                      return (
+                        <tr key={u.id} style={{ borderBottom: '1px solid #f1f2f6', background: i % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                          <td style={{ padding: '10px 14px', color: '#1a1a2e', fontWeight: 500, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</td>
+                          <td style={{ padding: '10px 14px' }}>{getPlanBadge(u.plan)}</td>
+                          <td style={{ padding: '10px 14px', color: '#888899', whiteSpace: 'nowrap' }}>{new Date(u.created_at).toLocaleDateString('de-CH')}</td>
+                          <td style={{ padding: '10px 14px', color: '#888899', whiteSpace: 'nowrap', fontSize: 12 }}>
+                            {u.last_scan ? timeAgo(u.last_scan) : '–'}
+                          </td>
+                          <td style={{ padding: '10px 14px', fontWeight: 700, color: u.scan_count > 0 ? '#3b82f6' : '#cccccc', textAlign: 'center' }}>{u.scan_count}</td>
+                          <td style={{ padding: '10px 14px' }}>
+                            <span style={{ background: statusBg, color: statusColor, padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                              {statusLabel}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
