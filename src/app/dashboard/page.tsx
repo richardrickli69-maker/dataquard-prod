@@ -368,6 +368,20 @@ export default function DashboardPage() {
               {tab.label}
             </button>
           ))}
+          {/* Link zum Agentur-Dashboard (separate Route) */}
+          <Link
+            href="/dashboard/agency"
+            style={{
+              padding: '10px 16px', border: 'none', background: 'transparent',
+              color: G.textSec, borderRadius: '8px 8px 0 0',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+              display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none',
+              marginLeft: 'auto', flexShrink: 0,
+            }}
+          >
+            <img src="/diagramm.png" alt="" width={16} height={16} style={{ display: 'inline-block', opacity: 0.7 }} />
+            Agentur →
+          </Link>
         </div>
 
         {/* Tab: Übersicht */}
