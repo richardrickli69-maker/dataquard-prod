@@ -381,6 +381,7 @@ export function Navbar() {
             <Link href="/ai-trust" className="dq-nav-link">AI-Trust</Link>
             <Link href="/preise" className="dq-nav-link">Preise</Link>
             <Link href="/faq" className="dq-nav-link">FAQ</Link>
+            <Link href="/fuer-agenturen" className="dq-nav-link">Für Agenturen</Link>
           </div>
 
           {/* Desktop: Mein Konto + CTA */}
@@ -415,6 +416,7 @@ export function Navbar() {
         <Link href="/ai-trust" className="dq-mobile-link" onClick={closeMobile}>AI-Trust</Link>
         <Link href="/preise" className="dq-mobile-link" onClick={closeMobile}>Preise</Link>
         <Link href="/faq" className="dq-mobile-link" onClick={closeMobile}>FAQ</Link>
+        <Link href="/fuer-agenturen" className="dq-mobile-link" onClick={closeMobile}>Für Agenturen</Link>
         <div className="dq-mobile-divider" />
         <Link
           href={isLoggedIn ? '/dashboard' : '/auth'}
