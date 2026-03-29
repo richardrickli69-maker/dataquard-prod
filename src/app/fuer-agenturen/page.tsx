@@ -7,7 +7,7 @@ import { PageWrapper } from '../components/PageWrapper';
 
 export const metadata: Metadata = {
   title: 'Dataquard für Agenturen — Compliance als Dienstleistung',
-  description: 'Bieten Sie Ihren Kunden vollständige Website-Compliance: nDSG, DSGVO, EU AI Act. White-Label-fähig, Bulk-Scan, eigenes Agentur-Dashboard. Ab CHF 149.–/Mt.',
+  description: 'Bieten Sie Ihren Kunden vollständige Website-Compliance: nDSG, DSGVO, EU AI Act. White-Label-fähig, Bulk-Scan, eigenes Agentur-Dashboard. Ab CHF 79.–/Mt.',
   alternates: { canonical: 'https://www.dataquard.ch/fuer-agenturen' },
 };
 
@@ -64,12 +64,12 @@ const FEATURES = [
 
 const PLANS = [
   {
-    name: 'Agency Starter',
+    name: 'Agency Basic',
     badge: null as string | null,
     highlight: false,
-    price: 'CHF 149.–',
+    price: 'CHF 79.–',
     pricePer: '/Mt.',
-    priceYear: '(CHF 1\'788.– / Jahr)',
+    priceYear: '(CHF 948.– / Jahr)',
     desc: 'Für Agenturen mit ersten Compliance-Mandaten',
     features: [
       'Bis zu 5 Kunden-Websites',
@@ -84,16 +84,16 @@ const PLANS = [
       'White-Label E-Mail-Versand',
       'Priority Support',
     ],
-    cta: 'Starter anfragen',
-    href: 'mailto:info@dataquard.ch?subject=Agency Starter Anfrage',
+    cta: 'Basic anfragen',
+    href: 'mailto:info@dataquard.ch?subject=Agency Basic Anfrage',
   },
   {
-    name: 'Agency Professional',
-    badge: 'EMPFOHLEN',
+    name: 'Agency Pro',
+    badge: 'BESTSELLER',
     highlight: true,
-    price: 'CHF 299.–',
+    price: 'CHF 179.–',
     pricePer: '/Mt.',
-    priceYear: '(CHF 3\'588.– / Jahr)',
+    priceYear: '(CHF 2\'148.– / Jahr)',
     desc: 'Für wachsende Agenturen mit regelmässigem Compliance-Bedarf',
     features: [
       'Bis zu 15 Kunden-Websites',
@@ -108,16 +108,16 @@ const PLANS = [
       'Unbegrenzte Kunden',
       'Custom Domain (White-Label Portal)',
     ],
-    cta: 'Professional anfragen',
-    href: 'mailto:info@dataquard.ch?subject=Agency Professional Anfrage',
+    cta: 'Pro anfragen',
+    href: 'mailto:info@dataquard.ch?subject=Agency Pro Anfrage',
   },
   {
     name: 'Agency Enterprise',
     badge: null as string | null,
     highlight: false,
-    price: 'CHF 499.–',
+    price: 'ab CHF 349.–',
     pricePer: '/Mt.',
-    priceYear: '(CHF 5\'988.– / Jahr)',
+    priceYear: '(ab CHF 4\'188.– / Jahr)',
     desc: 'Für grosse Agenturen und Managed-Service-Provider',
     features: [
       'Unbegrenzte Kunden-Websites',
@@ -520,7 +520,7 @@ export default function FuerAgenturenPage() {
                 <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Add-on</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: G.white, margin: '0 0 6px' }}>
-                Document Pack — CHF 49.– / Kunde / Jahr
+                Document Pack — CHF 9.– / Domain / Mt.
               </h3>
               <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
                 Automatisch generierte und aktuell gehaltene Datenschutzerklärung, Impressum und Cookie-Policy — individuell für jeden Kunden, mit Ihrem Logo.
@@ -567,8 +567,8 @@ export default function FuerAgenturenPage() {
               <thead>
                 <tr style={{ background: G.navy }}>
                   <th style={{ padding: '14px 20px', textAlign: 'left', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Feature</th>
-                  <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Starter</th>
-                  <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: G.green, background: 'rgba(34,197,94,0.1)' }}>Professional</th>
+                  <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Basic</th>
+                  <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: G.green, background: 'rgba(34,197,94,0.1)' }}>Pro</th>
                   <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Enterprise</th>
                   <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Andere Tools</th>
                 </tr>
