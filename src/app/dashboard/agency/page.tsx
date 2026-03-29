@@ -345,6 +345,35 @@ export default function AgencyDashboardPage() {
     }
   }
 
+  // ── Einzel-Domain scannen (direkt, ohne 24h-Filter) ─────────────────────
+  async function handleScanSingle(domainId: string, domainName: string) {
+    setScanning(true);
+    setScanResult(null);
+    setScanProgress(`Scanne ${domainName}…`);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/agency/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ domainIds: [domainId] }),
+      });
+      if (res.ok) {
+        setScanResult(`${domainName} erfolgreich gescannt.`);
+      } else {
+        setScanResult(`Scan fehlgeschlagen für ${domainName}.`);
+      }
+      await loadData();
+    } catch {
+      setScanResult(`Scan fehlgeschlagen — bitte erneut versuchen`);
+    } finally {
+      setScanning(false);
+      setScanProgress('');
+    }
+  }
+
   // ── Document Pack Toggle ─────────────────────────────────────────────────
   async function handleDocPackToggle(domainId: string, current: boolean) {
     try {
@@ -1003,7 +1032,7 @@ export default function AgencyDashboardPage() {
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             {/* Scannen */}
                             <button
-                              onClick={() => handleBulkScan([d.id])}
+                              onClick={() => handleScanSingle(d.id, d.domain)}
                               disabled={scanning}
                               title="Diese Domain scannen"
                               style={{
