@@ -284,25 +284,59 @@ export default function AgencyDashboardPage() {
     }
   }
 
-  // ── Bulk-Scan ────────────────────────────────────────────────────────────
-  async function handleBulkScan(domainIds?: string[]) {
+  // ── Bulk-Scan: sequenziell, mit Live-Fortschritt pro Domain ─────────────
+  async function handleBulkScanAll() {
+    // Nur Domains scannen die noch ausstehen oder deren letzter Scan älter als 24h ist
+    const MS_24H = 24 * 60 * 60 * 1000;
+    const toScan = domains.filter(d =>
+      d.status === 'pending' ||
+      d.last_scan_at === null ||
+      Date.now() - new Date(d.last_scan_at).getTime() > MS_24H
+    );
+
+    if (toScan.length === 0) {
+      setScanResult('Alle Domains wurden in den letzten 24 Stunden bereits gescannt.');
+      return;
+    }
+
     setScanning(true);
     setScanResult(null);
-    setScanProgress('Scans werden gestartet…');
+    setScanProgress(`Bereite ${toScan.length} Scans vor…`);
+
+    let successCount = 0;
+    let errorCount   = 0;
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const body = domainIds ? { domainIds } : {};
-      const res = await fetch('/api/agency/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token ?? ''}`,
-        },
-        body: JSON.stringify(body),
-      });
-      const json = await res.json() as { message?: string; scanned?: number; errors?: number };
-      setScanResult(json.message ?? 'Scan abgeschlossen');
-      await loadData();
+
+      for (let i = 0; i < toScan.length; i++) {
+        const d = toScan[i];
+        setScanProgress(`Scanne Domain ${i + 1} von ${toScan.length}: ${d.domain}`);
+
+        try {
+          const res = await fetch('/api/agency/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session?.access_token ?? ''}`,
+            },
+            body: JSON.stringify({ domainIds: [d.id] }),
+          });
+          if (res.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch {
+          errorCount++;
+        }
+
+        // Tabelle nach jeder Domain aktualisieren
+        await loadData();
+      }
+
+      const errInfo = errorCount > 0 ? `, ${errorCount} Fehler` : '';
+      setScanResult(`${successCount} von ${toScan.length} Domains erfolgreich gescannt${errInfo}.`);
     } catch {
       setScanResult('Scan fehlgeschlagen — bitte erneut versuchen');
     } finally {
@@ -485,7 +519,7 @@ export default function AgencyDashboardPage() {
 
           {/* Bulk-Scan Button */}
           <button
-            onClick={() => handleBulkScan()}
+            onClick={() => handleBulkScanAll()}
             disabled={scanning || domains.length === 0}
             style={{
               background: scanning ? G.bgLight : G.green,
@@ -497,9 +531,11 @@ export default function AgencyDashboardPage() {
               fontSize: '14px',
               cursor: scanning ? 'not-allowed' : 'pointer',
               flexShrink: 0,
+              minWidth: '180px',
+              textAlign: 'center',
             }}
           >
-            {scanning ? (scanProgress || 'Scannt…') : `Alle ${domains.length} scannen`}
+            {scanning ? (scanProgress || 'Scannt…') : `Alle Domains scannen`}
           </button>
         </div>
 
