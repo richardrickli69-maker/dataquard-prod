@@ -35,31 +35,31 @@ const STEPS = [
     nr: '01',
     title: 'Agentur-Account erstellen',
     desc: 'Registrieren Sie sich als Agentur-Partner. Ihr persönliches Dashboard ist sofort einsatzbereit.',
-    icon: '🚀',
+    icon: '/suche.png',
   },
   {
     nr: '02',
     title: 'Kunden anlegen & scannen',
     desc: 'Fügen Sie Kundendomains hinzu und starten Sie den Compliance-Scan. Alle Ergebnisse zentral im Agentur-Dashboard.',
-    icon: '🔍',
+    icon: '/diagramm.png',
   },
   {
     nr: '03',
     title: 'Berichte liefern & fakturieren',
     desc: 'Laden Sie White-Label-PDFs herunter oder teilen Sie Berichte direkt mit Ihren Kunden. Compliance wird zum Umsatz.',
-    icon: '📄',
+    icon: '/dokument.png',
   },
 ];
 
 const FEATURES = [
-  { icon: '🏢', title: 'Zentrales Agentur-Dashboard', desc: 'Alle Kundendaten, Scan-Ergebnisse und Dokumente auf einer Oberfläche — übersichtlich und effizient.' },
-  { icon: '⚡', title: 'Bulk-Scan', desc: 'Scannen Sie mehrere Kunden-Websites gleichzeitig. Kein manuelles Starten einzelner Scans.' },
-  { icon: '🏷️', title: 'White-Label-Berichte', desc: 'PDFs mit Ihrem Logo und Ihren Farben. Der Kunde sieht Ihre Marke, nicht Dataquard.' },
-  { icon: '📋', title: 'Dokument-Pack', desc: 'Automatisch generierte Datenschutzerklärungen, Impressum und Cookie-Policy für jeden Kunden.' },
-  { icon: '🤖', title: 'EU AI Act Compliance (Art. 50)', desc: 'KI-Bild-Erkennung und Deepfake-Check für alle Kunden-Websites. Stärkster Differenzierer am Markt.' },
-  { icon: '📊', title: 'Monatliche Reports per E-Mail', desc: 'Automatisierte Compliance-Reports für alle Kunden. Sie informieren proaktiv, ohne Aufwand.' },
-  { icon: '🔔', title: 'Echtzeit-Alerts', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
-  { icon: '🇨🇭', title: 'nDSG + DSGVO + EU AI Act', desc: 'Vollständige Abdeckung aller relevanten Schweizer und europäischen Datenschutzgesetze.' },
+  { icon: '/diagramm.png', title: 'Zentrales Agentur-Dashboard', desc: 'Alle Kundendaten, Scan-Ergebnisse und Dokumente auf einer Oberfläche — übersichtlich und effizient.' },
+  { icon: '/suche.png', title: 'Bulk-Scan', desc: 'Scannen Sie mehrere Kunden-Websites gleichzeitig. Kein manuelles Starten einzelner Scans.' },
+  { icon: '/dokument.png', title: 'White-Label-Berichte', desc: 'PDFs mit Ihrem Logo und Ihren Farben. Der Kunde sieht Ihre Marke, nicht Dataquard.' },
+  { icon: '/icon-recht.png', title: 'Dokument-Pack', desc: 'Automatisch generierte Datenschutzerklärungen, Impressum und Cookie-Policy für jeden Kunden.' },
+  { icon: '/badge-ai-trust.svg', title: 'EU AI Act Compliance (Art. 50)', desc: 'KI-Bild-Erkennung und Deepfake-Check für alle Kunden-Websites. Stärkster Differenzierer am Markt.' },
+  { icon: '/diagramm.png', title: 'Monatliche Reports per E-Mail', desc: 'Automatisierte Compliance-Reports für alle Kunden. Sie informieren proaktiv, ohne Aufwand.' },
+  { icon: '/warnung.png', title: 'Echtzeit-Alerts', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
+  { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO + EU AI Act', desc: 'Vollständige Abdeckung aller relevanten Schweizer und europäischen Datenschutzgesetze.' },
 ];
 
 const PLANS = [
@@ -254,14 +254,22 @@ export default function FuerAgenturenPage() {
 
           {/* Trust-Signale */}
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px' }}>
-            {['🇨🇭 Daten in Zürich', '🤖 EU AI Act Art. 50', '📋 nDSG + DSGVO', '🏷️ White-Label'].map(item => (
-              <span key={item} style={{
+            {[
+              { icon: '/icon-sicherheit.png', label: 'Daten in Zürich' },
+              { icon: '/badge-ai-trust.svg',  label: 'EU AI Act Art. 50' },
+              { icon: '/icon-recht.png',       label: 'nDSG + DSGVO' },
+              { icon: '/checkmark.png',        label: 'White-Label' },
+            ].map(item => (
+              <span key={item.label} style={{
                 fontSize: '13px',
                 color: 'rgba(255,255,255,0.55)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-              }}>{item}</span>
+              }}>
+                <img src={item.icon} alt="" width={24} height={24} style={{ display: 'inline-block', verticalAlign: 'middle', opacity: 0.75 }} />
+                {item.label}
+              </span>
             ))}
           </div>
         </div>
@@ -285,7 +293,7 @@ export default function FuerAgenturenPage() {
               borderRadius: '16px',
               padding: '32px',
             }}>
-              <div style={{ fontSize: '28px', marginBottom: '16px' }}>😓</div>
+              <img src="/fehler.png" alt="" width={36} height={36} style={{ marginBottom: '16px', display: 'block' }} />
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: G.text, margin: '0 0 16px' }}>Ohne Dataquard</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
@@ -311,7 +319,7 @@ export default function FuerAgenturenPage() {
               borderRadius: '16px',
               padding: '32px',
             }}>
-              <div style={{ fontSize: '28px', marginBottom: '16px' }}>✅</div>
+              <img src="/checkmark.png" alt="" width={36} height={36} style={{ marginBottom: '16px', display: 'block' }} />
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: G.text, margin: '0 0 16px' }}>Mit Dataquard</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
@@ -358,7 +366,7 @@ export default function FuerAgenturenPage() {
                     display: 'none', // wird per CSS auf Desktop gezeigt (vereinfacht)
                   }} />
                 )}
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>{step.icon}</div>
+                <img src={step.icon} alt="" width={48} height={48} style={{ marginBottom: '12px', display: 'block' }} />
                 <div style={{
                   fontSize: '11px', fontWeight: 700, color: G.green,
                   letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '8px',
@@ -398,7 +406,7 @@ export default function FuerAgenturenPage() {
                 borderRadius: '14px',
                 padding: '24px',
               }}>
-                <div style={{ fontSize: '28px', marginBottom: '12px' }}>{feat.icon}</div>
+                <img src={feat.icon} alt="" width={48} height={48} style={{ marginBottom: '12px', display: 'block' }} />
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: G.text, margin: '0 0 8px' }}>
                   {feat.title}
                 </h3>
@@ -516,7 +524,7 @@ export default function FuerAgenturenPage() {
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '24px' }}>📦</span>
+                <img src="/dokument.png" alt="" width={24} height={24} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
                 <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Add-on</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: G.white, margin: '0 0 6px' }}>
@@ -587,9 +595,13 @@ export default function FuerAgenturenPage() {
                         fontWeight: 600,
                         borderBottom: `1px solid ${G.border}`,
                         background: j === 1 ? 'rgba(34,197,94,0.04)' : 'transparent',
-                        color: val === '✓' ? G.green : val === '✗' ? '#ef4444' : G.textSec,
+                        color: G.textSec,
                       }}>
-                        {val}
+                        {val === '✓'
+                          ? <img src="/checkmark.png" alt="Ja" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                          : val === '✗'
+                          ? <img src="/fehler.png" alt="Nein" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', opacity: 0.5 }} />
+                          : val}
                       </td>
                     ))}
                   </tr>
@@ -607,7 +619,7 @@ export default function FuerAgenturenPage() {
         textAlign: 'center',
       }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <div style={{ fontSize: '40px', marginBottom: '20px' }}>🤝</div>
+          <img src="/checkmark.png" alt="" width={48} height={48} style={{ marginBottom: '20px', display: 'inline-block' }} />
           <h2 style={{
             fontSize: 'clamp(24px, 4vw, 36px)',
             fontWeight: 800,
