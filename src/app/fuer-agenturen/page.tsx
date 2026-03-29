@@ -69,10 +69,10 @@ const PLANS = [
     highlight: false,
     price: 'CHF 79.–',
     pricePer: '/Mt.',
-    priceYear: '(CHF 948.– / Jahr)',
+    priceYear: '',
     desc: 'Für Agenturen mit ersten Compliance-Mandaten',
     features: [
-      'Bis zu 5 Kunden-Websites',
+      'Bis zu 15 Kunden-Websites',
       'Bulk-Scan (alle Kunden gleichzeitig)',
       'Zentrales Agentur-Dashboard',
       'White-Label-PDFs mit Agentur-Logo',
@@ -93,10 +93,10 @@ const PLANS = [
     highlight: true,
     price: 'CHF 179.–',
     pricePer: '/Mt.',
-    priceYear: '(CHF 2\'148.– / Jahr)',
+    priceYear: '',
     desc: 'Für wachsende Agenturen mit regelmässigem Compliance-Bedarf',
     features: [
-      'Bis zu 15 Kunden-Websites',
+      'Bis zu 50 Kunden-Websites',
       'Alles aus Starter',
       'EU AI Act Scan (AI-Trust) pro Kunde',
       'Deepfake-Check & Echtzeit-Alerts',
@@ -117,7 +117,7 @@ const PLANS = [
     highlight: false,
     price: 'ab CHF 349.–',
     pricePer: '/Mt.',
-    priceYear: '(ab CHF 4\'188.– / Jahr)',
+    priceYear: '',
     desc: 'Für grosse Agenturen und Managed-Service-Provider',
     features: [
       'Unbegrenzte Kunden-Websites',
@@ -135,7 +135,7 @@ const PLANS = [
 ];
 
 const COMPARE_ROWS = [
-  { feature: 'Anzahl Kunden-Websites', starter: '5', professional: '15', enterprise: 'Unbegrenzt', competitors: '1–3' },
+  { feature: 'Anzahl Kunden-Websites', starter: '15', professional: '50', enterprise: 'Unbegrenzt', competitors: '1–3' },
   { feature: 'Bulk-Scan', starter: '✓', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'White-Label-PDFs', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Teilweise' },
   { feature: 'nDSG Schweiz', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Selten' },
@@ -428,7 +428,7 @@ export default function FuerAgenturenPage() {
               Transparente Agentur-Preise
             </h2>
             <p style={{ fontSize: '16px', color: G.textSec, margin: 0 }}>
-              Jährliche Abrechnung — jederzeit kündbar — 14 Tage Geld-zurück-Garantie
+              Monatlich kündbar — keine Mindestlaufzeit
             </p>
           </div>
 
@@ -471,9 +471,11 @@ export default function FuerAgenturenPage() {
                   <span style={{ fontSize: '16px', color: plan.highlight ? 'rgba(255,255,255,0.6)' : G.textMuted }}>
                     {plan.pricePer}
                   </span>
-                  <div style={{ fontSize: '12px', color: plan.highlight ? 'rgba(255,255,255,0.5)' : G.textMuted, marginTop: '4px' }}>
-                    {plan.priceYear}
-                  </div>
+                  {plan.priceYear && (
+                    <div style={{ fontSize: '12px', color: plan.highlight ? 'rgba(255,255,255,0.5)' : G.textMuted, marginTop: '4px' }}>
+                      {plan.priceYear}
+                    </div>
+                  )}
                 </div>
 
                 <ul style={{ margin: '0 0 20px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
