@@ -153,8 +153,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Domain-Limit prüfen
-    if (currentCount + validDomains.length > agency.max_domains) {
+    // Freie Slots berechnen
+    const freieSlots = Math.max(0, agency.max_domains - currentCount);
+
+    // Limit komplett erreicht → klare Fehlermeldung
+    if (freieSlots === 0) {
       const planLabel = agency.plan === 'agency_basic' ? 'Agency Basic (15)'
         : agency.plan === 'agency_pro' ? 'Agency Pro (50)'
         : 'Agency Enterprise';
@@ -174,13 +177,18 @@ export async function POST(request: NextRequest) {
       .in('domain', validDomains);
 
     const existingSet = new Set((existingDomains ?? []).map(d => d.domain));
-    const newDomains = validDomains.filter(d => !existingSet.has(d));
+    const newDomainsAll = validDomains.filter(d => !existingSet.has(d));
+
+    // Auf freie Slots begrenzen (partieller Import)
+    const limitSkipped = Math.max(0, newDomainsAll.length - freieSlots);
+    const newDomains = newDomainsAll.slice(0, freieSlots);
 
     if (newDomains.length === 0) {
       return NextResponse.json({
         message: 'Alle Domains bereits vorhanden',
         added: 0,
         skipped: validDomains.length,
+        limitSkipped: 0,
       });
     }
 
@@ -205,7 +213,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: `${newDomains.length} Domain(s) hinzugefügt`,
       added: newDomains.length,
-      skipped: validDomains.length - newDomains.length,
+      skipped: existingSet.size > 0 ? validDomains.filter(d => existingSet.has(d)).length : 0,
+      limitSkipped,
       invalid: invalidDomains,
       domains: inserted,
     }, { status: 201 });

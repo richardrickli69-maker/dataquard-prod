@@ -256,13 +256,19 @@ export default function AgencyDashboardPage() {
         },
         body: JSON.stringify({ domains }),
       });
-      const json = await res.json() as { error?: string; added?: number; skipped?: number; invalid?: string[] };
+      const json = await res.json() as { error?: string; added?: number; skipped?: number; limitSkipped?: number; invalid?: string[] };
       if (!res.ok) {
         setAddError(json.error ?? 'Fehler beim CSV-Import');
         return;
       }
       await loadData();
-      setAddError(`${json.added ?? 0} Domains hinzugefügt${(json.skipped ?? 0) > 0 ? `, ${json.skipped} bereits vorhanden` : ''}`);
+      const hinzugefuegt = json.added ?? 0;
+      const bereitsVorhanden = json.skipped ?? 0;
+      const limitAbgelehnt = json.limitSkipped ?? 0;
+      const teile: string[] = [`${hinzugefuegt} von ${domains.length} Domains hinzugefügt`];
+      if (bereitsVorhanden > 0) teile.push(`${bereitsVorhanden} bereits vorhanden`);
+      if (limitAbgelehnt > 0) teile.push(`${limitAbgelehnt} abgelehnt (Limit erreicht)`);
+      setAddError(teile.join(' · '));
     } catch {
       setAddError('Fehler beim Lesen der CSV-Datei');
     } finally {
