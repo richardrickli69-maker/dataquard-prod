@@ -79,8 +79,23 @@ export async function POST(request: NextRequest) {
       const currency = session.currency?.toUpperCase() ?? 'CHF';
       const createdAt = new Date(session.created * 1000);
 
-      if (!plan || (plan !== 'starter' && plan !== 'professional')) {
-        console.error('[Webhook] Unbekannter Plan in metadata:', plan, session.id);
+      if (!plan) {
+        console.error('[Webhook] Kein Plan in metadata:', session.id);
+        return NextResponse.json({ error: 'Kein Plan in metadata' }, { status: 400 });
+      }
+
+      // ── Agency-Pläne: eigener Branch ──────────────────────────────────────
+      const isAgencyPlan = session.metadata?.plan_type === 'agency' ||
+        plan === 'agency_basic' || plan === 'agency_pro' || plan === 'agency_enterprise';
+
+      if (isAgencyPlan) {
+        const agencyResult = await handleAgencyCheckout({ session, plan, stripe });
+        return agencyResult;
+      }
+
+      // ── Ab hier: nur KMU-Pläne ────────────────────────────────────────────
+      if (plan !== 'starter' && plan !== 'professional') {
+        console.error('[Webhook] Unbekannter KMU-Plan in metadata:', plan, session.id);
         return NextResponse.json({ error: 'Unbekannter Plan' }, { status: 400 });
       }
 
@@ -220,6 +235,7 @@ export async function POST(request: NextRequest) {
       const dbStatus: string = isActive ? 'active' : sub.status === 'past_due' ? 'past_due' : 'cancelled';
 
       if (customerId) {
+        // KMU-Subscriptions aktualisieren
         const { error: updErr } = await supabaseAdmin.from('subscriptions')
           .update({
             status: dbStatus,
@@ -228,7 +244,18 @@ export async function POST(request: NextRequest) {
           })
           .eq('stripe_customer_id', customerId);
 
-        if (updErr) console.error('[Webhook] subscription.updated DB error:', updErr.message);
+        if (updErr) console.error('[Webhook] subscription.updated KMU DB error:', updErr.message);
+
+        // Agency-Accounts aktualisieren (falls vorhanden)
+        const { error: agencyUpdErr } = await supabaseAdmin.from('agency_accounts')
+          .update({
+            status: dbStatus as 'active' | 'cancelled' | 'past_due',
+            current_period_end: currentPeriodEnd.toISOString(),
+          })
+          .eq('stripe_customer_id', customerId);
+
+        if (agencyUpdErr) console.error('[Webhook] subscription.updated Agency DB error:', agencyUpdErr.message);
+
         console.log(`[Webhook] Abo aktualisiert: customer=${customerId}, status=${dbStatus}, expires=${currentPeriodEnd.toISOString()}`);
       }
 
@@ -241,11 +268,20 @@ export async function POST(request: NextRequest) {
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
 
       if (customerId) {
+        // KMU-Subscriptions deaktivieren
         const { error: delErr } = await supabaseAdmin.from('subscriptions')
           .update({ status: 'cancelled' })
           .eq('stripe_customer_id', customerId);
 
-        if (delErr) console.error('[Webhook] subscription.deleted DB error:', delErr.message);
+        if (delErr) console.error('[Webhook] subscription.deleted KMU DB error:', delErr.message);
+
+        // Agency-Account deaktivieren (falls vorhanden)
+        const { error: agencyDelErr } = await supabaseAdmin.from('agency_accounts')
+          .update({ status: 'cancelled' })
+          .eq('stripe_customer_id', customerId);
+
+        if (agencyDelErr) console.error('[Webhook] subscription.deleted Agency DB error:', agencyDelErr.message);
+
         console.log(`[Webhook] Abo gekündigt: customer=${customerId}`);
       }
 
@@ -457,6 +493,328 @@ function generateSubscriptionEmailHtml({
                 <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
                 &nbsp;·&nbsp;
                 <a href="https://www.dataquard.ch/impressum" style="color:#9ca3af;">Impressum</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ─── Agency-Plan Mapping ────────────────────────────────────────────────────
+
+interface AgencyPlanConfig {
+  maxDomains: number;
+  scanFrequency: 'monthly' | 'weekly';
+  whiteLabelEnabled: boolean;
+  monthlyAmount: number;
+}
+
+const AGENCY_PLAN_CONFIG: Record<string, AgencyPlanConfig> = {
+  agency_basic: {
+    maxDomains: 15,
+    scanFrequency: 'monthly',
+    whiteLabelEnabled: false,
+    monthlyAmount: 79,
+  },
+  agency_pro: {
+    maxDomains: 50,
+    scanFrequency: 'weekly',
+    whiteLabelEnabled: true,
+    monthlyAmount: 179,
+  },
+  agency_enterprise: {
+    maxDomains: 9999,
+    scanFrequency: 'weekly',
+    whiteLabelEnabled: true,
+    monthlyAmount: 349,
+  },
+};
+
+// ─── Agency Checkout Handler ────────────────────────────────────────────────
+
+async function handleAgencyCheckout({
+  session,
+  plan,
+  stripe,
+}: {
+  session: Stripe.Checkout.Session;
+  plan: string;
+  stripe: Stripe;
+}): Promise<NextResponse> {
+  const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+  const planConfig = AGENCY_PLAN_CONFIG[plan];
+  if (!planConfig) {
+    console.error('[Webhook] Unbekannter Agency-Plan:', plan, session.id);
+    return NextResponse.json({ error: 'Unbekannter Agency-Plan' }, { status: 400 });
+  }
+
+  const userId       = session.metadata?.user_id ?? null;
+  const customerEmail = session.customer_details?.email ?? session.customer_email ?? null;
+  const stripeCustomerId = typeof session.customer === 'string' ? session.customer : null;
+  const createdAt    = new Date(session.created * 1000);
+
+  // Stripe Subscription laden für current_period_end
+  const stripeSubscriptionId = typeof session.subscription === 'string'
+    ? session.subscription
+    : (session.subscription as Stripe.Subscription | null)?.id ?? null;
+
+  const fallbackExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  let currentPeriodEnd: Date = fallbackExpiry;
+
+  if (stripeSubscriptionId) {
+    const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId) as unknown as { current_period_end?: number | null };
+    const ts = stripeSub.current_period_end;
+    if (ts && ts > 0) {
+      const parsed = new Date(ts * 1000);
+      currentPeriodEnd = isNaN(parsed.getTime()) ? fallbackExpiry : parsed;
+    }
+  }
+
+  // User-ID per E-Mail auflösen falls nicht in Metadata
+  let resolvedUserId = userId;
+  if (!resolvedUserId && customerEmail) {
+    const { data } = await supabaseAdmin.auth.admin.listUsers();
+    const match = data?.users?.find((u) => u.email === customerEmail);
+    if (match) resolvedUserId = match.id;
+  }
+
+  if (!resolvedUserId) {
+    console.error('[Webhook] Agency-Checkout: User-ID konnte nicht aufgelöst werden', { customerEmail, session_id: session.id });
+    return NextResponse.json({ error: 'User nicht gefunden' }, { status: 400 });
+  }
+
+  // agency_accounts upsert – on conflict user_id
+  const { error: upsertErr } = await supabaseAdmin.from('agency_accounts').upsert({
+    user_id: resolvedUserId,
+    plan,
+    status: 'active',
+    max_domains: planConfig.maxDomains,
+    scan_frequency: planConfig.scanFrequency,
+    white_label_enabled: planConfig.whiteLabelEnabled,
+    stripe_customer_id: stripeCustomerId,
+    stripe_subscription_id: stripeSubscriptionId,
+    current_period_end: currentPeriodEnd.toISOString(),
+    created_at: createdAt.toISOString(),
+  }, { onConflict: 'user_id' });
+
+  if (upsertErr) {
+    console.error('[Webhook] agency_accounts upsert Fehler:', upsertErr.message);
+  }
+
+  // Bestätigungs-E-Mail senden
+  if (customerEmail) {
+    const nextBillingDate = currentPeriodEnd.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    try {
+      const { error: emailError } = await resend.emails.send({
+        from: 'Dataquard <info@dataquard.ch>',
+        to: customerEmail,
+        subject: 'Willkommen bei Dataquard — Ihr Agency-Account ist bereit',
+        html: generateAgencyWelcomeEmailHtml({
+          plan,
+          planConfig,
+          customerEmail,
+          nextBillingDate,
+        }),
+      });
+      if (emailError) console.error('[Webhook] Agency Welcome-E-Mail Fehler:', emailError);
+    } catch (emailErr) {
+      console.error('[Webhook] Agency Welcome-E-Mail fehlgeschlagen:', emailErr instanceof Error ? emailErr.message : emailErr);
+    }
+  }
+
+  console.log(`[Webhook] ✅ Agency-Account "${plan}" erstellt für user=${resolvedUserId}`);
+  return NextResponse.json({ received: true });
+}
+
+// ─── Agency Welcome E-Mail Template ────────────────────────────────────────
+
+function generateAgencyWelcomeEmailHtml({
+  plan,
+  planConfig,
+  customerEmail,
+  nextBillingDate,
+}: {
+  plan: string;
+  planConfig: AgencyPlanConfig;
+  customerEmail: string;
+  nextBillingDate: string;
+}): string {
+  const planLabelMap: Record<string, string> = {
+    agency_basic: 'Agency Basic',
+    agency_pro: 'Agency Pro',
+    agency_enterprise: 'Agency Enterprise',
+  };
+  const planLabel = planLabelMap[plan] ?? plan;
+  const isProOrEnterprise = plan === 'agency_pro' || plan === 'agency_enterprise';
+  const domainsLabel = planConfig.maxDomains === 9999 ? 'Unbegrenzt' : `bis ${planConfig.maxDomains}`;
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Willkommen bei Dataquard — Ihr Agency-Account ist bereit</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0b1829,#0d1f35);padding:32px 40px;text-align:center;">
+              <div style="font-size:24px;font-weight:800;letter-spacing:-0.5px;">
+                <span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span>
+              </div>
+              <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">Ihre Website. Rechtssicher.</div>
+            </td>
+          </tr>
+          <!-- Begrüssung -->
+          <tr>
+            <td style="padding:40px 40px 24px;text-align:center;">
+              <div style="font-size:40px;margin-bottom:16px;">✅</div>
+              <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1a1a2e;">Ihr Agency-Account ist bereit!</h1>
+              <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
+                Vielen Dank für Ihr Vertrauen.<br/>
+                Ihr <strong style="color:#1a1a2e;">Dataquard ${planLabel}-Plan</strong> ist ab sofort aktiv.
+              </p>
+            </td>
+          </tr>
+          <!-- Rechnungsübersicht -->
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                <div style="background:#f9fafb;padding:12px 20px;border-bottom:1px solid #e5e7eb;">
+                  <span style="font-size:13px;font-weight:700;color:#374151;">Rechnungsübersicht</span>
+                </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="padding:16px 20px;">
+                  <tr>
+                    <td style="font-size:13px;color:#6b7280;padding:4px 0;">Plan</td>
+                    <td style="font-size:13px;color:#374151;font-weight:600;text-align:right;">Dataquard ${planLabel}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#6b7280;padding:4px 0;">Domains inbegriffen</td>
+                    <td style="font-size:13px;color:#374151;text-align:right;">${domainsLabel}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#6b7280;padding:4px 0;">Nächste Abrechnung</td>
+                    <td style="font-size:13px;color:#374151;text-align:right;">${nextBillingDate}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="border-top:1px solid #e5e7eb;padding-top:8px;"></td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:14px;font-weight:700;color:#1a1a2e;padding:4px 0;">Monatliche Kosten</td>
+                    <td style="font-size:14px;font-weight:700;color:#1a1a2e;text-align:right;">CHF ${planConfig.monthlyAmount}.–/Mt.</td>
+                  </tr>
+                </table>
+              </div>
+              <p style="font-size:12px;color:#9ca3af;margin:8px 0 0;text-align:center;">
+                Monatsabo · Monatlich kündbar · Keine Mindestlaufzeit
+              </p>
+            </td>
+          </tr>
+          <!-- 3 Schritte -->
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px 24px;">
+                <div style="font-size:13px;font-weight:700;color:#15803d;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px;">
+                  So starten Sie in 3 Schritten
+                </div>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="vertical-align:top;padding-bottom:14px;">
+                      <div style="display:inline-block;width:24px;height:24px;background:#22c55e;border-radius:50%;color:#fff;font-weight:700;font-size:13px;text-align:center;line-height:24px;flex-shrink:0;">1</div>
+                      &nbsp;&nbsp;<strong style="color:#1a1a2e;font-size:14px;">Dashboard öffnen</strong><br/>
+                      <span style="color:#555566;font-size:13px;padding-left:32px;display:block;margin-top:4px;">
+                        Unter <a href="https://www.dataquard.ch/dashboard" style="color:#22c55e;text-decoration:none;">dataquard.ch/dashboard</a> → Tab "Agentur" klicken.
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;padding-bottom:14px;">
+                      <div style="display:inline-block;width:24px;height:24px;background:#22c55e;border-radius:50%;color:#fff;font-weight:700;font-size:13px;text-align:center;line-height:24px;">2</div>
+                      &nbsp;&nbsp;<strong style="color:#1a1a2e;font-size:14px;">Domains hinzufügen</strong><br/>
+                      <span style="color:#555566;font-size:13px;padding-left:32px;display:block;margin-top:4px;">
+                        Einzeln eingeben oder per CSV-Upload (eine Domain pro Zeile).
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;">
+                      <div style="display:inline-block;width:24px;height:24px;background:#22c55e;border-radius:50%;color:#fff;font-weight:700;font-size:13px;text-align:center;line-height:24px;">3</div>
+                      &nbsp;&nbsp;<strong style="color:#1a1a2e;font-size:14px;">Scannen &amp; Reports</strong><br/>
+                      <span style="color:#555566;font-size:13px;padding-left:32px;display:block;margin-top:4px;">
+                        Klicken Sie auf "Alle Domains scannen". PDF-Reports können direkt heruntergeladen werden.
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+          </tr>
+          <!-- CTA -->
+          <tr>
+            <td style="padding:0 40px 28px;text-align:center;">
+              <a href="https://www.dataquard.ch/dashboard/agency"
+                style="display:inline-block;background:linear-gradient(135deg,#00e676,#00c853);color:#040c1c;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;">
+                Zum Agency-Dashboard →
+              </a>
+              <p style="margin:10px 0 0;color:#9ca3af;font-size:13px;">Angemeldet als ${customerEmail}</p>
+            </td>
+          </tr>
+          <!-- Document Pack Tipp -->
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;">
+                <div style="font-size:13px;color:#92400e;line-height:1.6;">
+                  <strong>Tipp: Document Pack</strong><br/>
+                  Aktivieren Sie das Document Pack (CHF 9.–/Domain/Mt.) für automatisch generierte Datenschutzerklärungen,
+                  Impressum und Cookie-Banner pro Kunden-Website.
+                </div>
+              </div>
+            </td>
+          </tr>
+          ${isProOrEnterprise ? `
+          <!-- White-Label Hinweis -->
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;">
+                <div style="font-size:13px;color:#1e40af;line-height:1.6;">
+                  <strong>White-Label freigeschaltet</strong><br/>
+                  Unter "Branding" im Agency-Dashboard können Sie Ihr eigenes Logo und Ihre Markenfarben
+                  für alle PDF-Reports konfigurieren.
+                </div>
+              </div>
+            </td>
+          </tr>
+          ` : ''}
+          <!-- Support -->
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;text-align:center;">
+                <div style="font-size:13px;color:#6b7280;">
+                  Fragen? Wir helfen gerne weiter:<br/>
+                  <a href="mailto:support@dataquard.ch" style="color:#22c55e;font-weight:600;text-decoration:none;">support@dataquard.ch</a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#9ca3af;">
+                © 2026 Dataquard · Reinach BL, Schweiz<br/>
+                <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;text-decoration:none;">Datenschutz</a>
+                &nbsp;·&nbsp;
+                <a href="https://www.dataquard.ch/impressum" style="color:#9ca3af;text-decoration:none;">Impressum</a>
+                &nbsp;·&nbsp;
+                <a href="https://www.dataquard.ch" style="color:#9ca3af;text-decoration:none;">dataquard.ch</a>
               </p>
             </td>
           </tr>
