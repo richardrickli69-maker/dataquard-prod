@@ -129,11 +129,24 @@ export default function AgencyDashboardPage() {
   const [search, setSearch]               = useState('');
 
   // White-Label Einstellungen (Tab)
-  const [activeTab, setActiveTab]         = useState<'domains' | 'branding'>('domains');
+  const [activeTab, setActiveTab]         = useState<'domains' | 'branding' | 'billing'>('domains');
   const [brandColor, setBrandColor]       = useState('#22c55e');
   const [brandLogoUrl, setBrandLogoUrl]   = useState('');
   const [brandSaving, setBrandSaving]     = useState(false);
   const [brandSaved, setBrandSaved]       = useState(false);
+
+  // Billing-Tab
+  const [billingLoading, setBillingLoading]       = useState(false);
+  const [billingData, setBillingData]             = useState<{
+    planPrice: number;
+    docPackDomains: number;
+    docPackTotal: number;
+    totalMonthly: number;
+    currentPeriodEnd: string | null;
+    paymentMethodLast4: string | null;
+    paymentMethodBrand: string | null;
+    customerPortalUrl: string | null;
+  } | null>(null);
 
   // ── Auth + Daten laden ───────────────────────────────────────────────────
   useEffect(() => {
@@ -374,8 +387,50 @@ export default function AgencyDashboardPage() {
     }
   }
 
-  // ── Document Pack Toggle ─────────────────────────────────────────────────
+  // ── Billing-Daten laden ──────────────────────────────────────────────────
+  async function loadBilling() {
+    setBillingLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/agency/billing', {
+        headers: { Authorization: `Bearer ${session?.access_token ?? ''}` },
+      });
+      if (res.ok) {
+        const json = await res.json() as typeof billingData;
+        setBillingData(json);
+      }
+    } catch {
+      console.error('Billing-Daten konnten nicht geladen werden');
+    } finally {
+      setBillingLoading(false);
+    }
+  }
+
+  // ── Document Pack Toggle (mit Stripe-Update via neue Route) ──────────────
   async function handleDocPackToggle(domainId: string, current: boolean) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      // Neue Route: Stripe Quantity wird serverseitig aktualisiert
+      await fetch('/api/agency/document-pack', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ domainId, enabled: !current }),
+      });
+      // Lokal sofort aktualisieren
+      setDomains(prev => prev.map(d =>
+        d.id === domainId ? { ...d, document_pack_enabled: !current } : d
+      ));
+      return;
+    } catch {
+      console.error('Doc Pack Toggle fehlgeschlagen');
+    }
+  }
+
+  // ── Document Pack Toggle (alte Route, wird nicht mehr direkt aufgerufen) ─
+  async function _handleDocPackToggleLegacy(domainId: string, current: boolean) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       await fetch('/api/agency/domains', {
@@ -650,12 +705,18 @@ export default function AgencyDashboardPage() {
         {/* ── Tabs ── */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', borderBottom: `1px solid ${G.border}` }}>
           {[
-            { id: 'domains' as const, label: 'Domains' },
+            { id: 'domains'  as const, label: 'Domains' },
             { id: 'branding' as const, label: 'Branding / White-Label' },
+            { id: 'billing'  as const, label: 'Abrechnung' },
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id === 'billing' && !billingData && !billingLoading) {
+                  loadBilling();
+                }
+              }}
               style={{
                 padding: '10px 18px',
                 fontSize: '14px',
@@ -1260,6 +1321,159 @@ export default function AgencyDashboardPage() {
                 >
                   {brandSaving ? 'Wird gespeichert…' : brandSaved ? 'Gespeichert!' : 'Einstellungen speichern'}
                 </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            TAB: ABRECHNUNG
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'billing' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+            {billingLoading && (
+              <div style={{ textAlign: 'center', color: G.textMuted, padding: '40px' }}>
+                Abrechnungsdaten werden geladen…
+              </div>
+            )}
+
+            {!billingLoading && billingData && (
+              <>
+                {/* Kostenübersicht */}
+                <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: '14px', padding: '24px 28px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: G.text, margin: '0 0 20px' }}>
+                    Monatliche Kosten
+                  </h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ fontSize: '14px', color: G.textSec, padding: '6px 0' }}>
+                          {planLabel(agency.plan)}
+                        </td>
+                        <td style={{ fontSize: '14px', color: G.text, textAlign: 'right', fontWeight: 500 }}>
+                          CHF {billingData.planPrice}.–/Mt.
+                        </td>
+                      </tr>
+                      {billingData.docPackDomains > 0 && (
+                        <tr>
+                          <td style={{ fontSize: '14px', color: G.textSec, padding: '6px 0' }}>
+                            Document Pack ({billingData.docPackDomains} {billingData.docPackDomains === 1 ? 'Domain' : 'Domains'} × CHF 9.–)
+                          </td>
+                          <td style={{ fontSize: '14px', color: G.text, textAlign: 'right', fontWeight: 500 }}>
+                            CHF {billingData.docPackTotal}.–/Mt.
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td colSpan={2} style={{ borderTop: `1px solid ${G.border}`, padding: '8px 0 0' }} />
+                      </tr>
+                      <tr>
+                        <td style={{ fontSize: '15px', fontWeight: 700, color: G.text, padding: '4px 0' }}>
+                          Gesamt
+                        </td>
+                        <td style={{ fontSize: '15px', fontWeight: 700, color: G.text, textAlign: 'right' }}>
+                          CHF {billingData.totalMonthly}.–/Mt.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Nächste Abrechnung + Zahlungsmethode */}
+                <div style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: '14px', padding: '24px 28px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: G.text, margin: '0 0 16px' }}>
+                    Abo-Details
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                      <span style={{ color: G.textSec }}>Plan</span>
+                      <span style={{ color: G.text, fontWeight: 600 }}>{planLabel(agency.plan)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                      <span style={{ color: G.textSec }}>Status</span>
+                      <span style={{
+                        color: agency.status === 'active' ? G.green : G.red,
+                        fontWeight: 600,
+                      }}>
+                        {agency.status === 'active' ? 'Aktiv' : agency.status === 'cancelled' ? 'Gekündigt' : 'Zahlung ausstehend'}
+                      </span>
+                    </div>
+                    {billingData.currentPeriodEnd && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                        <span style={{ color: G.textSec }}>Nächste Abrechnung</span>
+                        <span style={{ color: G.text }}>
+                          {new Date(billingData.currentPeriodEnd).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        </span>
+                      </div>
+                    )}
+                    {billingData.paymentMethodLast4 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                        <span style={{ color: G.textSec }}>Zahlungsmethode</span>
+                        <span style={{ color: G.text }}>
+                          {billingData.paymentMethodBrand
+                            ? `${billingData.paymentMethodBrand.charAt(0).toUpperCase()}${billingData.paymentMethodBrand.slice(1)}`
+                            : 'Karte'
+                          } •••• {billingData.paymentMethodLast4}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Customer Portal Buttons */}
+                {billingData.customerPortalUrl && (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <a
+                      href={billingData.customerPortalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-block',
+                        background: G.green,
+                        color: '#fff',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        padding: '11px 22px',
+                        borderRadius: '10px',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Plan ändern / Kündigen →
+                    </a>
+                    <a
+                      href={billingData.customerPortalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-block',
+                        background: 'transparent',
+                        border: `1px solid ${G.border}`,
+                        color: G.textSec,
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        padding: '11px 22px',
+                        borderRadius: '10px',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Rechnungen anzeigen →
+                    </a>
+                  </div>
+                )}
+
+                {!billingData.customerPortalUrl && (
+                  <p style={{ fontSize: '13px', color: G.textMuted }}>
+                    Stripe Customer Portal nicht verfügbar. Bitte kontaktieren Sie{' '}
+                    <a href="mailto:support@dataquard.ch" style={{ color: G.green }}>support@dataquard.ch</a>.
+                  </p>
+                )}
+              </>
+            )}
+
+            {!billingLoading && !billingData && (
+              <div style={{ textAlign: 'center', color: G.textMuted, padding: '40px' }}>
+                Keine Abrechnungsdaten verfügbar.
               </div>
             )}
           </div>

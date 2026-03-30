@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageWrapper } from '../components/PageWrapper';
+import AgencyCheckoutButton from './AgencyCheckoutButton';
 
 export const metadata: Metadata = {
   title: 'Dataquard für Agenturen — Compliance als Dienstleistung',
@@ -84,8 +85,9 @@ const PLANS = [
       'White-Label E-Mail-Versand',
       'Priority Support',
     ],
-    cta: 'Basic anfragen',
-    href: 'mailto:info@dataquard.ch?subject=Agency Basic Anfrage',
+    cta: 'Jetzt starten',
+    href: null as string | null,
+    checkoutPlan: 'agency_basic' as 'agency_basic' | 'agency_pro' | null,
   },
   {
     name: 'Agency Pro',
@@ -108,8 +110,9 @@ const PLANS = [
       'Unbegrenzte Kunden',
       'Custom Domain (White-Label Portal)',
     ],
-    cta: 'Pro anfragen',
-    href: 'mailto:info@dataquard.ch?subject=Agency Pro Anfrage',
+    cta: 'Jetzt starten',
+    href: null as string | null,
+    checkoutPlan: 'agency_pro' as 'agency_basic' | 'agency_pro' | null,
   },
   {
     name: 'Agency Enterprise',
@@ -130,7 +133,8 @@ const PLANS = [
     ],
     missing: [],
     cta: 'Kontakt aufnehmen',
-    href: 'mailto:info@dataquard.ch?subject=Agency Enterprise Anfrage',
+    href: 'mailto:info@dataquard.ch?subject=Agency Enterprise Anfrage' as string | null,
+    checkoutPlan: null as 'agency_basic' | 'agency_pro' | null,
   },
 ];
 
@@ -493,21 +497,34 @@ export default function FuerAgenturenPage() {
                   ))}
                 </ul>
 
-                <a href={plan.href} style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  padding: '13px',
-                  background: plan.highlight ? G.green : 'transparent',
-                  border: plan.highlight ? 'none' : `2px solid ${G.green}`,
-                  color: plan.highlight ? G.white : G.green,
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  borderRadius: '12px',
-                  textDecoration: 'none',
-                  marginTop: 'auto',
-                }}>
-                  {plan.cta}
-                </a>
+                <div style={{ marginTop: 'auto' }}>
+                  {plan.checkoutPlan ? (
+                    // Basic + Pro: Stripe Checkout
+                    <AgencyCheckoutButton
+                      plan={plan.checkoutPlan}
+                      label={plan.cta}
+                      highlight={plan.highlight}
+                      green={G.green}
+                      white={G.white}
+                    />
+                  ) : (
+                    // Enterprise: mailto
+                    <a href={plan.href ?? 'mailto:info@dataquard.ch'} style={{
+                      display: 'block',
+                      textAlign: 'center',
+                      padding: '13px',
+                      background: 'transparent',
+                      border: `2px solid ${G.green}`,
+                      color: G.green,
+                      fontWeight: 700,
+                      fontSize: '15px',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                    }}>
+                      {plan.cta}
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>
