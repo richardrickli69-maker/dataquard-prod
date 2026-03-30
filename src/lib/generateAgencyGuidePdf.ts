@@ -111,20 +111,20 @@ export async function generateAgencyGuidePdf(params: {
 
   // Hinweis-Box
   page.drawRectangle({ x: 50, y: height - 188, width: width - 100, height: 26, color: lightGreen });
-  page.drawText(`Ihr ${params.planLabel}-Plan ist sofort aktiv. Sie können jetzt Domains hinzufuegen und scannen.`, {
+  page.drawText(`Ihr ${params.planLabel}-Plan ist sofort aktiv. Sie können jetzt Domains hinzufügen und scannen.`, {
     x: 58, y: height - 179, size: 9, font, color: darkGreen,
   });
 
   // Schritte
   let y = height - 222;
 
-  y = drawStep(page, y, '1', 'Dashboard oeffnen', [
+  y = drawStep(page, y, '1', 'Dashboard öffnen', [
     'Gehen Sie zu dataquard.ch/dashboard und melden Sie sich an.',
     'Klicken Sie auf den Link "Agentur" oder den Tab "Agentur" im Dashboard.',
   ], stepFonts, stepColors);
 
-  y = drawStep(page, y, '2', 'Domains hinzufuegen', [
-    'Einzeln: Domain in das Eingabefeld eingeben und bestaetigen.',
+  y = drawStep(page, y, '2', 'Domains hinzufügen', [
+    'Einzeln: Domain in das Eingabefeld eingeben und bestätigen.',
     'Bulk: CSV-Datei hochladen (eine Domain pro Zeile, z.B. "example.ch").',
     'Die Domains erscheinen sofort in der Tabelle mit Status "Ausstehend".',
   ], stepFonts, stepColors);
@@ -143,7 +143,7 @@ export async function generateAgencyGuidePdf(params: {
   y = drawStep(page, y, '5', 'Document Pack aktivieren (optional)', [
     'Aktivieren Sie das Document Pack (CHF 9.\u2013/Domain/Mt.) per Toggle.',
     'Pro Kunden-Domain wird automatisch generiert:',
-    '  \u00B7 Datenschutzerklaerung (nDSG + DSGVO)',
+    '  \u00B7 Datenschutzerklärung (nDSG + DSGVO)',
     '  \u00B7 Impressum',
     '  \u00B7 Cookie-Banner',
   ], stepFonts, stepColors);
@@ -151,8 +151,8 @@ export async function generateAgencyGuidePdf(params: {
   // Schritt 6 nur fuer Pro/Enterprise
   if (isProOrEnterprise) {
     y = drawStep(page, y, '6', 'White-Label konfigurieren', [
-      'Unter "Branding" im Agency-Dashboard koennen Sie Ihr Logo und Ihre',
-      'Markenfarben fuer alle PDF-Reports konfigurieren.',
+      'Unter "Branding" im Agency-Dashboard können Sie Ihr Logo und Ihre',
+      'Markenfarben für alle PDF-Reports konfigurieren.',
       'Ihre Kunden sehen die Reports in Ihrem Corporate Design.',
     ], stepFonts, stepColors);
   }

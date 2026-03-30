@@ -86,7 +86,7 @@ export async function generateAgencyInvoicePdf(params: {
   } catch {
     page.drawText('Data',    { x: 50, y: height - 60, size: 22, font: bold, color: green });
     page.drawText('quard',   { x: 50 + bold.widthOfTextAtSize('Data', 22), y: height - 60, size: 22, font: bold, color: darkGreen });
-    page.drawText('Agentur-Compliance-Loesung', { x: 50, y: height - 76, size: 9, font, color: gray });
+    page.drawText('Agentur-Compliance-Lösung', { x: 50, y: height - 76, size: 9, font, color: gray });
   } finally {
     clearTimeout(logoTimeout);
   }
@@ -105,7 +105,7 @@ export async function generateAgencyInvoicePdf(params: {
   });
 
   // Empfaenger + Zahlungsart
-  page.drawText('RECHNUNGSEMPFAENGER', { x: 50,  y: height - 148, size: 8, font: bold, color: gray });
+  page.drawText('RECHNUNGSEMPFÄNGER', { x: 50,  y: height - 148, size: 8, font: bold, color: gray });
   page.drawText('ZAHLUNGSART',         { x: 300, y: height - 148, size: 8, font: bold, color: gray });
   page.drawText(params.customerEmail,  { x: 50,  y: height - 162, size: 11, font, color: black });
   page.drawText('Kreditkarte via Stripe (Monatsabo)', { x: 300, y: height - 162, size: 10, font, color: black });
@@ -125,17 +125,17 @@ export async function generateAgencyInvoicePdf(params: {
   page.drawText(`CHF ${amount.toFixed(2)}`,        { x: 455, y: rowY + 8, size: 12, font, color: black });
 
   // Laufzeit-Hinweis
-  page.drawText(`Monatsabo \u00B7 Automatische Verlaengerung`,     { x: 56, y: rowY - 24, size: 8.5, font, color: gray });
-  page.drawText(`Naechste Abrechnung: ${params.nextBillingDate}`,  { x: 56, y: rowY - 37, size: 8.5, font, color: gray });
+  page.drawText(`Monatsabo \u00B7 Automatische Verlängerung`,      { x: 56, y: rowY - 24, size: 8.5, font, color: gray });
+  page.drawText(`Nächste Abrechnung: ${params.nextBillingDate}`,   { x: 56, y: rowY - 37, size: 8.5, font, color: gray });
 
   // Trennlinie
   page.drawLine({ start: { x: 50, y: rowY - 52 }, end: { x: width - 50, y: rowY - 52 }, thickness: 0.5, color: lightgray });
 
-  // MwSt. Aufschluesselung
+  // MwSt. Aufschlüsselung — Labels links (x=56), Beträge rechts (x=455)
   const t1Y = rowY - 70;
-  page.drawText('Zwischensumme (exkl. MwSt.)',   { x: 340, y: t1Y,      size: 10, font, color: gray });
+  page.drawText('Zwischensumme (exkl. MwSt.)',   { x: 56,  y: t1Y,      size: 10, font, color: gray });
   page.drawText(`CHF ${netto.toFixed(2)}`,        { x: 455, y: t1Y,      size: 10, font, color: black });
-  page.drawText('MwSt. 8.1%',                     { x: 340, y: t1Y - 16, size: 10, font, color: gray });
+  page.drawText('MwSt. 8.1%',                     { x: 56,  y: t1Y - 16, size: 10, font, color: gray });
   page.drawText(`CHF ${mwst.toFixed(2)}`,         { x: 455, y: t1Y - 16, size: 10, font, color: black });
 
   // Total-Box (navy Hintergrund)
