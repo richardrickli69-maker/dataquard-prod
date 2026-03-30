@@ -6,10 +6,10 @@ import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema, Web
 
 export const metadata: Metadata = {
   title: {
-    default: 'Dataquard – Der Schweizer Website-Check für Compliance, Performance, Security & AI-Trust',
+    default: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
     template: '%s | Dataquard',
   },
-  description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust — gleichzeitig geprüft, direkt behoben. Erkennt automatisch KI-generierte Bilder und Deepfakes nach EU AI Act Art. 50.',
+  description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich. Kostenlos starten.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Dataquard – Der Schweizer Website-Check für Compliance, Performance, Security & AI-Trust',
-    description: 'Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust — gleichzeitig geprüft, direkt behoben. Erkennt automatisch KI-generierte Bilder und Deepfakes nach EU AI Act Art. 50.',
+    title: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
+    description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich. Kostenlos starten.',
     url: 'https://www.dataquard.ch',
     siteName: 'Dataquard',
     locale: 'de_CH',
