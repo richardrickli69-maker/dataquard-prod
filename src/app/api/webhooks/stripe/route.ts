@@ -15,6 +15,8 @@ import { Resend } from 'resend';
 import { logAudit } from '@/lib/audit';
 import { generateInvoicePdf } from '@/lib/generateInvoicePdf';
 import { generateInstallationPdf } from '@/lib/generateInstallationPdf';
+import { generateAgencyInvoicePdf } from '@/lib/generateAgencyInvoicePdf';
+import { generateAgencyGuidePdf } from '@/lib/generateAgencyGuidePdf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -606,10 +608,33 @@ async function handleAgencyCheckout({
     console.error('[Webhook] agency_accounts upsert Fehler:', upsertErr.message);
   }
 
-  // Bestätigungs-E-Mail senden
+  // Bestätigungs-E-Mail mit PDF-Anhängen senden
   if (customerEmail) {
     const nextBillingDate = currentPeriodEnd.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const invoiceDate     = createdAt.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const planLabelMap: Record<string, string> = {
+      agency_basic:      'Agency Basic',
+      agency_pro:        'Agency Pro',
+      agency_enterprise: 'Agency Enterprise',
+    };
+    const planLabel = planLabelMap[plan] ?? plan;
+
     try {
+      // PDFs parallel generieren
+      const [invoicePdf, guidePdf] = await Promise.all([
+        generateAgencyInvoicePdf({
+          plan,
+          customerEmail,
+          nextBillingDate,
+          invoiceDate,
+        }),
+        generateAgencyGuidePdf({
+          plan,
+          planLabel,
+        }),
+      ]);
+
       const { error: emailError } = await resend.emails.send({
         from: 'Dataquard <info@dataquard.ch>',
         to: customerEmail,
@@ -620,7 +645,18 @@ async function handleAgencyCheckout({
           customerEmail,
           nextBillingDate,
         }),
+        attachments: [
+          {
+            filename: `Dataquard-Rechnung-${plan}-${createdAt.getFullYear()}${String(createdAt.getMonth() + 1).padStart(2, '0')}${String(createdAt.getDate()).padStart(2, '0')}.pdf`,
+            content: invoicePdf,
+          },
+          {
+            filename: 'Dataquard-Agency-Kurzanleitung.pdf',
+            content: guidePdf,
+          },
+        ],
       });
+
       if (emailError) console.error('[Webhook] Agency Welcome-E-Mail Fehler:', emailError);
     } catch (emailErr) {
       console.error('[Webhook] Agency Welcome-E-Mail fehlgeschlagen:', emailErr instanceof Error ? emailErr.message : emailErr);
