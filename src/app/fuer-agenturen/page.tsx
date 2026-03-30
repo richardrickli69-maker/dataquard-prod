@@ -8,7 +8,7 @@ import AgencyCheckoutButton from './AgencyCheckoutButton';
 
 export const metadata: Metadata = {
   title: 'Dataquard für Agenturen — Compliance als Dienstleistung',
-  description: 'Bieten Sie Ihren Kunden vollständige Website-Compliance: nDSG, DSGVO, EU AI Act. White-Label-fähig, Bulk-Scan, eigenes Agentur-Dashboard. Ab CHF 79.–/Mt.',
+  description: 'DSE, Impressum und Cookie-Banner für alle Kunden Ihrer Agentur — von einem Dashboard aus. White-Label, Bulk-Scan, KI-Bild-Erkennung. Ab CHF 79.–/Mt.',
   alternates: { canonical: 'https://www.dataquard.ch/fuer-agenturen' },
 };
 
@@ -57,10 +57,10 @@ const FEATURES = [
   { icon: '/suche.png', title: 'Bulk-Scan', desc: 'Scannen Sie mehrere Kunden-Websites gleichzeitig. Kein manuelles Starten einzelner Scans.' },
   { icon: '/dokument.png', title: 'White-Label-Berichte', desc: 'PDFs mit Ihrem Logo und Ihren Farben. Der Kunde sieht Ihre Marke, nicht Dataquard.' },
   { icon: '/icon-recht.png', title: 'Dokument-Pack', desc: 'Automatisch generierte Datenschutzerklärungen, Impressum und Cookie-Policy für jeden Kunden.' },
-  { icon: '/badge-ai-trust.svg', title: 'EU AI Act Compliance (Art. 50)', desc: 'KI-Bild-Erkennung und Deepfake-Check für alle Kunden-Websites. Stärkster Differenzierer am Markt.' },
+  { icon: '/badge-ai-trust.svg', title: 'KI-Bild-Erkennung & Deepfake-Check', desc: 'Prüfen Sie automatisch alle Kunden-Websites auf KI-generierte Bilder und Deepfakes. Der stärkste Differenzierer, den Sie Ihren Kunden bieten können.' },
   { icon: '/diagramm.png', title: 'Monatliche Reports per E-Mail', desc: 'Automatisierte Compliance-Reports für alle Kunden. Sie informieren proaktiv, ohne Aufwand.' },
   { icon: '/warnung.png', title: 'Echtzeit-Alerts', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
-  { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO + EU AI Act', desc: 'Vollständige Abdeckung aller relevanten Schweizer und europäischen Datenschutzgesetze.' },
+  { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO — vollständige Abdeckung', desc: 'Alle relevanten Schweizer und europäischen Datenschutzgesetze abgedeckt. Inklusive automatischer KI-Transparenzklausel für Kunden mit EU-Geschäft.' },
 ];
 
 const PLANS = [
@@ -81,7 +81,7 @@ const PLANS = [
       'Monatlicher Compliance-Report',
     ],
     missing: [
-      'EU AI Act Scan (AI-Trust)',
+      'KI-Bild-Erkennung',
       'White-Label E-Mail-Versand',
       'Priority Support',
     ],
@@ -100,7 +100,7 @@ const PLANS = [
     features: [
       'Bis zu 50 Kunden-Websites',
       'Alles aus Starter',
-      'EU AI Act Scan (AI-Trust) pro Kunde',
+      'KI-Bild-Erkennung & Deepfake-Check pro Kunde',
       'Deepfake-Check & Echtzeit-Alerts',
       'White-Label E-Mail-Reports an Kunden',
       'Wöchentlicher Compliance-Report',
@@ -143,7 +143,7 @@ const COMPARE_ROWS = [
   { feature: 'Bulk-Scan', starter: '✓', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'White-Label-PDFs', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Teilweise' },
   { feature: 'nDSG Schweiz', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Selten' },
-  { feature: 'EU AI Act Art. 50 Check', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
+  { feature: 'KI-Bild-Erkennung', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'Deepfake-Erkennung', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'White-Label E-Mail', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'API-Zugang', starter: '✗', professional: '✗', enterprise: '✓', competitors: 'Teilweise' },
@@ -212,7 +212,7 @@ export default function FuerAgenturenPage() {
             margin: '0 0 20px',
             fontFamily: '"DM Serif Display", Georgia, serif',
           }}>
-            Compliance als Dienstleistung — <span style={{ color: G.green }}>skalierbar für Ihre Agentur</span>
+            DSE, Impressum und Cookie-Banner für alle Ihre Kunden — <span style={{ color: G.green }}>von einem Dashboard aus.</span>
           </h1>
 
           <p style={{
@@ -224,8 +224,7 @@ export default function FuerAgenturenPage() {
             marginLeft: 'auto',
             marginRight: 'auto',
           }}>
-            Bieten Sie Ihren Kunden vollständige Website-Compliance: nDSG, DSGVO, EU AI Act Art. 50.
-            White-Label-fähig, Bulk-Scan, ein zentrales Dashboard.
+            Dataquard scannt alle Kunden-Websites Ihrer Agentur, generiert White-Label-Dokumente und liefert laufende Compliance-Reports. Inklusive KI-Bild-Erkennung — ein Angebot das keine andere Schweizer Agentur machen kann.
           </p>
 
           <div className="agency-hero-ctas" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -260,7 +259,7 @@ export default function FuerAgenturenPage() {
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px' }}>
             {[
               { icon: '/icon-sicherheit.png', label: 'Daten in Zürich' },
-              { icon: '/badge-ai-trust.svg',  label: 'EU AI Act Art. 50' },
+              { icon: '/badge-ai-trust.svg',  label: 'KI-Bild-Erkennung' },
               { icon: '/icon-recht.png',       label: 'nDSG + DSGVO' },
               { icon: '/checkmark.png',        label: 'White-Label' },
             ].map(item => (
@@ -285,7 +284,7 @@ export default function FuerAgenturenPage() {
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: G.green, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>Das Problem</div>
             <h2 style={{ fontSize: '32px', fontWeight: 800, color: G.text, margin: 0 }}>
-              Compliance kostet Zeit — die Ihre Agentur nicht hat
+              Compliance kostet Zeit — und bringt kein Geld. Bis jetzt.
             </h2>
           </div>
 
@@ -301,12 +300,11 @@ export default function FuerAgenturenPage() {
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: G.text, margin: '0 0 16px' }}>Ohne Dataquard</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
-                  'Manuelle Compliance-Prüfung für jeden Kunden',
-                  'Kein Überblick über nDSG/DSGVO-Status aller Kunden',
-                  'EU AI Act Art. 50? Kaum ein Tool prüft das',
+                  'Manuelle Compliance-Prüfung für jeden Kunden einzeln',
+                  'Kein Überblick über den Datenschutz-Status aller Kunden',
+                  'KI-generierte Bilder? Kein bestehendes Tool prüft das',
                   'PDFs selbst erstellen, anpassen, versenden',
-                  'Kunden melden sich wegen Abmahnungen',
-                  'Kein skalierbares Angebot für Compliance',
+                  'Kein skalierbares Compliance-Angebot',
                 ].map(item => (
                   <li key={item} style={{ display: 'flex', gap: '10px', fontSize: '14px', color: G.textSec, alignItems: 'flex-start' }}>
                     <img src="/fehler.png" alt="" style={{ width: '16px', height: '16px', marginTop: '2px', flexShrink: 0 }} />
@@ -329,7 +327,7 @@ export default function FuerAgenturenPage() {
                 {[
                   'Ein Klick — alle Kunden gleichzeitig gescannt',
                   'Compliance-Dashboard für alle Kunden auf einen Blick',
-                  'EU AI Act Art. 50 automatisch geprüft',
+                  'KI-Bilder und Deepfakes automatisch erkannt',
                   'White-Label-PDFs in Minuten generiert',
                   'Echtzeit-Alerts bei neuen Problemen',
                   'Compliance als neues Umsatz-Standbein',
@@ -398,7 +396,7 @@ export default function FuerAgenturenPage() {
               Alles, was Ihre Agentur braucht
             </h2>
             <p style={{ fontSize: '16px', color: G.textSec, margin: 0 }}>
-              Das einzige Schweizer Compliance-Tool mit EU AI Act Art. 50 — und White-Label für Agenturen.
+              Das einzige Schweizer Compliance-Tool mit KI-Bild-Erkennung — und White-Label für Agenturen.
             </p>
           </div>
 
