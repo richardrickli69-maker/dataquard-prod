@@ -187,8 +187,8 @@ export default function HomePage() {
         <p style={{ fontSize: 13, fontWeight: 700, color: G.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
           Der Schweizer Website-Check für KMU
         </p>
-        <h1 style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text }}>
-          Datenschutzerklärung, Impressum und Cookie-Banner —{' '}
+        <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', hyphens: 'auto' }}>
+          Datenschutz{'\u00AD'}erklärung, Impressum und Cookie-Banner —{' '}
           <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
@@ -307,11 +307,11 @@ export default function HomePage() {
             ))}
           </div>
           <div style={{ background: G.bgLight, borderRadius: 12, padding: '14px 16px', fontSize: 14, color: G.textSec, lineHeight: 1.8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong> nDSG-konform, Datenschutzerklärung vorhanden</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong> Google Fonts extern geladen (Datentransfer USA)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong> Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong>{' '}nDSG-konform, Datenschutzerklärung vorhanden</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong>{' '}Google Fonts extern geladen (Datentransfer USA)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong>{' '}Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
             {/* Violetter Punkt als AI-Trust Markenfarbe */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0, boxShadow: '0 0 6px #8B5CF660' }} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong> 3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0, boxShadow: '0 0 6px #8B5CF660' }} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong>{' '}3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
           </div>
         </div>
       </section>
