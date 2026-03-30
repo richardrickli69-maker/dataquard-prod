@@ -184,22 +184,15 @@ export default function HomePage() {
 
       {/* ═══ 1. HERO + SCANNER ═══ */}
       <section id="hero-scanner" style={{ position: 'relative', padding: '56px 24px 40px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#22c55e', letterSpacing: 0.5 }}>
-            NEU ab 2026: AI-Trust Säule — EU AI Act Art. 50 macht KI-Kennzeichnung zur Pflicht. Dataquard prüft Ihre Website automatisch auf KI-Bilder &amp; Deepfakes.
-          </div>
-        </div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.redBg, border: `1px solid ${G.redBorder}`, fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 20, marginBottom: 28, color: G.red }}>
-          <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} /> nDSG seit 01.09.2023 in Kraft – Bussen bis CHF 250&apos;000
-        </div>
+        <p style={{ fontSize: 13, fontWeight: 700, color: G.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
+          Der Schweizer Website-Check für KMU
+        </p>
         <h1 style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text }}>
-          Ihre KMU-Website ist{' '}
-          <span style={{ color: G.green }}>nicht rechtskonform.</span>
-          <br />
-          <span style={{ fontSize: 34, fontWeight: 700, color: G.textSec }}>Wir ändern das — in 3 Minuten.</span>
+          Datenschutzerklärung, Impressum und Cookie-Banner —{' '}
+          <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Der einzige Schweizer Website-Check mit 4-Säulen-Analyse: <strong style={{ color: G.text }}>Compliance, Performance, Security und AI-Trust</strong> — gleichzeitig geprüft, direkt behoben. Erkennt automatisch <strong style={{ color: G.text }}>KI-generierte Bilder und Deepfakes</strong> nach EU AI Act Art. 50.
+          Dataquard scannt Ihre Website, findet Probleme und generiert alle Dokumente die Sie brauchen — rechtssicher nach nDSG und DSGVO. Plus: <strong style={{ color: G.text }}>Erkennung von KI-generierten Bildern und Deepfakes.</strong> Einzigartig in der Schweiz.
         </p>
         {/* Status-Banner (nur bei Problemen) */}
         {serviceStatus === 'down' && (
@@ -220,7 +213,7 @@ export default function HomePage() {
         )}
         <div className="hero-input-row" style={{ maxWidth: 520, margin: '0 auto 12px', display: 'flex', background: G.bgWhite, borderRadius: 14, border: `2px solid ${serviceStatus === 'down' ? 'rgba(220,38,38,0.3)' : G.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           <input id="hero-url-input" type="text" value={heroUrl} onChange={e => setHeroUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && !heroScanning && serviceStatus !== 'down' && handleHeroScan()} placeholder="https://ihre-website.ch" style={{ flex: 1, padding: '15px 18px', background: 'transparent', border: 'none', color: G.text, fontSize: 14, outline: 'none' }} disabled={serviceStatus === 'down'} />
-          <button onClick={handleHeroScan} disabled={heroScanning || serviceStatus === 'down'} style={{ padding: '15px 24px', background: (heroScanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (heroScanning || serviceStatus === 'down') ? G.textMuted : '#fff', fontWeight: 800, border: 'none', cursor: (heroScanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, opacity: serviceStatus === 'down' ? 0.5 : 1 }}>Jetzt kostenlos prüfen →</button>
+          <button onClick={handleHeroScan} disabled={heroScanning || serviceStatus === 'down'} style={{ padding: '15px 24px', background: (heroScanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (heroScanning || serviceStatus === 'down') ? G.textMuted : '#fff', fontWeight: 800, border: 'none', cursor: (heroScanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, opacity: serviceStatus === 'down' ? 0.5 : 1 }}>Jetzt kostenlos scannen →</button>
         </div>
         {heroScanning && (
           <div style={{ maxWidth: 520, margin: '14px auto 0' }}>
@@ -240,7 +233,7 @@ export default function HomePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🇨🇭" size={24} /> Schweizer Produkt</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={24} /> Daten in Zürich</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={24} /> nDSG/DSGVO</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> AI-Trust</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> KI-Bild-Erkennung</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={24} /> Ergebnis in 60 Sek.</span>
           <Link href="/ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
         </div>
@@ -265,6 +258,28 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* ═══ WAS WIR PRÜFEN ═══ */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '56px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>4 Bereiche. 1 Scan. Volle Übersicht.</span>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Was Dataquard auf Ihrer Website prüft</h2>
+        </div>
+        <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
+          {[
+            { icon: '/icon-recht.png', title: 'Datenschutz & Compliance', desc: 'Ist Ihre Datenschutzerklärung auf dem Stand des nDSG 2023? Wir prüfen automatisch, ob alle Pflichtangaben vorhanden sind, erkennen Drittanbieter und generieren Ihre DSE, Impressum und Cookie-Banner.' },
+            { icon: '/icon-sicherheit.png', title: 'Sicherheit & Vertrauen', desc: 'SSL-Zertifikat gültig? Impressum vollständig? Cookie-Banner vorhanden? Die Grundlagen, die Besucher und Suchmaschinen erwarten — auf einen Blick geprüft.' },
+            { icon: '/badge-ai-trust.svg', title: 'KI-Bilder & Deepfakes', desc: 'Nutzen Sie Bilder von Midjourney, DALL-E oder ChatGPT? Die EU macht KI-Kennzeichnung zur Pflicht. Dataquard erkennt KI-generierte Bilder zuverlässig — das kann kein anderes Schweizer Tool.' },
+            { icon: '/diagramm.png', title: 'Performance & Technik', desc: 'Laden externe Dienste wie Google Fonts heimlich Daten Ihrer Besucher nach? Wir erkennen versteckte Datentransfers und technische Schwachstellen.' },
+          ].map(item => (
+            <div key={item.title} style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 14, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+              <div style={{ marginBottom: 14 }}><img src={item.icon} alt="" width={48} height={48} /></div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8 }}>{item.title}</h3>
+              <p style={{ fontSize: 13, color: G.textSec, lineHeight: 1.6 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ═══ 3. AMPEL-SYSTEM ═══ */}
       <section style={{ maxWidth: 700, margin: '0 auto', padding: '56px 24px' }}>
@@ -301,16 +316,55 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ KI-BILDER SPOTLIGHT ═══ */}
+      <section style={{ background: '#0d1425', padding: '56px 24px' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Einzigartig in der Schweiz</span>
+            <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>KI-Bilder auf Ihrer Website? Wir erkennen sie.</h2>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 580, margin: '12px auto 0', lineHeight: 1.7 }}>
+              Immer mehr KMUs nutzen KI-generierte Bilder — oft ohne zu wissen, dass in der EU bereits eine Kennzeichnungspflicht gilt. Für Schweizer Unternehmen mit EU-Kunden wird das direkt relevant. Und auch ohne EU-Geschäft: Transparenz bei KI-Inhalten schafft Vertrauen.
+            </p>
+          </div>
+          <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28, marginBottom: 32 }}>
+            {[
+              { title: 'Zuverlässige Erkennung', desc: 'Bilder von Midjourney, DALL-E, Stable Diffusion und anderen KI-Tools werden mit über 90% Genauigkeit erkannt.' },
+              { title: 'Deepfake-Schutz', desc: 'Manipulierte Fotos von echten Personen — etwa Team-Bilder oder Porträts — werden separat auf Deepfake-Indikatoren geprüft.' },
+              { title: 'Automatische Kennzeichnung', desc: 'Im Professional-Plan erhalten Sie ein AI-Shield Badge für Ihre Website und automatische Updates Ihrer Datenschutzerklärung.' },
+            ].map(item => (
+              <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <img src="/checkmark.png" alt="" width={24} height={24} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>{item.title}</h3>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', textAlign: 'center', marginBottom: 28 }}>
+            Die Erkennungsrate variiert je nach Bildtyp und KI-Tool. Dataquard nutzt die Sightengine API (EU-konformer Anbieter) für die Analyse.
+          </p>
+          <div style={{ textAlign: 'center', display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/scanner" style={{ display: 'inline-block', padding: '13px 28px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 14, textDecoration: 'none' }}>
+              Ihre Website auf KI-Bilder prüfen →
+            </Link>
+            <Link href="/ai-trust" style={{ display: 'inline-block', padding: '13px 24px', border: '2px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', fontWeight: 600, borderRadius: 12, fontSize: 14, textDecoration: 'none' }}>
+              Mehr über KI-Kennzeichnung erfahren →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ 4. 3 SCHRITTE ═══ */}
       <section style={{ padding: '50px 24px', background: G.bgWhite, borderTop: `1px solid ${G.border}`, borderBottom: `1px solid ${G.border}` }}>
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2 }}>SO EINFACH GEHT&apos;S</span>
-          <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: 6, marginBottom: 36 }}>In 3 Schritten zu Ihrer Datenschutzerklärung</h2>
+          <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: 6, marginBottom: 36 }}>In 3 Schritten zu Ihren Compliance-Dokumenten</h2>
           <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
             {[
-              { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben – kostenlos, ohne Anmeldung. Wir erkennen automatisch alle Drittanbieter.' },
-              { n: '2', ic: '📊', t: 'Report erhalten', d: '4-Säulen-Analyse: Compliance, Performance, Security und AI-Trust. Jurisdiktion (nDSG/DSGVO), KI-Bilder-Check und konkrete Handlungsempfehlungen.' },
-              { n: '3', ic: '📄', t: 'Dokument herunterladen', d: 'Datenschutzerklärung + Impressum + Cookie-Banner generiert, als PDF. Fertig in Minuten.' },
+              { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben — kostenlos, ohne Anmeldung. Dataquard erkennt automatisch Drittanbieter, prüft Sicherheit und analysiert Ihre Bilder auf KI-Inhalte.' },
+              { n: '2', ic: '📊', t: 'Report erhalten', d: 'Übersichtlicher Report über 4 Bereiche: Datenschutz, Sicherheit, Performance und KI-Bilder. Mit konkreten Handlungsempfehlungen.' },
+              { n: '3', ic: '📄', t: 'Dokument herunterladen', d: 'Datenschutzerklärung, Impressum und Cookie-Banner — fertig generiert, als PDF. In Minuten statt Stunden.' },
             ].map(s => (
               <div key={s.n} style={{ textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', background: G.greenBg, border: `2px solid ${G.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 18, fontWeight: 900, color: G.green }}>{s.n}</div>
@@ -416,7 +470,7 @@ export default function HomePage() {
       {/* ═══ BOTTOM CTA ═══ */}
       <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
         <h2 style={{ fontSize: 28, fontWeight: 800, color: G.text, marginBottom: 12 }}>
-          Ist Ihre Website wirklich rechtssicher?
+          Ist Ihre Website auf dem neuesten Stand?
         </h2>
         <p style={{ color: G.textSec, fontSize: 16, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
           Finden Sie es in 60 Sekunden heraus — kostenlos und ohne Anmeldung.
@@ -428,7 +482,7 @@ export default function HomePage() {
           }}
           style={{ padding: '14px 36px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, border: 'none', fontSize: 16, cursor: 'pointer', boxShadow: `0 4px 16px rgba(34,197,94,0.3)`, transition: 'background 0.15s' }}
         >
-          Jetzt kostenlos prüfen →
+          Jetzt kostenlos scannen →
         </button>
       </section>
 

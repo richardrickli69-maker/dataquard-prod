@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { PageWrapper } from '../components/PageWrapper';
 
 export const metadata: Metadata = {
-  title: 'AI-Trust — KI-Bilder & Deepfake-Erkennung | Dataquard',
-  description: 'Dataquard AI-Trust erkennt KI-generierte Bilder und Deepfakes auf Ihrer Website. EU AI Act Art. 50 konform. Das einzige Schweizer Tool mit KI-Bild-Analyse.',
+  title: 'KI-Bilder erkennen & Deepfakes stoppen | Dataquard AI-Trust',
+  description: 'Dataquard prüft Ihre Website zuverlässig auf KI-generierte Bilder und Deepfakes. Für Schweizer KMUs mit und ohne EU-Kunden. Kostenloser Scan.',
   alternates: { canonical: 'https://www.dataquard.ch/ai-trust' },
 };
 
@@ -58,7 +58,7 @@ export default function AiTrustPage() {
       {/* ═══ HERO ═══ */}
       <section style={{ textAlign: 'center', padding: '56px 24px 48px', maxWidth: 760, margin: '0 auto' }}>
         <span style={{ display: 'inline-block', background: G.violetBg, border: `1px solid ${G.violetBorder}`, color: G.violet, fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 20, letterSpacing: 0.5, marginBottom: 20 }}>
-          AI-TRUST · EU AI ACT ART. 50
+          Dataquard AI-Trust
         </span>
         <h1 style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.12, marginBottom: 16, letterSpacing: -1, color: G.text }}>
           KI-Bilder erkennen.<br />
@@ -66,7 +66,7 @@ export default function AiTrustPage() {
           EU AI Act konform.
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Dataquard ist das einzige Schweizer Tool das Ihre Website automatisch auf KI-generierte Inhalte prüft — und die gesetzlich vorgeschriebene Kennzeichnung nach EU AI Act Art. 50 sicherstellt.
+          Dataquard ist das einzige Schweizer Tool das Ihre Website automatisch auf KI-generierte Inhalte prüft — und Sie bei der gesetzlichen Kennzeichnung unterstützt.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/scanner" style={{ display: 'inline-block', padding: '14px 32px', background: G.violet, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 15, textDecoration: 'none', boxShadow: `0 4px 16px ${G.violet}40` }}>
@@ -83,9 +83,9 @@ export default function AiTrustPage() {
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
             <span style={{ color: G.violet, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Rechtlicher Hintergrund</span>
-            <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Was ist der EU AI Act Art. 50?</h2>
+            <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Warum KI-Bilder auf Websites ein Thema sind</h2>
             <p style={{ color: G.textSec, fontSize: 14, marginTop: 8, maxWidth: 600, margin: '8px auto 0', lineHeight: 1.7 }}>
-              Der EU AI Act (weltweit erstes KI-Gesetz) schreibt seit August 2026 vor, dass KI-generierte Bilder, Texte und Videos als solche erkennbar gemacht werden müssen. Für Schweizer KMU mit EU-Kunden gilt: Wer KI-Bilder ohne Kennzeichnung verwendet, riskiert Bussgelder.
+              Die EU hat mit dem AI Act das weltweit erste KI-Gesetz verabschiedet. Ab August 2026 gilt: KI-generierte Bilder, Texte und Videos müssen als solche erkennbar gemacht werden (Art. 50). Für Schweizer KMUs mit Kunden in der EU wird das direkt relevant. Und auch ohne EU-Geschäft gilt: Transparenz bei KI-Inhalten stärkt das Vertrauen Ihrer Kunden und Besucher.
             </p>
           </div>
 
@@ -93,7 +93,7 @@ export default function AiTrustPage() {
             {[
               { icon: '🤖', title: 'KI-generierte Bilder', desc: 'Tools wie Midjourney, DALL-E oder Stable Diffusion erzeugen Bilder die täuschend echt wirken. Viele KMUs nutzen diese ohne zu wissen, dass eine Kennzeichnungspflicht besteht.' },
               { icon: '🎭', title: 'Deepfakes', desc: 'KI-manipulierte Fotos und Videos die echte Personen zeigen. Für Team-Fotos, CEO-Bilder oder Produktpräsentationen besonders riskant — und rechtlich heikel.' },
-              { icon: '⚖️', title: 'Kennzeichnungspflicht', desc: 'EU AI Act Art. 50 verlangt: KI-Inhalte müssen als solche erkennbar sein. Dataquard prüft Ihre Website und fügt automatisch die korrekte Klausel in Ihre Datenschutzerklärung ein.' },
+              { icon: '⚖️', title: 'Die Lösung', desc: 'Dataquard prüft Ihre Website auf beide Risiken und ergänzt bei Bedarf die korrekte Klausel in Ihrer Datenschutzerklärung — automatisch im Professional-Plan oder manuell im Starter.' },
             ].map(item => (
               <div key={item.title} style={{ background: G.bg, borderRadius: 14, padding: 24, border: `1px solid ${G.border}` }}>
                 <div style={{ marginBottom: 12 }}><IconEl ic={item.icon} size={48} /></div>
@@ -114,8 +114,8 @@ export default function AiTrustPage() {
         <div className="ai-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
           {[
             { n: '1', title: 'Scan startet', desc: 'Dataquard lädt alle Bilder von Ihrer Website. Die Analyse läuft vollständig automatisch — kein manueller Aufwand.' },
-            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird via Sightengine API (EU-konformer Anbieter) auf KI-Merkmale, Deepfake-Indikatoren und andere Risiken geprüft.' },
-            { n: '3', title: 'Ergebnis & Klausel', desc: 'Erkannte KI-Bilder werden im Bericht markiert. Ihre Datenschutzerklärung wird automatisch mit der EU AI Act Art. 50 Klausel ergänzt.' },
+            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird via Sightengine API (EU-konformer Anbieter) auf KI-Merkmale und Deepfake-Indikatoren analysiert — mit einer Erkennungsrate von über 90% bei gängigen KI-Tools.' },
+            { n: '3', title: 'Ergebnis & Klausel', desc: 'Erkannte KI-Bilder werden im Bericht markiert. Ihre Datenschutzerklärung kann automatisch mit der passenden Transparenzklausel ergänzt werden.' },
           ].map(s => (
             <div key={s.n} style={{ textAlign: 'center', padding: 20 }}>
               <div style={{ width: 52, height: 52, borderRadius: '50%', background: G.violetBg, border: `2px solid ${G.violet}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 18, fontWeight: 900, color: G.violet }}>{s.n}</div>
@@ -231,7 +231,7 @@ export default function AiTrustPage() {
       {/* ═══ BOTTOM CTA ═══ */}
       <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 10 }}>
-          Sind KI-Bilder auf Ihrer Website kennzeichnungspflichtig?
+          Sind KI-Bilder auf Ihrer Website?
         </h2>
         <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
           Finden Sie es in 60 Sekunden heraus — kostenlos, ohne Anmeldung.
