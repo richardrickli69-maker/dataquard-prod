@@ -187,7 +187,7 @@ export default function HomePage() {
         <p style={{ fontSize: 13, fontWeight: 700, color: G.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
           Der Schweizer Website-Check für KMU
         </p>
-        <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', hyphens: 'auto' }}>
+        <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
           Daten{'\u00AD'}schutz{'\u00AD'}erklärung, <span style={{ hyphens: 'none' }}>Impressum</span> und Cookie-Banner —{' '}
           <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>

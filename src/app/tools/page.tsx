@@ -55,6 +55,7 @@ export default function ToolsPage() {
         @media (max-width: 768px) {
           .tools-grid-2 { grid-template-columns: 1fr !important; }
           .tools-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+          .tools-saeulen-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
           .table-scroll table { min-width: 520px; }
         }
@@ -74,6 +75,33 @@ export default function ToolsPage() {
         <Link href="/scanner" style={{ display: 'inline-block', padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 16, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
           Jetzt kostenlos prüfen →
         </Link>
+      </section>
+
+      {/* ═══ DIGITALE LÖSUNGEN ÜBERBLICK ═══ */}
+      <section style={{ background: '#0a0f1e', padding: '56px 24px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <span style={{ color: '#888899', fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Unsere digitalen Lösungen</span>
+            <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>Für jedes Compliance-Problem das richtige Werkzeug</h2>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 580, margin: '12px auto 0', lineHeight: 1.7 }}>
+              Dataquard ist kein einzelnes Tool — sondern ein komplettes System aus Scanner, Dokumenten-Generator und Monitoring. Alle Werkzeuge arbeiten zusammen und basieren auf unserer 4-Säulen-Analyse.
+            </p>
+          </div>
+          <div className="tools-saeulen-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
+            {[
+              { icon: '/icon-recht.png', title: 'Compliance', desc: 'Automatischer Website-Scan, Datenschutzerklärung, Impressum und Cookie-Banner — generiert in Minuten.' },
+              { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL-Überwachung, Impressum-Check und Cookie-Banner-Erkennung mit Echtzeit-Alerts.' },
+              { icon: '/diagramm.png', title: 'Performance', desc: 'Tracker-Erkennung, Drittanbieter-Analyse und Handlungsempfehlungen für schnellere Ladezeiten.' },
+              { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bild-Erkennung, Deepfake-Check und automatische Kennzeichnung nach EU-Vorgaben.' },
+            ].map(item => (
+              <div key={item.title} style={{ background: '#1e293b', borderRadius: 14, padding: 24, border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ marginBottom: 14 }}><img src={item.icon} alt="" width={48} height={48} /></div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>{item.title}</h3>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ═══ 1. VIER SÄULEN DETAIL ═══ */}
