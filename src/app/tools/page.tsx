@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { PageWrapper } from '../components/PageWrapper';
 
 export const metadata: Metadata = {
-  title: 'Tools — Dataquard 4-Säulen-Analyse | Compliance, Performance, Security, AI-Trust',
+  title: 'Digitale Lösungen | Dataquard',
   description: 'Dataquard prüft Ihre Website auf Compliance, Performance, Security und AI-Trust gleichzeitig. Der einzige 4-Säulen-Check der Schweiz für KMUs.',
   alternates: { canonical: 'https://www.dataquard.ch/tools' },
 };
@@ -54,8 +54,8 @@ export default function ToolsPage() {
       <style>{`
         @media (max-width: 768px) {
           .tools-grid-2 { grid-template-columns: 1fr !important; }
-          .tools-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
-          .tools-saeulen-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .tools-grid-4 { grid-template-columns: 1fr !important; }
+          .tools-saeulen-grid { grid-template-columns: 1fr !important; }
           .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
           .table-scroll table { min-width: 520px; }
         }

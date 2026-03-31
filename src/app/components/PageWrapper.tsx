@@ -22,7 +22,7 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { l: 'Scanner', h: '/scanner' },
-                { l: 'Tools', h: '/tools' },
+                { l: 'Digitale Lösungen', h: '/tools' },
                 { l: 'KI-Sicherheit', h: '/ki-sicherheit' },
                 { l: 'Preise', h: '/preise' },
               ].map(n => (

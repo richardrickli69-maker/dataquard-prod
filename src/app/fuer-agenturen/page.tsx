@@ -158,7 +158,8 @@ export default function FuerAgenturenPage() {
           .agency-hero-grid { flex-direction: column !important; }
           .agency-hero-ctas { flex-direction: column !important; align-items: stretch !important; }
           .agency-steps-grid { grid-template-columns: 1fr !important; }
-          .agency-features-grid { grid-template-columns: 1fr 1fr !important; }
+          .agency-features-grid { grid-template-columns: 1fr !important; }
+          .agency-problem-grid { grid-template-columns: 1fr !important; }
           .agency-plans-grid { grid-template-columns: 1fr !important; }
           .agency-compare-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
           .agency-compare-scroll table { min-width: 600px; }

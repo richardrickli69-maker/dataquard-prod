@@ -171,7 +171,7 @@ export default function HomePage() {
         @media (max-width: 768px) {
           .grid-3col { grid-template-columns: 1fr !important; }
           .grid-2col { grid-template-columns: 1fr !important; }
-          .grid-4col { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-4col { grid-template-columns: 1fr !important; }
           .grid-trust { grid-template-columns: 1fr !important; }
           .grid-trust > div { border-right: none !important; border-bottom: 1px solid #e2e4ea; }
           .grid-trust > div:last-child { border-bottom: none; }
