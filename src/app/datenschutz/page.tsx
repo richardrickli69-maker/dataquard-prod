@@ -75,7 +75,7 @@ export default function DatenschutzPage() {
             <li><strong style={{ color: G.text }}>Supabase</strong> – Datenbank und Authentifizierung (Server: Zürich, Schweiz)</li>
             <li><strong style={{ color: G.text }}>Vercel</strong> – Hosting (Daten können auf EU-Servern verarbeitet werden)</li>
             <li><strong style={{ color: G.text }}>Stripe</strong> – Zahlungsabwicklung inkl. wiederkehrende Zahlungen (USA – SCCs)</li>
-            <li><strong style={{ color: G.text }}>Anthropic Claude API</strong> – KI-Analyse (USA – SCCs)</li>
+            <li><strong style={{ color: G.text }}>KI-Analyse-Dienst</strong> – Generierung von Compliance-Dokumenten und Scan-Analysen (USA – SCCs)</li>
             <li><strong style={{ color: G.text }}>Resend</strong> – E-Mail-Versand (EU, Region eu-west-1)</li>
           </ul>
         </Section>
