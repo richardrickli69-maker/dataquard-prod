@@ -23,7 +23,7 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
               {[
                 { l: 'Scanner', h: '/scanner' },
                 { l: 'Tools', h: '/tools' },
-                { l: 'AI-Trust', h: '/ai-trust' },
+                { l: 'KI-Sicherheit', h: '/ki-sicherheit' },
                 { l: 'Preise', h: '/preise' },
               ].map(n => (
                 <Link key={n.l} href={n.h} style={{ color: '#aaaabc', textDecoration: 'none', fontSize: 14 }}>{n.l}</Link>

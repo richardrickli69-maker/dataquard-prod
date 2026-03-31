@@ -488,7 +488,7 @@ export default function DashboardPage() {
                       KI-Bilder Kontingent
                     </h2>
                     <p style={{ color: G.textMuted, fontSize: 13, marginBottom: 14 }}>
-                      Anzahl KI-gescannter Bilder (Sightengine) seit letzter Erneuerung
+                      Anzahl KI-gescannter Bilder seit letzter Erneuerung
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 13, color: G.textSec }}>{scanned} / {limit} Bilder analysiert</span>

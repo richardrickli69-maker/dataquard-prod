@@ -188,7 +188,7 @@ export default function HomePage() {
           Der Schweizer Website-Check für KMU
         </p>
         <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', hyphens: 'auto' }}>
-          Datenschutz{'\u00AD'}erklärung, Impressum und Cookie-Banner —{' '}
+          Daten{'\u00AD'}schutz{'\u00AD'}erklärung, <span style={{ hyphens: 'none' }}>Impressum</span> und Cookie-Banner —{' '}
           <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
@@ -235,7 +235,7 @@ export default function HomePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={24} /> nDSG/DSGVO</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> KI-Bild-Erkennung</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={24} /> Ergebnis in 60 Sek.</span>
-          <Link href="/ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
+          <Link href="/ki-sicherheit" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
         </div>
       </section>
 
@@ -342,13 +342,13 @@ export default function HomePage() {
             ))}
           </div>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', textAlign: 'center', marginBottom: 28 }}>
-            Die Erkennungsrate variiert je nach Bildtyp und KI-Tool. Dataquard nutzt die Sightengine API (EU-konformer Anbieter) für die Analyse.
+            Die Erkennungsrate variiert je nach Bildtyp und KI-Tool. Dataquard nutzt eine EU-konforme KI-Analyse-Technologie für die Bilderkennung.
           </p>
           <div style={{ textAlign: 'center', display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/scanner" style={{ display: 'inline-block', padding: '13px 28px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 14, textDecoration: 'none' }}>
               Ihre Website auf KI-Bilder prüfen →
             </Link>
-            <Link href="/ai-trust" style={{ display: 'inline-block', padding: '13px 24px', border: '2px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', fontWeight: 600, borderRadius: 12, fontSize: 14, textDecoration: 'none' }}>
+            <Link href="/ki-sicherheit" style={{ display: 'inline-block', padding: '13px 24px', border: '2px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', fontWeight: 600, borderRadius: 12, fontSize: 14, textDecoration: 'none' }}>
               Mehr über KI-Kennzeichnung erfahren →
             </Link>
           </div>

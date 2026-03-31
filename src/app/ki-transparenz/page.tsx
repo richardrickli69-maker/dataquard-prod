@@ -6,7 +6,7 @@ import { PageWrapper } from '../components/PageWrapper';
 
 export const metadata = {
   title: 'KI-Transparenz | Dataquard',
-  description: 'Dataquard legt offen, wie und wo KI-Technologie (Anthropic Claude) eingesetzt wird — gemäss EU AI Act Art. 50.',
+  description: 'Dataquard legt offen, wie und wo KI-Technologie eingesetzt wird — gemäss EU AI Act Art. 50.',
 };
 
 // Schema.org FAQ-Markup für KI-Transparenz
@@ -20,7 +20,7 @@ function KiTransparenzFaqSchema() {
         name: 'Verwendet Dataquard KI-Technologie?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Ja. Dataquard verwendet die Claude API von Anthropic für die Generierung von Datenschutzerklärungen, Scan-Analysen und Handlungsempfehlungen. Alle KI-generierten Inhalte werden manuell geprüft und freigegeben.',
+          text: 'Ja. Dataquard verwendet KI-Technologie für die Generierung von Datenschutzerklärungen, Scan-Analysen und Handlungsempfehlungen. Alle KI-generierten Inhalte werden manuell geprüft und freigegeben.',
         },
       },
       {
@@ -119,18 +119,16 @@ export default function KiTransparenzPage() {
           </Section>
 
           <Section title="2. Welche KI-Technologie verwenden wir?">
-            <p>Dataquard nutzt folgende KI-Werkzeuge:</p>
+            <p>Dataquard setzt auf bewährte KI-Technologie aus Europa und den USA:</p>
             <div style={{ marginTop: 12 }}>
               {[
                 {
-                  name: 'Anthropic Claude API',
-                  use: 'Generierung von Datenschutzerklärungen, Impressum-Texten, Scan-Analysen und Handlungsempfehlungen',
-                  url: 'https://www.anthropic.com',
+                  name: 'Dokumenten-Generierung',
+                  use: 'Unsere KI erstellt Datenschutzerklärungen, Impressum-Texte, Scan-Analysen und Handlungsempfehlungen — basierend auf aktuellen Schweizer und europäischen Rechtsgrundlagen.',
                 },
                 {
-                  name: 'Sightengine API',
-                  use: 'KI-Bild-Erkennung und Deepfake-Check für den AI-Trust Scanner',
-                  url: 'https://sightengine.com',
+                  name: 'Bild-Analyse',
+                  use: 'Für die KI-Bild-Erkennung und den Deepfake-Check verwenden wir eine EU-konforme Analyse-Technologie mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.',
                 },
               ].map(tool => (
                 <div key={tool.name} style={{ padding: '12px 16px', background: G.bgLight, borderRadius: 10, marginBottom: 8, display: 'flex', gap: 12 }}>
@@ -151,7 +149,7 @@ export default function KiTransparenzPage() {
                 { label: 'Datenschutzerklärungen', detail: 'Automatisch generiert auf Basis des Website-Scans — manuell geprüft und juristisch validiert.' },
                 { label: 'Scan-Analysen & Empfehlungen', detail: 'KI-gestützte Auswertung von Website-Daten mit konkreten Handlungsempfehlungen.' },
                 { label: 'Website-Texte (Marketing)', detail: 'Teile der Homepage- und Landingpage-Texte wurden mit KI-Unterstützung verfasst und redaktionell überarbeitet.' },
-                { label: 'AI-Trust Bild-Analyse', detail: 'Automatische Erkennung von KI-generierten Bildern und Deepfakes auf Kunden-Websites via Sightengine.' },
+                { label: 'AI-Trust Bild-Analyse', detail: 'Automatische Erkennung von KI-generierten Bildern und Deepfakes auf Kunden-Websites mit EU-konformer Analyse-Technologie.' },
               ].map(item => (
                 <div key={item.label} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
                   <img src="/checkmark.png" alt="" width={16} height={16} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -206,7 +204,7 @@ export default function KiTransparenzPage() {
 
           <Section title="6. Datenschutz bei KI-Anfragen">
             <p>
-              Wenn Dataquard die Claude API für die Policy-Generierung nutzt, werden folgende Daten übermittelt:
+              Wenn Dataquard KI-Technologie für die Policy-Generierung nutzt, werden folgende Daten übermittelt:
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 8 }}>
               <li>Domain-Name der zu analysierenden Website</li>
@@ -214,8 +212,8 @@ export default function KiTransparenzPage() {
               <li>Jurisdiktion (nDSG/DSGVO)</li>
             </ul>
             <p style={{ marginTop: 8 }}>
-              Es werden <strong style={{ color: G.text }}>keine personenbezogenen Daten</strong> an die
-              Claude API weitergegeben. Weitere Informationen finden Sie in unserer{' '}
+              Es werden <strong style={{ color: G.text }}>keine personenbezogenen Daten</strong> an
+              KI-Dienste weitergegeben. Weitere Informationen finden Sie in unserer{' '}
               <Link href="/datenschutz" style={{ color: G.green, textDecoration: 'none' }}>Datenschutzerklärung</Link>.
             </p>
           </Section>

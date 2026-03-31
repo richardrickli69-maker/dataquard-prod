@@ -1,4 +1,4 @@
-// src/app/ai-trust/page.tsx
+// src/app/ki-sicherheit/page.tsx
 // AI-Trust Seite — EU AI Act Art. 50, KI-Bild-Erkennung, Deepfake-Check, AI-Shield Badge
 
 import type { Metadata } from 'next';
@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { PageWrapper } from '../components/PageWrapper';
 
 export const metadata: Metadata = {
-  title: 'KI-Bilder erkennen & Deepfakes stoppen | Dataquard AI-Trust',
+  title: 'KI-Bilder erkennen & Deepfakes stoppen | Dataquard KI-Sicherheit',
   description: 'Dataquard prüft Ihre Website zuverlässig auf KI-generierte Bilder und Deepfakes. Für Schweizer KMUs mit und ohne EU-Kunden. Kostenloser Scan.',
-  alternates: { canonical: 'https://www.dataquard.ch/ai-trust' },
+  alternates: { canonical: 'https://www.dataquard.ch/ki-sicherheit' },
 };
 
 const G = {
@@ -45,13 +45,14 @@ function IconEl({ ic, size = 24 }: { ic: string; size?: number }) {
   return <img src={src} alt="" width={size} height={size} style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
 }
 
-export default function AiTrustPage() {
+export default function KiSicherheitPage() {
   return (
     <PageWrapper>
       <style>{`
         @media (max-width: 768px) {
           .ai-grid-3 { grid-template-columns: 1fr !important; }
           .ai-grid-2 { grid-template-columns: 1fr !important; }
+          .ai-grid-4 { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -75,6 +76,34 @@ export default function AiTrustPage() {
           <Link href="/ki-transparenz" style={{ display: 'inline-block', padding: '14px 28px', border: `2px solid ${G.border}`, color: G.textSec, fontWeight: 600, borderRadius: 12, fontSize: 15, textDecoration: 'none' }}>
             KI-Transparenz ansehen
           </Link>
+        </div>
+      </section>
+
+      {/* ═══ 4-SÄULEN-ANALYSE ═══ */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Unser Ansatz</span>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Die 4-Säulen-Analyse für Ihre Compliance</h2>
+          <p style={{ color: G.textSec, fontSize: 15, marginTop: 12, maxWidth: 660, margin: '12px auto 0', lineHeight: 1.7 }}>
+            Vergessen Sie komplexe Insellösungen. Unsere 4-Säulen-Analyse ist ein methodischer Ansatz, der Datenschutz und Informationssicherheit in eine klare Struktur bringt. Wir kombinieren digitale Präzision mit fachlicher Expertise, um Ihr Unternehmen rechtssicher und zukunftsfest aufzustellen.
+          </p>
+          <p style={{ color: G.textSec, fontSize: 15, marginTop: 12, maxWidth: 660, margin: '12px auto 0', lineHeight: 1.7 }}>
+            Statt mühsamer Handarbeit nutzen wir intelligente Assistenten und automatisierte Prüfverfahren, die Sie Schritt für Schritt durch die regulatorischen Anforderungen führen — effizient, verständlich und ohne technisches Vorwissen.
+          </p>
+        </div>
+        <div className="ai-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
+          {[
+            { icon: '/icon-recht.png', title: 'Compliance', desc: 'nDSG und DSGVO Konformität — automatisch geprüft, lückenlos dokumentiert.' },
+            { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL, Impressum, Cookie-Banner — die Vertrauensbasis für Ihre Besucher.' },
+            { icon: '/diagramm.png', title: 'Performance', desc: 'Versteckte Datentransfers und technische Schwachstellen aufdecken.' },
+            { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bilder und Deepfakes erkennen — einzigartig in der Schweiz.' },
+          ].map(item => (
+            <div key={item.title} style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 14, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+              <div style={{ marginBottom: 14 }}><img src={item.icon} alt="" width={48} height={48} /></div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: G.text, marginBottom: 8 }}>{item.title}</h3>
+              <p style={{ fontSize: 13, color: G.textSec, lineHeight: 1.6 }}>{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -114,7 +143,7 @@ export default function AiTrustPage() {
         <div className="ai-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
           {[
             { n: '1', title: 'Scan startet', desc: 'Dataquard lädt alle Bilder von Ihrer Website. Die Analyse läuft vollständig automatisch — kein manueller Aufwand.' },
-            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird via Sightengine API (EU-konformer Anbieter) auf KI-Merkmale und Deepfake-Indikatoren analysiert — mit einer Erkennungsrate von über 90% bei gängigen KI-Tools.' },
+            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird mit einer EU-konformen KI-Analyse auf KI-Merkmale und Deepfake-Indikatoren geprüft — mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.' },
             { n: '3', title: 'Ergebnis & Klausel', desc: 'Erkannte KI-Bilder werden im Bericht markiert. Ihre Datenschutzerklärung kann automatisch mit der passenden Transparenzklausel ergänzt werden.' },
           ].map(s => (
             <div key={s.n} style={{ textAlign: 'center', padding: 20 }}>

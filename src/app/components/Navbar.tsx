@@ -377,8 +377,8 @@ export function Navbar() {
 
           {/* Desktop: Nav Links zentriert */}
           <div className="dq-nav-links">
-            <Link href="/tools" className="dq-nav-link">Tools</Link>
-            <Link href="/ai-trust" className="dq-nav-link">AI-Trust</Link>
+            <Link href="/tools" className="dq-nav-link">Digitale Lösungen</Link>
+            <Link href="/ki-sicherheit" className="dq-nav-link">KI-Sicherheit</Link>
             <Link href="/preise" className="dq-nav-link">Preise</Link>
             <Link href="/faq" className="dq-nav-link">FAQ</Link>
             <Link href="/fuer-agenturen" className="dq-nav-link">Für Agenturen</Link>
@@ -412,8 +412,8 @@ export function Navbar() {
 
       {/* Mobile Overlay-Menü */}
       <div className={`dq-mobile-menu${mobileOpen ? ' dq-mobile-open' : ''}`}>
-        <Link href="/tools" className="dq-mobile-link" onClick={closeMobile}>Tools</Link>
-        <Link href="/ai-trust" className="dq-mobile-link" onClick={closeMobile}>AI-Trust</Link>
+        <Link href="/tools" className="dq-mobile-link" onClick={closeMobile}>Digitale Lösungen</Link>
+        <Link href="/ki-sicherheit" className="dq-mobile-link" onClick={closeMobile}>KI-Sicherheit</Link>
         <Link href="/preise" className="dq-mobile-link" onClick={closeMobile}>Preise</Link>
         <Link href="/faq" className="dq-mobile-link" onClick={closeMobile}>FAQ</Link>
         <Link href="/fuer-agenturen" className="dq-mobile-link" onClick={closeMobile}>Für Agenturen</Link>

@@ -739,7 +739,7 @@ export default function ScannerPage() {
                 <h2 style={{ fontSize: 13, fontWeight: 600, color: G.violet, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <img src="/suche.png" alt="KI-Bild-Analyse" width={16} height={16} /> KI-Bild-Analyse
                   <span style={{ fontSize: 11, fontWeight: 400, color: G.textMuted }}>
-                    ({result.imageAnalysis.total_images_scanned} von {result.imageAnalysis.total_images_found} Bildern geprüft via Sightengine)
+                    ({result.imageAnalysis.total_images_scanned} von {result.imageAnalysis.total_images_found} Bildern geprüft)
                   </span>
                 </h2>
                 {/* Upsell-Hinweis wenn mehr Bilder vorhanden als gescannt */}
