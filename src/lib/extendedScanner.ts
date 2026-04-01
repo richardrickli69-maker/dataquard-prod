@@ -1233,7 +1233,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     if (!res.ok) return null;
     const html = await res.text();
 
-    // Filtert Icons, Logos, SVGs und Minimal-Bilder aus — nur echte Content-Bilder für Sightengine
+    // Filtert nur eindeutige UI-Elemente (Sprites, Favicons) aus — Content-Bilder bleiben erhalten
     const isContentImage = (absUrl: string, imgTag: string): boolean => {
       let pathname: string;
       try {
@@ -1243,34 +1243,83 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
       }
       // Dateiname ohne Querystring
       const filename = pathname.split('/').pop()?.split('?')[0] ?? '';
-      // Bekannte Icon/Logo-Begriffe im Dateinamen ausschliessen
-      if (/logo|icon|favicon|sprite|badge|arrow|bullet|check|close|menu|btn|button|thumb|avatar|placeholder/i.test(filename)) return false;
-      // Icon-Pfade ausschliessen
-      if (/\/(icons?|favicons?|sprites?|svg|ui|components?|assets\/icons?|public\/icons?)\//i.test(pathname)) return false;
-      // Zu kleine Bilder nach HTML width/height-Attributen ausschliessen (< 50px)
+      // Nur eindeutige UI-Artefakte (Sprite-Sheets, Favicons) ausschliessen
+      if (/sprite|favicon/i.test(filename)) return false;
+      // Favicon- und Sprite-Verzeichnisse ausschliessen
+      if (/\/(favicons?|sprites?)\//i.test(pathname)) return false;
+      // Nur ausschliessen wenn BEIDE Dimensionen gesetzt sind UND beide < 50px
       const wMatch = imgTag.match(/\bwidth=["']?(\d+)/i);
       const hMatch = imgTag.match(/\bheight=["']?(\d+)/i);
-      if (wMatch && parseInt(wMatch[1]) < 50) return false;
-      if (hMatch && parseInt(hMatch[1]) < 50) return false;
+      if (wMatch && hMatch && parseInt(wMatch[1]) < 50 && parseInt(hMatch[1]) < 50) return false;
       return true;
     };
 
+    /**
+     * Bereitet eine Bild-URL für Sightengine vor:
+     * 1. HTML-Entities dekodieren (&amp; → &) — nötig für CDN-Query-Parameter in HTML-Attributen
+     * 2. CDN-Resize-Parameter entfernen (Shopify ?width=200, Imgix ?w=, etc.)
+     *    Sightengine erwartet das Vollbild — kleine Vorschau-URLs liefern HTTP 400
+     */
+    const prepareImageUrlForSightengine = (rawUrl: string): string => {
+      // Schritt 1: HTML-Entities dekodieren
+      const decoded = rawUrl
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+      // Schritt 2: CDN-Resize-Parameter entfernen
+      try {
+        const urlObj = new URL(decoded);
+        ['width', 'w', 'h', 'height', 'size', 'resize', 'fit'].forEach(p => urlObj.searchParams.delete(p));
+        return urlObj.toString();
+      } catch {
+        // URL noch nicht absolut (relative URL) — dekodierten String zurückgeben
+        return decoded;
+      }
+    };
+
+    // Hilfsfunktion: Bild-URL aus Tag extrahieren (src → data-src → data-lazy-src → srcset)
+    const extractImgSrc = (imgTag: string): string | null => {
+      // Standard src
+      const srcM = imgTag.match(/\bsrc=["']([^"']+)["']/i);
+      if (srcM && !srcM[1].startsWith('data:') && srcM[1] !== 'about:blank') return prepareImageUrlForSightengine(srcM[1]);
+      // Lazy-Load: data-src / data-lazy-src / data-original
+      const dataSrcM = imgTag.match(/\bdata-(?:lazy-)?(?:src|original)=["']([^"']+)["']/i);
+      if (dataSrcM && !dataSrcM[1].startsWith('data:')) return prepareImageUrlForSightengine(dataSrcM[1]);
+      // srcset: ersten Eintrag (vor Leerzeichen oder Komma) verwenden
+      const srcsetM = imgTag.match(/\bsrcset=["']([^"',\s]+)/i);
+      if (srcsetM && !srcsetM[1].startsWith('data:')) return prepareImageUrlForSightengine(srcsetM[1]);
+      return null;
+    };
+
+    // Eigene Dataquard-Assets aus Sightengine-Scan ausschliessen
+    const EXCLUDED_SCAN_DOMAINS = new Set(['dataquard.ch', 'www.dataquard.ch']);
+
     // Alle geeigneten Content-Bilder sammeln (max. 50 für Total-Zählung)
     const allImgUrls: string[] = [];
+    const seenUrls = new Set<string>();
     const base = new URL(url);
-    for (const match of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
+    for (const match of html.matchAll(/<img[^>]+>/gi)) {
       try {
-        const src = match[1];
-        // Data-URIs und SVGs überspringen
-        if (src.startsWith('data:')) continue;
+        const imgTag = match[0];
+        const src = extractImgSrc(imgTag);
+        if (!src) continue;
         const absUrl = new URL(src, base).href;
+        if (seenUrls.has(absUrl)) continue;
+        seenUrls.add(absUrl);
+        // Eigene Domain überspringen
+        if (EXCLUDED_SCAN_DOMAINS.has(new URL(absUrl).hostname)) continue;
         // Nur jpg/png/webp — kein svg, kein gif, kein ico
         if (!/\.(jpe?g|png|webp)(\?.*)?$/i.test(absUrl)) continue;
-        // Icons/Logos/Minimal-Bilder filtern
-        if (!isContentImage(absUrl, match[0])) continue;
+        // Sprite/Favicon filtern
+        if (!isContentImage(absUrl, imgTag)) continue;
         allImgUrls.push(absUrl);
         if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
       } catch { /* skip */ }
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[Sightengine] Bilder auf ${url}: ${seenUrls.size} gefunden, ${allImgUrls.length} nach Filter`);
     }
     const totalImagesFound = allImgUrls.length;
     // Free-Tier: max. 5 Bilder pro Scan
