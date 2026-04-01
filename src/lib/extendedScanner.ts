@@ -372,22 +372,33 @@ export async function checkPerformance(domain: string): Promise<{
 
 /**
  * Ruft Google PageSpeed Insights API v5 auf.
- * Gibt null zurück wenn API nicht erreichbar oder Timeout (30s) überschritten.
+ * Gibt null zurück wenn API nicht erreichbar oder Timeout überschritten.
+ * Verwendet manuellen AbortController statt AbortSignal.timeout() für maximale Runtime-Kompatibilität.
  */
 async function fetchPageSpeedData(url: string, strategy: 'mobile' | 'desktop'): Promise<PageSpeedScore | null> {
+  const controller = new AbortController();
+  // 25s Timeout: ausreichend für PSI, passt in Vercel Pro Function (60s gesamt)
+  const timer = setTimeout(() => controller.abort(), 25000);
   try {
     const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY ?? '';
     const endpoint =
       `https://www.googleapis.com/pagespeedonline/v5/runPagespeed` +
       `?url=${encodeURIComponent(url)}&strategy=${strategy}&category=PERFORMANCE` +
       (apiKey ? `&key=${apiKey}` : '');
-    const res = await fetch(endpoint, { signal: AbortSignal.timeout(30000) });
-    if (!res.ok) return null;
+    const res = await fetch(endpoint, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) {
+      console.error(`[PageSpeed] ${strategy}: HTTP ${res.status} für ${url}`);
+      return null;
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = await res.json();
     const perfScore: number | null = data?.lighthouseResult?.categories?.performance?.score ?? null;
     const audits = data?.lighthouseResult?.audits;
-    if (perfScore == null || !audits) return null;
+    if (perfScore == null || !audits) {
+      console.error(`[PageSpeed] ${strategy}: Ungültige API-Antwort für ${url}`, JSON.stringify(data).slice(0, 200));
+      return null;
+    }
     return {
       score: Math.round(perfScore * 100),
       fcp: Math.round(audits['first-contentful-paint']?.numericValue ?? 0),
@@ -396,7 +407,9 @@ async function fetchPageSpeedData(url: string, strategy: 'mobile' | 'desktop'): 
       cls: Math.round((audits['cumulative-layout-shift']?.numericValue ?? 0) * 1000) / 1000,
       si: Math.round(audits['speed-index']?.numericValue ?? 0),
     };
-  } catch {
+  } catch (err) {
+    clearTimeout(timer);
+    console.error(`[PageSpeed] ${strategy}: Fehler für ${url}:`, err instanceof Error ? err.message : String(err));
     return null;
   }
 }
@@ -1237,6 +1250,8 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     if (imgUrls.length === 0) return null;
 
     const scanOne = async (imageUrl: string): Promise<SightengineImgResult | null> => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
       try {
         const params = new URLSearchParams({
           url: imageUrl,
@@ -1245,9 +1260,13 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
           api_secret: apiSecret,
         });
         const r = await fetch(`https://api.sightengine.com/1.0/check.json?${params}`, {
-          signal: AbortSignal.timeout(10000),
+          signal: ctrl.signal,
         });
-        if (!r.ok) return null;
+        clearTimeout(t);
+        if (!r.ok) {
+          console.error(`[Sightengine] HTTP ${r.status} für Bild: ${imageUrl}`);
+          return null;
+        }
         const d = await r.json();
         if (d.status !== 'success') return null;
         const aiScore: number = d.type?.ai_generated ?? 0;
@@ -1265,7 +1284,11 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
           weapon_detected: weaponDetected,
           safe: aiScore <= 0.5 && !nudityDetected && !weaponDetected,
         };
-      } catch { return null; }
+      } catch (err) {
+        clearTimeout(t);
+        console.error(`[Sightengine] Fehler bei Bild ${imageUrl}:`, err instanceof Error ? err.message : String(err));
+        return null;
+      }
     };
 
     const details: SightengineImgResult[] = [];
@@ -1295,7 +1318,8 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
       deepfakeDetected: deepfakeCount > 0,
       imageDetails: details.map(r => ({ url: r.url, ai_score: r.ai_score })),
     };
-  } catch {
+  } catch (err) {
+    console.error('[Sightengine] Unerwarteter Fehler:', err instanceof Error ? err.message : String(err));
     return null;
   }
 }

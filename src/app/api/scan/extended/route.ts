@@ -2,6 +2,10 @@
  * Extended Scanner API Route
  * POST /api/scan/extended
  */
+
+// Maximale Ausführungszeit auf Vercel Pro: 60s (Hobby-Plan: ignoriert, bleibt bei 10s)
+export const maxDuration = 60;
+
 import { isValidUrl } from '@/lib/scanner';
 import { NextRequest, NextResponse } from 'next/server';
 import { performExtendedScan } from '@/lib/extendedScanner';
