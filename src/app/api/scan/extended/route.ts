@@ -8,7 +8,7 @@ import { performExtendedScan } from '@/lib/extendedScanner';
 import { logAudit } from '@/lib/audit';
 
 const ipScanMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 3;
+const RATE_LIMIT = 10;
 const WINDOW_MS = 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
