@@ -67,7 +67,7 @@ export default function ToolsPage() {
           4-SÄULEN-ANALYSE
         </span>
         <h1 style={{ fontSize: 42, fontWeight: 900, lineHeight: 1.12, marginBottom: 16, letterSpacing: -1, color: G.text }}>
-          Die einzige <span style={{ color: G.green }}>4-Säulen-Analyse</span> der Schweiz
+          Die einzige <span style={{ color: G.green }}>Vier-Säulen-Analyse</span> der Schweiz
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.7 }}>
           Compliance, Performance, Security und AI-Trust — gleichzeitig geprüft, direkt behoben. Kein anderes Schweizer Tool bietet alle vier Säulen in einem Scan.
@@ -84,15 +84,15 @@ export default function ToolsPage() {
             <span style={{ color: '#888899', fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Unsere digitalen Lösungen</span>
             <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>Für jedes Compliance-Problem das richtige Werkzeug</h2>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 580, margin: '12px auto 0', lineHeight: 1.7 }}>
-              Dataquard ist kein einzelnes Tool — sondern ein komplettes System aus Scanner, Dokumenten-Generator und Monitoring. Alle Werkzeuge arbeiten zusammen und basieren auf unserer 4-Säulen-Analyse.
+              Dataquard ist kein einzelnes Tool — sondern ein komplettes System aus Scanner, Dokumenten-Generator und Monitoring. Alle Werkzeuge arbeiten zusammen und basieren auf unserer Vier-Säulen-Analyse.
             </p>
           </div>
           <div className="tools-saeulen-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
             {[
               { icon: '/icon-recht.png', title: 'Compliance', desc: 'Automatischer Website-Scan, Datenschutzerklärung, Impressum und Cookie-Banner — generiert in Minuten.' },
-              { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL-Überwachung, Impressum-Check und Cookie-Banner-Erkennung mit Echtzeit-Alerts.' },
+              { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL-Überwachung, Impressum-Check und Cookie-Banner-Erkennung mit Alerts in Echtzeit.' },
               { icon: '/diagramm.png', title: 'Performance', desc: 'Tracker-Erkennung, Drittanbieter-Analyse und Handlungsempfehlungen für schnellere Ladezeiten.' },
-              { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bild-Erkennung, Deepfake-Check und automatische Kennzeichnung nach EU-Vorgaben.' },
+              { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bilderkennung, Deepfake-Check und automatische Kennzeichnung nach EU-Vorgaben.' },
             ].map(item => (
               <div key={item.title} style={{ background: '#1e293b', borderRadius: 14, padding: 24, border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ marginBottom: 14 }}><img src={item.icon} alt="" width={48} height={48} /></div>

@@ -128,7 +128,7 @@ export default function KiTransparenzPage() {
                 },
                 {
                   name: 'Bild-Analyse',
-                  use: 'Für die KI-Bild-Erkennung und den Deepfake-Check verwenden wir eine EU-konforme Analyse-Technologie mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.',
+                  use: 'Für die KI-Bilderkennung und den Deepfake-Check verwenden wir eine EU-konforme Analyse-Technologie mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.',
                 },
               ].map(tool => (
                 <div key={tool.name} style={{ padding: '12px 16px', background: G.bgLight, borderRadius: 10, marginBottom: 8, display: 'flex', gap: 12 }}>

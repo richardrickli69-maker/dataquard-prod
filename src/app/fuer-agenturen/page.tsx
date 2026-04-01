@@ -57,9 +57,9 @@ const FEATURES = [
   { icon: '/suche.png', title: 'Bulk-Scan', desc: 'Scannen Sie mehrere Kunden-Websites gleichzeitig. Kein manuelles Starten einzelner Scans.' },
   { icon: '/dokument.png', title: 'White-Label-Berichte', desc: 'PDFs mit Ihrem Logo und Ihren Farben. Der Kunde sieht Ihre Marke, nicht Dataquard.' },
   { icon: '/icon-recht.png', title: 'Dokument-Pack', desc: 'Automatisch generierte Datenschutzerklärungen, Impressum und Cookie-Policy für jeden Kunden.' },
-  { icon: '/badge-ai-trust.svg', title: 'KI-Bild-Erkennung & Deepfake-Check', desc: 'Prüfen Sie automatisch alle Kunden-Websites auf KI-generierte Bilder und Deepfakes. Der stärkste Differenzierer, den Sie Ihren Kunden bieten können.' },
+  { icon: '/badge-ai-trust.svg', title: 'Erkennung von KI-Bildern und Deepfakes', desc: 'Prüfen Sie automatisch alle Kunden-Websites auf KI-generierte Bilder und Deepfakes. Der stärkste Differenzierer, den Sie Ihren Kunden bieten können.' },
   { icon: '/diagramm.png', title: 'Monatliche Reports per E-Mail', desc: 'Automatisierte Compliance-Reports für alle Kunden. Sie informieren proaktiv, ohne Aufwand.' },
-  { icon: '/warnung.png', title: 'Echtzeit-Alerts', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
+  { icon: '/warnung.png', title: 'Alerts in Echtzeit', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
   { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO — vollständige Abdeckung', desc: 'Alle relevanten Schweizer und europäischen Datenschutzgesetze abgedeckt. Inklusive automatischer KI-Transparenzklausel für Kunden mit EU-Geschäft.' },
 ];
 
@@ -81,7 +81,7 @@ const PLANS = [
       'Monatlicher Compliance-Report',
     ],
     missing: [
-      'KI-Bild-Erkennung',
+      'KI-Bilderkennung',
       'White-Label E-Mail-Versand',
       'Priority Support',
     ],
@@ -100,8 +100,8 @@ const PLANS = [
     features: [
       'Bis zu 50 Kunden-Websites',
       'Alles aus Starter',
-      'KI-Bild-Erkennung & Deepfake-Check pro Kunde',
-      'Deepfake-Check & Echtzeit-Alerts',
+      'Erkennung von KI-Bildern und Deepfake-Check pro Kunde',
+      'Deepfake-Check & Alerts in Echtzeit',
       'White-Label E-Mail-Reports an Kunden',
       'Wöchentlicher Compliance-Report',
       'Autom. DSE-Update bei neuen KI-Inhalten',
@@ -143,7 +143,7 @@ const COMPARE_ROWS = [
   { feature: 'Bulk-Scan', starter: '✓', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'White-Label-PDFs', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Teilweise' },
   { feature: 'nDSG Schweiz', starter: '✓', professional: '✓', enterprise: '✓', competitors: 'Selten' },
-  { feature: 'KI-Bild-Erkennung', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
+  { feature: 'KI-Bilderkennung', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'Deepfake-Erkennung', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'White-Label E-Mail', starter: '✗', professional: '✓', enterprise: '✓', competitors: '✗' },
   { feature: 'API-Zugang', starter: '✗', professional: '✗', enterprise: '✓', competitors: 'Teilweise' },
@@ -225,7 +225,7 @@ export default function FuerAgenturenPage() {
             marginLeft: 'auto',
             marginRight: 'auto',
           }}>
-            Dataquard scannt alle Kunden-Websites Ihrer Agentur, generiert White-Label-Dokumente und liefert laufende Compliance-Reports. Inklusive KI-Bild-Erkennung — ein Angebot das keine andere Schweizer Agentur machen kann.
+            Dataquard scannt alle Kunden-Websites Ihrer Agentur, generiert White-Label-Dokumente und liefert laufende Compliance-Reports. Inklusive KI-Bilderkennung — ein Angebot das keine andere Schweizer Agentur machen kann.
           </p>
 
           <div className="agency-hero-ctas" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -260,7 +260,7 @@ export default function FuerAgenturenPage() {
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px' }}>
             {[
               { icon: '/icon-sicherheit.png', label: 'Daten in Zürich' },
-              { icon: '/badge-ai-trust.svg',  label: 'KI-Bild-Erkennung' },
+              { icon: '/badge-ai-trust.svg',  label: 'KI-Bilderkennung' },
               { icon: '/icon-recht.png',       label: 'nDSG + DSGVO' },
               { icon: '/checkmark.png',        label: 'White-Label' },
             ].map(item => (
@@ -330,7 +330,7 @@ export default function FuerAgenturenPage() {
                   'Compliance-Dashboard für alle Kunden auf einen Blick',
                   'KI-Bilder und Deepfakes automatisch erkannt',
                   'White-Label-PDFs in Minuten generiert',
-                  'Echtzeit-Alerts bei neuen Problemen',
+                  'Alerts in Echtzeit bei neuen Problemen',
                   'Compliance als neues Umsatz-Standbein',
                 ].map(item => (
                   <li key={item} style={{ display: 'flex', gap: '10px', fontSize: '14px', color: G.textSec, alignItems: 'flex-start' }}>
@@ -397,7 +397,7 @@ export default function FuerAgenturenPage() {
               Alles, was Ihre Agentur braucht
             </h2>
             <p style={{ fontSize: '16px', color: G.textSec, margin: 0 }}>
-              Das einzige Schweizer Compliance-Tool mit KI-Bild-Erkennung — und White-Label für Agenturen.
+              Das einzige Schweizer Compliance-Tool mit KI-Bilderkennung — und White-Label für Agenturen.
             </p>
           </div>
 

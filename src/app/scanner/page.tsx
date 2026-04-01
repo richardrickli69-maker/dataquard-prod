@@ -411,7 +411,7 @@ export default function ScannerPage() {
                 { icon: '✅', title: 'Vertrauen', desc: 'Kontaktinfos, Meta Tags, Sicherheitsindikatoren' },
                 { icon: '📄', title: 'Impressum', desc: 'Vollständigkeit, Pflichtangaben nach nDSG/DSGVO' },
                 { icon: '🎯', title: 'Empfehlungen', desc: 'Konkrete Schritte zur Verbesserung' },
-                { icon: '🤖', title: 'AI-Trust', desc: 'KI-Bild-Erkennung, Deepfake-Check, EU AI Act Art. 50' },
+                { icon: '🤖', title: 'AI-Trust', desc: 'KI-Bilderkennung, Deepfake-Check, EU AI Act Art. 50' },
               ].map(item => {
                 const featureIconMap: Record<string, string> = {
                   '🔒': '/gruener-kreis.png',

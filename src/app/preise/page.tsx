@@ -51,7 +51,7 @@ const PLANS = [
     p: 'CHF 39.–', pMt: '/Mt.' as string | null, pYear: '(CHF 468.– / Jahr)' as string | null,
     pNote: 'Jährliche Abrechnung — jederzeit kündbar',
     d: 'Unser Bestseller',
-    f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Deepfake-Schutz & Echtzeit-Alerts', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
+    f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Schutz vor Deepfakes & Alerts in Echtzeit', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
     m: [],
     c: 'Professional wählen', l: '/checkout',
   },
@@ -124,51 +124,6 @@ export default function PreisePage() {
         <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>
           Alle Preise in CHF inkl. MwSt. · Jährliche Abrechnung · Jederzeit kündbar
         </p>
-      </section>
-
-      {/* ═══ WETTBEWERBSVERGLEICH ═══ */}
-      <section style={{ maxWidth: 800, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Vergleich</span>
-          <h2 style={{ fontSize: 24, fontWeight: 800, marginTop: 6, color: G.text }}>Dataquard vs. Wettbewerb — der einzige 4-Säulen-Check</h2>
-        </div>
-        <div className="table-scroll" style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${G.border}` }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-            <thead>
-              <tr style={{ background: G.bgLight }}>
-                <th style={{ padding: '12px 14px', textAlign: 'left', color: G.textMuted, fontWeight: 600 }}>Feature</th>
-                <th style={{ padding: 12, textAlign: 'center', color: G.green, fontWeight: 800 }}>Dataquard</th>
-                <th style={{ padding: 12, textAlign: 'center', color: G.textMuted }}>PrivacyBee</th>
-                <th style={{ padding: 12, textAlign: 'center', color: G.textMuted }}>iubenda</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ['Compliance (nDSG + DSGVO)', '✅', '✅', '✅'],
-                ['Performance-Check', '✅', '❌', '❌'],
-                ['Security-Check', '✅', '❌', '❌'],
-                ['Preis', 'ab CHF 19.–/Mt.', 'CHF 55/J.', '€ 144+/J.'],
-                ['AI-Trust (EU AI Act Art. 50)', '✅', '❌', '❌'],
-                ['KI-Bild-Erkennung', '✅', '❌', '❌'],
-                ['Deepfake-Check', '✅', '❌', '❌'],
-                ['Daten in der Schweiz', '✅', '✅', '❌'],
-              ].map((r, i) => (
-                <tr key={r[0]} style={{ background: i % 2 === 0 ? G.bgWhite : G.bg, borderTop: `1px solid ${G.border}` }}>
-                  <td style={{ padding: '10px 14px', color: G.text }}>{r[0]}</td>
-                  <td style={{ padding: 10, textAlign: 'center', fontWeight: 700 }}>
-                    {r[1] === '✅' ? <img src="/checkmark.png" alt="Ja" width={22} height={22} /> : r[1] === '❌' ? <img src="/fehler.png" alt="Nein" width={22} height={22} /> : r[1]}
-                  </td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>
-                    {r[2] === '✅' ? <img src="/checkmark.png" alt="Ja" width={22} height={22} /> : r[2] === '❌' ? <img src="/fehler.png" alt="Nein" width={22} height={22} /> : r[2]}
-                  </td>
-                  <td style={{ padding: 10, textAlign: 'center', color: G.textSec }}>
-                    {r[3] === '✅' ? <img src="/checkmark.png" alt="Ja" width={22} height={22} /> : r[3] === '❌' ? <img src="/fehler.png" alt="Nein" width={22} height={22} /> : r[3]}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </section>
 
       {/* ═══ PREIS-FAQ ═══ */}

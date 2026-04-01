@@ -233,7 +233,7 @@ export default function HomePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🇨🇭" size={24} /> Schweizer Produkt</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🔒" size={24} /> Daten in Zürich</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⚖️" size={24} /> nDSG/DSGVO</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> KI-Bild-Erkennung</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="🤖" size={24} /> KI-Bilderkennung</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconEl ic="⏱" size={24} /> Ergebnis in 60 Sek.</span>
           <Link href="/ki-sicherheit" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: G.textMuted, textDecoration: 'none' }}><img src="/checkmark.png" alt="" width={24} height={24} /> EU AI Act Art. 50 konform</Link>
         </div>
@@ -329,7 +329,7 @@ export default function HomePage() {
           <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28, marginBottom: 32 }}>
             {[
               { title: 'Zuverlässige Erkennung', desc: 'Bilder von Midjourney, DALL-E, Stable Diffusion und anderen KI-Tools werden mit über 90% Genauigkeit erkannt.' },
-              { title: 'Deepfake-Schutz', desc: 'Manipulierte Fotos von echten Personen — etwa Team-Bilder oder Porträts — werden separat auf Deepfake-Indikatoren geprüft.' },
+              { title: 'Schutz vor Deepfakes', desc: 'Manipulierte Fotos von echten Personen — etwa Team-Bilder oder Porträts — werden separat auf Deepfake-Indikatoren geprüft.' },
               { title: 'Automatische Kennzeichnung', desc: 'Im Professional-Plan erhalten Sie ein AI-Shield Badge für Ihre Website und automatische Updates Ihrer Datenschutzerklärung.' },
             ].map(item => (
               <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -437,7 +437,7 @@ export default function HomePage() {
               p: 'CHF 39.–', pMt: '/Mt.' as string | null, pYear: '(CHF 468.– / Jahr)' as string | null,
               pNote: 'Jährliche Abrechnung — jederzeit kündbar',
               d: 'Unser Bestseller',
-              f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Deepfake-Schutz & Echtzeit-Alerts', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
+              f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Schutz vor Deepfakes & Alerts in Echtzeit', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
               m: [],
               c: 'Professional wählen', l: '/checkout',
             },

@@ -83,9 +83,9 @@ export default function KiSicherheitPage() {
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Unser Ansatz</span>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Die 4-Säulen-Analyse für Ihre Compliance</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>Die Vier-Säulen-Analyse für Ihre Compliance</h2>
           <p style={{ color: G.textSec, fontSize: 15, marginTop: 12, maxWidth: 660, margin: '12px auto 0', lineHeight: 1.7 }}>
-            Vergessen Sie komplexe Insellösungen. Unsere 4-Säulen-Analyse ist ein methodischer Ansatz, der Datenschutz und Informationssicherheit in eine klare Struktur bringt. Wir kombinieren digitale Präzision mit fachlicher Expertise, um Ihr Unternehmen rechtssicher und zukunftsfest aufzustellen.
+            Vergessen Sie komplexe Insellösungen. Unsere Vier-Säulen-Analyse ist ein methodischer Ansatz, der Datenschutz und Informationssicherheit in eine klare Struktur bringt. Wir kombinieren digitale Präzision mit fachlicher Expertise, um Ihr Unternehmen rechtssicher und zukunftsfest aufzustellen.
           </p>
           <p style={{ color: G.textSec, fontSize: 15, marginTop: 12, maxWidth: 660, margin: '12px auto 0', lineHeight: 1.7 }}>
             Statt mühsamer Handarbeit nutzen wir intelligente Assistenten und automatisierte Prüfverfahren, die Sie Schritt für Schritt durch die regulatorischen Anforderungen führen — effizient, verständlich und ohne technisches Vorwissen.
@@ -225,7 +225,7 @@ export default function KiSicherheitPage() {
               price: 'CHF 39.–/Mt.',
               badge: 'VOLLSTÄNDIG' as string | null,
               highlight: false,
-              features: ['250 KI-Bilder pro Jahr', 'Deepfake-Check & Erkennung', 'AI-Shield Badge (verifizierbar)', 'Echtzeit-Alerts bei neuen KI-Inhalten', 'Auto-Update der DSE bei KI-Änderungen', 'Wöchentlicher AI-Trust Bericht'],
+              features: ['250 KI-Bilder pro Jahr', 'Deepfake-Check & Erkennung', 'AI-Shield Badge (verifizierbar)', 'Alerts in Echtzeit bei neuen KI-Inhalten', 'Auto-Update der DSE bei KI-Änderungen', 'Wöchentlicher AI-Trust Bericht'],
               missing: [],
             },
           ].map(pl => (

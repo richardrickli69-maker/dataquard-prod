@@ -95,7 +95,7 @@ const FAQ_CATEGORIES = [
       },
       {
         question: 'Was ist im Professional-Plan anders als im Starter?',
-        answer: 'Der Professional-Plan (CHF 39.–/Mt.) beinhaltet alles aus Starter plus: bis zu 5 Domains gleichzeitig, Deepfake-Check & Echtzeit-Alerts, AI-Shield Badge (EU AI Act konform), wöchentliche Compliance-Reports und automatische DSE-Aktualisierung bei neuen KI-Inhalten.',
+        answer: 'Der Professional-Plan (CHF 39.–/Mt.) beinhaltet alles aus Starter plus: bis zu 5 Domains gleichzeitig, Deepfake-Check & Alerts in Echtzeit, AI-Shield Badge (EU AI Act konform), wöchentliche Compliance-Reports und automatische DSE-Aktualisierung bei neuen KI-Inhalten.',
       },
     ],
   },
