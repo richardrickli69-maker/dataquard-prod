@@ -1340,7 +1340,21 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
         if (r.status === 'fulfilled' && r.value) details.push(r.value);
       }
     }
-    if (details.length === 0) return null;
+    // Bilder gefunden, aber keine konnte analysiert werden (z.B. Icons die durch Filter schlüpften)
+    if (details.length === 0) return {
+      status: 'no_images' as const,
+      imagesAnalysed: 0,
+      totalImagesFound,
+      aiImagesFound: 0,
+      deepfakeCount: 0,
+      nudityCount: 0,
+      weaponCount: 0,
+      unsafeCount: 0,
+      allSafe: true,
+      maxAiScore: 0,
+      deepfakeDetected: false,
+      imageDetails: [],
+    };
 
     const aiImagesFound = details.filter(r => r.ai_score > 0.5).length;
     const deepfakeCount = details.filter(r => r.deepfake_score > 0.5).length;
