@@ -1230,18 +1230,43 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     if (!res.ok) return null;
     const html = await res.text();
 
-    // Alle geeigneten Bilder sammeln (max. 50 für Total-Zählung)
+    // Filtert Icons, Logos, SVGs und Minimal-Bilder aus — nur echte Content-Bilder für Sightengine
+    const isContentImage = (absUrl: string, imgTag: string): boolean => {
+      let pathname: string;
+      try {
+        pathname = new URL(absUrl).pathname.toLowerCase();
+      } catch {
+        return false;
+      }
+      // Dateiname ohne Querystring
+      const filename = pathname.split('/').pop()?.split('?')[0] ?? '';
+      // Bekannte Icon/Logo-Begriffe im Dateinamen ausschliessen
+      if (/logo|icon|favicon|sprite|badge|arrow|bullet|check|close|menu|btn|button|thumb|avatar|placeholder/i.test(filename)) return false;
+      // Icon-Pfade ausschliessen
+      if (/\/(icons?|favicons?|sprites?|svg|ui|components?|assets\/icons?|public\/icons?)\//i.test(pathname)) return false;
+      // Zu kleine Bilder nach HTML width/height-Attributen ausschliessen (< 50px)
+      const wMatch = imgTag.match(/\bwidth=["']?(\d+)/i);
+      const hMatch = imgTag.match(/\bheight=["']?(\d+)/i);
+      if (wMatch && parseInt(wMatch[1]) < 50) return false;
+      if (hMatch && parseInt(hMatch[1]) < 50) return false;
+      return true;
+    };
+
+    // Alle geeigneten Content-Bilder sammeln (max. 50 für Total-Zählung)
     const allImgUrls: string[] = [];
     const base = new URL(url);
     for (const match of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
       try {
         const src = match[1];
+        // Data-URIs und SVGs überspringen
         if (src.startsWith('data:')) continue;
         const absUrl = new URL(src, base).href;
-        if (/\.(jpe?g|png|webp)$/i.test(absUrl)) {
-          allImgUrls.push(absUrl);
-          if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
-        }
+        // Nur jpg/png/webp — kein svg, kein gif, kein ico
+        if (!/\.(jpe?g|png|webp)(\?.*)?$/i.test(absUrl)) continue;
+        // Icons/Logos/Minimal-Bilder filtern
+        if (!isContentImage(absUrl, match[0])) continue;
+        allImgUrls.push(absUrl);
+        if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
       } catch { /* skip */ }
     }
     const totalImagesFound = allImgUrls.length;
