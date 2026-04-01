@@ -288,6 +288,8 @@ export interface ExtendedScanResult {
   aiAudit: AiAuditResult;
   /** Sightengine-Bildscan (KI-Bild, Deepfake, Nudity, Waffen) */
   sightengine: {
+    /** 'no_images' = keine Content-Bilder nach Filter; 'success' = mind. 1 Bild analysiert */
+    status: 'no_images' | 'success';
     imagesAnalysed: number;
     /** Gesamt-Anzahl gefundener Bilder auf der Seite (vor Free-Tier-Limit) */
     totalImagesFound: number;
@@ -1208,6 +1210,7 @@ interface SightengineImgResult {
 }
 
 async function scanSiteImagesWithSightengine(url: string): Promise<{
+  status: 'no_images' | 'success';
   imagesAnalysed: number;
   totalImagesFound: number;
   aiImagesFound: number;
@@ -1272,7 +1275,21 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     const totalImagesFound = allImgUrls.length;
     // Free-Tier: max. 5 Bilder pro Scan
     const imgUrls = allImgUrls.slice(0, 5);
-    if (imgUrls.length === 0) return null;
+    // Keine Content-Bilder nach Filter — kein API-Fehler, nur leere Seite
+    if (imgUrls.length === 0) return {
+      status: 'no_images',
+      imagesAnalysed: 0,
+      totalImagesFound,
+      aiImagesFound: 0,
+      deepfakeCount: 0,
+      nudityCount: 0,
+      weaponCount: 0,
+      unsafeCount: 0,
+      allSafe: true,
+      maxAiScore: 0,
+      deepfakeDetected: false,
+      imageDetails: [],
+    };
 
     const scanOne = async (imageUrl: string): Promise<SightengineImgResult | null> => {
       const ctrl = new AbortController();
@@ -1331,6 +1348,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
     const weaponCount = details.filter(r => r.weapon_detected).length;
     const unsafeCount = details.filter(r => !r.safe).length;
     return {
+      status: 'success',
       imagesAnalysed: details.length,
       totalImagesFound,
       aiImagesFound,
@@ -1389,8 +1407,8 @@ export async function performExtendedScan(
     hasPrivacyPolicy && cookieBannerOk ? 85 :
     hasPrivacyPolicy ? 65 :
     cookieBannerOk ? 50 : 40;
-  // Bild-Sicherheit beeinflusst Compliance (EU AI Act / Datenschutz)
-  if (sightengineResult) {
+  // Bild-Sicherheit beeinflusst Compliance (EU AI Act / Datenschutz) — nur bei erfolgreichem Scan
+  if (sightengineResult && sightengineResult.status === 'success') {
     if (sightengineResult.deepfakeCount > 0) complianceScore = Math.max(0, complianceScore - 15);
     if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) complianceScore = Math.max(0, complianceScore - 10);
     if (sightengineResult.aiImagesFound > 0) complianceScore = Math.max(0, complianceScore - 5);

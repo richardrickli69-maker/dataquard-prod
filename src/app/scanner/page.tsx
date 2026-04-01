@@ -117,6 +117,8 @@ interface ScanResult {
     imagesAnalysed: number;
     aiImagesFound: number;
     sightengineActive: boolean;
+    /** null = API nicht konfiguriert oder Fehler; 'no_images' = keine Content-Bilder; 'success' = analysiert */
+    sightengineStatus: 'no_images' | 'success' | null;
   };
   imageAnalysis?: {
     total_images_scanned: number;
@@ -306,7 +308,8 @@ export default function ScannerPage() {
           signals: aiAudit?.signals ?? [],
           imagesAnalysed: sightengine?.imagesAnalysed ?? 0,
           aiImagesFound: sightengine?.aiImagesFound ?? 0,
-          sightengineActive: !!sightengine,
+          sightengineActive: sightengine?.status === 'success',
+          sightengineStatus: sightengine?.status ?? null,
         },
         imageAnalysis: data.data?.image_analysis ?? undefined,
         pageSpeed: scan?.pageSpeed ?? undefined,
@@ -789,8 +792,15 @@ export default function ScannerPage() {
                 </div>
               )}
 
-              {/* Sightengine nicht verfügbar */}
-              {!result.aiTrust.sightengineActive && (
+              {/* Sightengine: keine analysierbaren Bilder gefunden */}
+              {!result.aiTrust.sightengineActive && result.aiTrust.sightengineStatus === 'no_images' && (
+                <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 10, fontSize: 13, color: G.textSec, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <img src="/warnung.png" alt="" width={16} height={16} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span>Keine analysierbaren Bilder auf dieser Website erkannt. Die Seite enthält möglicherweise keine Fotos oder nur Icons und Logos, die von der Analyse ausgeschlossen werden.</span>
+                </div>
+              )}
+              {/* Sightengine: API-Fehler oder nicht konfiguriert */}
+              {!result.aiTrust.sightengineActive && result.aiTrust.sightengineStatus !== 'no_images' && (
                 <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 10, fontSize: 13, color: G.textSec, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <img src="/warnung.png" alt="" width={16} height={16} style={{ flexShrink: 0, marginTop: 1 }} />
                   <span>Die KI-Bild-Analyse ist momentan nicht verfügbar. Die übrigen Prüfungen wurden durchgeführt. Bitte scannen Sie später erneut für die vollständige Analyse.</span>
