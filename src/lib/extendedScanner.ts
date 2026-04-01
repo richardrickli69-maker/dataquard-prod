@@ -1314,7 +1314,7 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
         if (!/\.(jpe?g|png|webp)(\?.*)?$/i.test(absUrl)) continue;
         // Sprite/Favicon filtern
         if (!isContentImage(absUrl, imgTag)) continue;
-        allImgUrls.push(absUrl);
+        allImgUrls.push(prepareImageUrlForSightengine(absUrl));
         if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
       } catch { /* skip */ }
     }
