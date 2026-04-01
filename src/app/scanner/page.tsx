@@ -74,11 +74,25 @@ interface JsRenderingInfo {
   signals: string[];
 }
 
+interface PageSpeedMetric {
+  score: number;
+  fcp: number;
+  lcp: number;
+  tbt: number;
+  cls: number;
+  si: number;
+}
+
 interface ScanResult {
   url: string;
   /** Wenn gesetzt: Seite konnte nicht vollständig geladen werden (Partial Result) */
   fetchError?: string;
   scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
+  pageSpeed?: {
+    mobile: PageSpeedMetric | null;
+    desktop: PageSpeedMetric | null;
+    combinedScore: number;
+  };
   findings: {
     datenschutz: boolean;
     cookieBanner: boolean;
@@ -295,6 +309,7 @@ export default function ScannerPage() {
           sightengineActive: !!sightengine,
         },
         imageAnalysis: data.data?.image_analysis ?? undefined,
+        pageSpeed: scan?.pageSpeed ?? undefined,
       });
     } catch {
       setError('Der Scanner ist momentan nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut.');
@@ -648,6 +663,92 @@ export default function ScannerPage() {
                 </ol>
               </div>
             )}
+
+            {/* ─── PageSpeed Insights ─── */}
+            {result.pageSpeed && (result.pageSpeed.mobile || result.pageSpeed.desktop) && (() => {
+              // Schwellenwerte gemäss Google Core Web Vitals
+              const cwvColor = (val: number, good: number, poor: number) =>
+                val <= good ? G.green : val <= poor ? G.yellow : G.red;
+              const cwvLabel = (val: number, good: number, poor: number) =>
+                val <= good ? 'Gut' : val <= poor ? 'Verbesserung' : 'Schlecht';
+
+              const metrics: Array<{
+                key: keyof PageSpeedMetric;
+                label: string;
+                unit: string;
+                good: number;
+                poor: number;
+                format: (v: number) => string;
+              }> = [
+                { key: 'fcp', label: 'Erster sichtbarer Inhalt', unit: 'FCP', good: 1800, poor: 3000, format: v => `${(v / 1000).toFixed(1)}s` },
+                { key: 'lcp', label: 'Grösster sichtbarer Inhalt', unit: 'LCP', good: 2500, poor: 4000, format: v => `${(v / 1000).toFixed(1)}s` },
+                { key: 'tbt', label: 'Gesamte Blockierungszeit', unit: 'TBT', good: 200, poor: 600, format: v => `${v}ms` },
+                { key: 'cls', label: 'Visuelle Stabilität', unit: 'CLS', good: 0.1, poor: 0.25, format: v => v.toFixed(3) },
+                { key: 'si', label: 'Geschwindigkeits-Index', unit: 'SI', good: 3400, poor: 5800, format: v => `${(v / 1000).toFixed(1)}s` },
+              ];
+
+              // Mini Score-Circle für Mobile/Desktop
+              const MiniCircle = ({ score, label }: { score: number; label: string }) => {
+                const r = 16;
+                const circ = 2 * Math.PI * r;
+                const offset = circ - (score / 100) * circ;
+                const color = scoreColor(score);
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ position: 'relative', width: 44, height: 44 }}>
+                      <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }} viewBox="0 0 40 40">
+                        <circle cx="20" cy="20" r={r} fill="none" stroke={G.border} strokeWidth="4" />
+                        <circle cx="20" cy="20" r={r} fill="none" stroke={color} strokeWidth="4"
+                          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
+                      </svg>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: G.text }}>{score}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 12, color: G.textMuted, fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color }}>{scoreLabel(score)}</span>
+                  </div>
+                );
+              };
+
+              // CWV-Zeile für eine Strategie
+              const CwvRow = ({ metric, val }: { metric: typeof metrics[0]; val: number }) => {
+                const color = cwvColor(val, metric.good, metric.poor);
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: `1px solid ${G.border}` }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                    <span style={{ color: G.textMuted, fontSize: 13, flex: 1 }}>{metric.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: G.textMuted, width: 36, textAlign: 'right', flexShrink: 0 }}>{metric.unit}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color, width: 56, textAlign: 'right', flexShrink: 0 }}>{metric.format(val)}</span>
+                    <span style={{ fontSize: 11, color, width: 80, flexShrink: 0 }}>{cwvLabel(val, metric.good, metric.poor)}</span>
+                  </div>
+                );
+              };
+
+              const activeStrategy = result.pageSpeed!.mobile ?? result.pageSpeed!.desktop;
+
+              return (
+                <div style={card}>
+                  <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <img src="/flug.png" alt="Performance" width={16} height={16} /> Performance Details (PageSpeed Insights)
+                  </h2>
+
+                  {/* Mobile + Desktop Score-Circles */}
+                  <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap' }}>
+                    {result.pageSpeed!.mobile && <MiniCircle score={result.pageSpeed!.mobile.score} label="Mobile" />}
+                    {result.pageSpeed!.desktop && <MiniCircle score={result.pageSpeed!.desktop.score} label="Desktop" />}
+                  </div>
+
+                  {/* Core Web Vitals */}
+                  <p style={{ fontSize: 12, fontWeight: 700, color: G.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Core Web Vitals {result.pageSpeed!.mobile && result.pageSpeed!.desktop ? '(Mobile)' : result.pageSpeed!.mobile ? '(Mobile)' : '(Desktop)'}
+                  </p>
+                  {activeStrategy && metrics.map(m => (
+                    <CwvRow key={m.key} metric={m} val={activeStrategy[m.key] as number} />
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* ─── FIX 1: AI-Trust — positiver Upsell statt Warnungs-Box ─── */}
             <div id="ai-trust-section" style={{

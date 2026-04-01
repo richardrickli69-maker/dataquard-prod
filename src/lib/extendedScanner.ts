@@ -225,6 +225,22 @@ async function fetchPageHtml(inputUrl: string): Promise<FetchHtmlResult | FetchH
   return { ok: false, code: 'UNKNOWN', message: lastMessage };
 }
 
+/** Messwerte einer PageSpeed-Abfrage (mobile oder desktop) */
+export interface PageSpeedScore {
+  /** Performance-Score 0–100 */
+  score: number;
+  /** First Contentful Paint in ms */
+  fcp: number;
+  /** Largest Contentful Paint in ms */
+  lcp: number;
+  /** Total Blocking Time in ms */
+  tbt: number;
+  /** Cumulative Layout Shift (z.B. 0.05) */
+  cls: number;
+  /** Speed Index in ms */
+  si: number;
+}
+
 export interface ExtendedScanResult {
   /**
    * Wenn der Haupt-Fetch der Seite fehlgeschlagen ist, enthält dieses Feld
@@ -286,6 +302,13 @@ export interface ExtendedScanResult {
     /** Einzelne Bild-Ergebnisse für ai_detected_images Speicherung */
     imageDetails: Array<{ url: string; ai_score: number }>;
   } | null;
+  /** Google PageSpeed Insights Ergebnisse (optional – Fallback auf intern wenn API nicht verfügbar) */
+  pageSpeed?: {
+    mobile: PageSpeedScore | null;
+    desktop: PageSpeedScore | null;
+    /** Kombinierter Score: mobile×0.6 + desktop×0.4 */
+    combinedScore: number;
+  };
 }
 
 export async function checkSSL(domain: string): Promise<{
@@ -345,6 +368,37 @@ export async function checkPerformance(domain: string): Promise<{
       cls: 0.05,
     },
   };
+}
+
+/**
+ * Ruft Google PageSpeed Insights API v5 auf.
+ * Gibt null zurück wenn API nicht erreichbar oder Timeout (30s) überschritten.
+ */
+async function fetchPageSpeedData(url: string, strategy: 'mobile' | 'desktop'): Promise<PageSpeedScore | null> {
+  try {
+    const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY ?? '';
+    const endpoint =
+      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed` +
+      `?url=${encodeURIComponent(url)}&strategy=${strategy}&category=PERFORMANCE` +
+      (apiKey ? `&key=${apiKey}` : '');
+    const res = await fetch(endpoint, { signal: AbortSignal.timeout(30000) });
+    if (!res.ok) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = await res.json();
+    const perfScore: number | null = data?.lighthouseResult?.categories?.performance?.score ?? null;
+    const audits = data?.lighthouseResult?.audits;
+    if (perfScore == null || !audits) return null;
+    return {
+      score: Math.round(perfScore * 100),
+      fcp: Math.round(audits['first-contentful-paint']?.numericValue ?? 0),
+      lcp: Math.round(audits['largest-contentful-paint']?.numericValue ?? 0),
+      tbt: Math.round(audits['total-blocking-time']?.numericValue ?? 0),
+      cls: Math.round((audits['cumulative-layout-shift']?.numericValue ?? 0) * 1000) / 1000,
+      si: Math.round(audits['speed-index']?.numericValue ?? 0),
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ─── Link-Erkennungs-Hilfsfunktionen ──────────────────────────────────────────
@@ -1270,10 +1324,12 @@ export async function performExtendedScan(
   ]);
 
   const siteUrl = domain.startsWith('http') ? domain : `https://${domain}`;
-  const [outdatedScripts, mixedContent, sightengineResult] = await Promise.all([
+  const [outdatedScripts, mixedContent, sightengineResult, pageSpeedMobile, pageSpeedDesktop] = await Promise.all([
     checkOutdatedScripts(domain),
     checkMixedContent(domain),
     scanSiteImagesWithSightengine(siteUrl),
+    fetchPageSpeedData(siteUrl, 'mobile'),
+    fetchPageSpeedData(siteUrl, 'desktop'),
   ]);
 
   const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
@@ -1290,10 +1346,21 @@ export async function performExtendedScan(
     if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) complianceScore = Math.max(0, complianceScore - 10);
     if (sightengineResult.aiImagesFound > 0) complianceScore = Math.max(0, complianceScore - 5);
   }
+  // PageSpeed Insights: kombinierter Score wenn verfügbar (mobile×0.6 + desktop×0.4)
+  const pageSpeedData = (pageSpeedMobile || pageSpeedDesktop) ? {
+    mobile: pageSpeedMobile,
+    desktop: pageSpeedDesktop,
+    combinedScore: pageSpeedMobile && pageSpeedDesktop
+      ? Math.round(pageSpeedMobile.score * 0.6 + pageSpeedDesktop.score * 0.4)
+      : (pageSpeedMobile?.score ?? pageSpeedDesktop?.score ?? 0),
+  } : undefined;
+
   // Ladezeit-Basis (0–100) + Tracker-Abzug (je 3 externe Scripts -5 Punkte, max -30)
   const loadTimeBase = Math.round(((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100);
   const trackerPenalty = Math.min(30, thirdPartyCheck.totalScripts * 5);
-  const optimizationScore = Math.max(0, loadTimeBase - trackerPenalty);
+  const internalOptimizationScore = Math.max(0, loadTimeBase - trackerPenalty);
+  // PageSpeed-Daten vorhanden: echten Score verwenden; sonst intern berechneten Fallback
+  const optimizationScore = pageSpeedData ? pageSpeedData.combinedScore : internalOptimizationScore;
   
   const trustScore = Math.round(
     (
@@ -1360,5 +1427,6 @@ export async function performExtendedScan(
     recommendations,
     aiAudit,
     sightengine: sightengineResult,
+    pageSpeed: pageSpeedData,
   };
 }
