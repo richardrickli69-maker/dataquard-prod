@@ -67,7 +67,7 @@ export default function KiSicherheitPage() {
           EU AI Act konform.
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Dataquard ist das einzige Schweizer Tool das Ihre Website automatisch auf KI-generierte Inhalte prüft — und Sie bei der gesetzlichen Kennzeichnung unterstützt.
+          Dataquard ist das einzige Schweizer Tool das Ihre Website automatisch auf KI-generierte Inhalte prüft und Sie bei der gesetzlichen Kennzeichnung unterstützt.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/scanner" style={{ display: 'inline-block', padding: '14px 32px', background: G.violet, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 15, textDecoration: 'none', boxShadow: `0 4px 16px ${G.violet}40` }}>
@@ -88,15 +88,15 @@ export default function KiSicherheitPage() {
             Vergessen Sie komplexe Insellösungen. Unsere Vier-Säulen-Analyse ist ein methodischer Ansatz, der Datenschutz und Informationssicherheit in eine klare Struktur bringt. Wir kombinieren digitale Präzision mit fachlicher Expertise, um Ihr Unternehmen rechtssicher und zukunftsfest aufzustellen.
           </p>
           <p style={{ color: G.textSec, fontSize: 15, marginTop: 12, maxWidth: 660, margin: '12px auto 0', lineHeight: 1.7 }}>
-            Statt mühsamer Handarbeit nutzen wir intelligente Assistenten und automatisierte Prüfverfahren, die Sie Schritt für Schritt durch die regulatorischen Anforderungen führen — effizient, verständlich und ohne technisches Vorwissen.
+            Statt mühsamer Handarbeit nutzen wir intelligente Assistenten und automatisierte Prüfverfahren, die Sie Schritt für Schritt durch die regulatorischen Anforderungen führen, effizient, verständlich und ohne technisches Vorwissen.
           </p>
         </div>
         <div className="ai-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
           {[
-            { icon: '/icon-recht.png', title: 'Compliance', desc: 'nDSG und DSGVO Konformität — automatisch geprüft, lückenlos dokumentiert.' },
-            { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL, Impressum, Cookie-Banner — die Vertrauensbasis für Ihre Besucher.' },
+            { icon: '/icon-recht.png', title: 'Compliance', desc: 'nDSG und DSGVO Konformität: automatisch geprüft und lückenlos dokumentiert.' },
+            { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL, Impressum und Cookie-Banner: die Vertrauensbasis für Ihre Besucher.' },
             { icon: '/diagramm.png', title: 'Performance', desc: 'Versteckte Datentransfers und technische Schwachstellen aufdecken.' },
-            { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bilder und Deepfakes erkennen — einzigartig in der Schweiz.' },
+            { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bilder und Deepfakes erkennen, einzigartig in der Schweiz.' },
           ].map(item => (
             <div key={item.title} style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 14, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ marginBottom: 14 }}><img src={item.icon} alt="" width={48} height={48} /></div>
@@ -121,8 +121,8 @@ export default function KiSicherheitPage() {
           <div className="ai-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
             {[
               { icon: '🤖', title: 'KI-generierte Bilder', desc: 'Tools wie Midjourney, DALL-E oder Stable Diffusion erzeugen Bilder die täuschend echt wirken. Viele KMUs nutzen diese ohne zu wissen, dass eine Kennzeichnungspflicht besteht.' },
-              { icon: '🎭', title: 'Deepfakes', desc: 'KI-manipulierte Fotos und Videos die echte Personen zeigen. Für Team-Fotos, CEO-Bilder oder Produktpräsentationen besonders riskant — und rechtlich heikel.' },
-              { icon: '⚖️', title: 'Die Lösung', desc: 'Dataquard prüft Ihre Website auf beide Risiken und ergänzt bei Bedarf die korrekte Klausel in Ihrer Datenschutzerklärung — automatisch im Professional-Plan oder manuell im Starter.' },
+              { icon: '🎭', title: 'Deepfakes', desc: 'KI-manipulierte Fotos und Videos die echte Personen zeigen. Für Team-Fotos, CEO-Bilder oder Produktpräsentationen besonders riskant und rechtlich heikel.' },
+              { icon: '⚖️', title: 'Die Lösung', desc: 'Dataquard prüft Ihre Website auf beide Risiken und ergänzt bei Bedarf die korrekte Klausel in Ihrer Datenschutzerklärung, automatisch im Professional-Plan oder manuell im Starter.' },
             ].map(item => (
               <div key={item.title} style={{ background: G.bg, borderRadius: 14, padding: 24, border: `1px solid ${G.border}` }}>
                 <div style={{ marginBottom: 12 }}><IconEl ic={item.icon} size={48} /></div>
@@ -142,8 +142,8 @@ export default function KiSicherheitPage() {
         </div>
         <div className="ai-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
           {[
-            { n: '1', title: 'Scan startet', desc: 'Dataquard lädt alle Bilder von Ihrer Website. Die Analyse läuft vollständig automatisch — kein manueller Aufwand.' },
-            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird mit einer EU-konformen KI-Analyse auf KI-Merkmale und Deepfake-Indikatoren geprüft — mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.' },
+            { n: '1', title: 'Scan startet', desc: 'Dataquard lädt alle Bilder von Ihrer Website. Die Analyse läuft vollständig automatisch, ohne manuellen Aufwand.' },
+            { n: '2', title: 'KI-Analyse', desc: 'Jedes Bild wird mit einer EU-konformen KI-Analyse auf KI-Merkmale und Deepfake-Indikatoren geprüft, mit einer Erkennungsrate von über 90% bei gängigen KI-Tools wie Midjourney, DALL-E und Stable Diffusion.' },
             { n: '3', title: 'Ergebnis & Klausel', desc: 'Erkannte KI-Bilder werden im Bericht markiert. Ihre Datenschutzerklärung kann automatisch mit der passenden Transparenzklausel ergänzt werden.' },
           ].map(s => (
             <div key={s.n} style={{ textAlign: 'center', padding: 20 }}>
@@ -263,7 +263,7 @@ export default function KiSicherheitPage() {
           Sind KI-Bilder auf Ihrer Website?
         </h2>
         <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
-          Finden Sie es in 60 Sekunden heraus — kostenlos, ohne Anmeldung.
+          Finden Sie es in 60 Sekunden heraus, kostenlos und ohne Anmeldung.
         </p>
         <Link href="/scanner" style={{ display: 'inline-block', padding: '14px 36px', background: G.violet, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 16, textDecoration: 'none', boxShadow: `0 4px 16px ${G.violet}40` }}>
           Website jetzt auf KI-Bilder prüfen →

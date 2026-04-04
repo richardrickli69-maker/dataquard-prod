@@ -39,7 +39,7 @@ export default function AgencyCheckoutButton({ plan, label, highlight, green, wh
         setLoading(false);
       }
     } catch {
-      setError('Verbindungsfehler — bitte erneut versuchen');
+      setError('Verbindungsfehler. Bitte erneut versuchen.');
       setLoading(false);
     }
   }

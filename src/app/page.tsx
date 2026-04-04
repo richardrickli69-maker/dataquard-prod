@@ -188,11 +188,11 @@ export default function HomePage() {
           Der Schweizer Website-Check für KMU
         </p>
         <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
-          Daten{'\u00AD'}schutz{'\u00AD'}erklärung, <span style={{ hyphens: 'none' }}>Impressum</span> und Cookie-Banner —{' '}
+          Daten{'\u00AD'}schutz{'\u00AD'}erklärung, <span style={{ hyphens: 'none' }}>Impressum</span> und Cookie-Banner:{' '}
           <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Dataquard scannt Ihre Website, findet Probleme und generiert alle Dokumente die Sie brauchen — rechtssicher nach nDSG und DSGVO. Plus: <strong style={{ color: G.text }}>Erkennung von KI-generierten Bildern und Deepfakes.</strong> Einzigartig in der Schweiz.
+          Dataquard scannt Ihre Website, findet Probleme und generiert alle Dokumente die Sie brauchen, rechtssicher nach nDSG und DSGVO. Plus: <strong style={{ color: G.text }}>Erkennung von KI-generierten Bildern und Deepfakes.</strong> Einzigartig in der Schweiz.
         </p>
         {/* Status-Banner (nur bei Problemen) */}
         {serviceStatus === 'down' && (
@@ -207,7 +207,7 @@ export default function HomePage() {
           <div style={{ maxWidth: 520, margin: '0 auto 12px', padding: '10px 16px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/warnung.png" alt="" width={14} height={14} style={{ flexShrink: 0 }} />
             <p style={{ color: '#92400e', fontSize: 13, margin: 0 }}>
-              Eingeschränkter Betrieb — KI-Bild-Analyse momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
+              Eingeschränkter Betrieb: KI-Bild-Analyse momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
             </p>
           </div>
         )}
@@ -268,8 +268,8 @@ export default function HomePage() {
         <div className="grid-4col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
           {[
             { icon: '/icon-recht.png', title: 'Datenschutz & Compliance', desc: 'Ist Ihre Datenschutzerklärung auf dem Stand des nDSG 2023? Wir prüfen automatisch, ob alle Pflichtangaben vorhanden sind, erkennen Drittanbieter und generieren Ihre DSE, Impressum und Cookie-Banner.' },
-            { icon: '/icon-sicherheit.png', title: 'Sicherheit & Vertrauen', desc: 'SSL-Zertifikat gültig? Impressum vollständig? Cookie-Banner vorhanden? Die Grundlagen, die Besucher und Suchmaschinen erwarten — auf einen Blick geprüft.' },
-            { icon: '/badge-ai-trust.svg', title: 'KI-Bilder & Deepfakes', desc: 'Nutzen Sie Bilder von Midjourney, DALL-E oder ChatGPT? Die EU macht KI-Kennzeichnung zur Pflicht. Dataquard erkennt KI-generierte Bilder zuverlässig — das kann kein anderes Schweizer Tool.' },
+            { icon: '/icon-sicherheit.png', title: 'Sicherheit & Vertrauen', desc: 'SSL-Zertifikat gültig? Impressum vollständig? Cookie-Banner vorhanden? Die Grundlagen, die Besucher und Suchmaschinen erwarten, auf einen Blick geprüft.' },
+            { icon: '/badge-ai-trust.svg', title: 'KI-Bilder & Deepfakes', desc: 'Nutzen Sie Bilder von Midjourney, DALL-E oder ChatGPT? Die EU macht KI-Kennzeichnung zur Pflicht. Dataquard erkennt KI-generierte Bilder zuverlässig. Das kann kein anderes Schweizer Tool.' },
             { icon: '/diagramm.png', title: 'Performance & Technik', desc: 'Laden externe Dienste wie Google Fonts heimlich Daten Ihrer Besucher nach? Wir erkennen versteckte Datentransfers und technische Schwachstellen.' },
           ].map(item => (
             <div key={item.title} style={{ background: G.bgWhite, border: `1px solid ${G.border}`, borderRadius: 14, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
@@ -286,7 +286,7 @@ export default function HomePage() {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Live-Vorschau</span>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>Das Dataquard <span style={{ color: G.green }}>Ampel-System</span></h2>
-          <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>So sieht Ihr Ergebnis aus — auf einen Blick verständlich</p>
+          <p style={{ color: G.textSec, fontSize: 14, marginTop: 6 }}>So sieht Ihr Ergebnis aus, auf einen Blick verständlich</p>
         </div>
         <div style={{ maxWidth: 520, margin: '0 auto', background: G.bgWhite, borderRadius: 20, padding: '32px 28px', border: `1px solid ${G.border}`, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', fontSize: 13, color: G.textMuted, marginBottom: 20 }}>beispiel-kmu.ch</div>
@@ -323,13 +323,13 @@ export default function HomePage() {
             <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Einzigartig in der Schweiz</span>
             <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>KI-Bilder auf Ihrer Website? Wir erkennen sie.</h2>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 580, margin: '12px auto 0', lineHeight: 1.7 }}>
-              Immer mehr KMUs nutzen KI-generierte Bilder — oft ohne zu wissen, dass in der EU bereits eine Kennzeichnungspflicht gilt. Für Schweizer Unternehmen mit EU-Kunden wird das direkt relevant. Und auch ohne EU-Geschäft: Transparenz bei KI-Inhalten schafft Vertrauen.
+              Immer mehr KMUs nutzen KI-generierte Bilder, oft ohne zu wissen, dass in der EU bereits eine Kennzeichnungspflicht gilt. Für Schweizer Unternehmen mit EU-Kunden wird das direkt relevant. Und auch ohne EU-Geschäft: Transparenz bei KI-Inhalten schafft Vertrauen.
             </p>
           </div>
           <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28, marginBottom: 32 }}>
             {[
               { title: 'Zuverlässige Erkennung', desc: 'Bilder von Midjourney, DALL-E, Stable Diffusion und anderen KI-Tools werden mit über 90% Genauigkeit erkannt.' },
-              { title: 'Schutz vor Deepfakes', desc: 'Manipulierte Fotos von echten Personen — etwa Team-Bilder oder Porträts — werden separat auf Deepfake-Indikatoren geprüft.' },
+              { title: 'Schutz vor Deepfakes', desc: 'Manipulierte Fotos von echten Personen (etwa Team-Bilder oder Porträts) werden separat auf Deepfake-Indikatoren geprüft.' },
               { title: 'Automatische Kennzeichnung', desc: 'Im Professional-Plan erhalten Sie ein AI-Shield Badge für Ihre Website und automatische Updates Ihrer Datenschutzerklärung.' },
             ].map(item => (
               <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -362,9 +362,9 @@ export default function HomePage() {
           <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: 6, marginBottom: 36 }}>In 3 Schritten zu Ihren Compliance-Dokumenten</h2>
           <div className="grid-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
             {[
-              { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben — kostenlos, ohne Anmeldung. Dataquard erkennt automatisch Drittanbieter, prüft Sicherheit und analysiert Ihre Bilder auf KI-Inhalte.' },
+              { n: '1', ic: '🔍', t: 'Website scannen', d: 'URL eingeben, kostenlos und ohne Anmeldung. Dataquard erkennt automatisch Drittanbieter, prüft Sicherheit und analysiert Ihre Bilder auf KI-Inhalte.' },
               { n: '2', ic: '📊', t: 'Report erhalten', d: 'Übersichtlicher Report über 4 Bereiche: Datenschutz, Sicherheit, Performance und KI-Bilder. Mit konkreten Handlungsempfehlungen.' },
-              { n: '3', ic: '📄', t: 'Dokument herunterladen', d: 'Datenschutzerklärung, Impressum und Cookie-Banner — fertig generiert, als PDF. In Minuten statt Stunden.' },
+              { n: '3', ic: '📄', t: 'Dokument herunterladen', d: 'Datenschutzerklärung, Impressum und Cookie-Banner, fertig generiert als PDF. In Minuten statt Stunden.' },
             ].map(s => (
               <div key={s.n} style={{ textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', background: G.greenBg, border: `2px solid ${G.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 18, fontWeight: 900, color: G.green }}>{s.n}</div>
@@ -425,7 +425,7 @@ export default function HomePage() {
               n: 'Starter', sub: 'Basis', badge: 'EMPFOHLEN' as string | null,
               hl: true, best: false,
               p: 'CHF 19.–', pMt: '/Mt.' as string | null, pYear: '(CHF 228.– / Jahr)' as string | null,
-              pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+              pNote: 'Jährliche Abrechnung, jederzeit kündbar',
               d: 'Für Schweizer KMUs',
               f: ['Website-Scan & Compliance-Bericht', 'nDSG-Datenschutzerklärung & Impressum', 'Cookie-Banner inklusive', 'Autom. Scan für 50 KI-Bilder', 'Monatlicher Compliance-Report per E-Mail', 'SSL-Ablauf Warnung'],
               m: [],
@@ -435,7 +435,7 @@ export default function HomePage() {
               n: 'Professional', sub: 'Sorglos', badge: 'BESTSELLER' as string | null,
               hl: false, best: true,
               p: 'CHF 39.–', pMt: '/Mt.' as string | null, pYear: '(CHF 468.– / Jahr)' as string | null,
-              pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+              pNote: 'Jährliche Abrechnung, jederzeit kündbar',
               d: 'Unser Bestseller',
               f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Schutz vor Deepfakes & Alerts in Echtzeit', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
               m: [],
@@ -473,7 +473,7 @@ export default function HomePage() {
           Ist Ihre Website auf dem neuesten Stand?
         </h2>
         <p style={{ color: G.textSec, fontSize: 16, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
-          Finden Sie es in 60 Sekunden heraus — kostenlos und ohne Anmeldung.
+          Finden Sie es in 60 Sekunden heraus, kostenlos und ohne Anmeldung.
         </p>
         <button
           onClick={() => {

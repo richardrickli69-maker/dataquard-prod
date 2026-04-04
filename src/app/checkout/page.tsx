@@ -241,7 +241,7 @@ function CheckoutContent() {
           <img src="/badge-ai-trust.svg" alt="AI" width={20} height={20} style={{ display: 'inline-block' }} /> AI-Datenschutzerklärung inklusive
         </h3>
         <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6 }}>
-          Dataquard erkennt automatisch welche Dienste Ihre Website nutzt — und generiert eine rechtskonforme Datenschutzerklärung nach nDSG + DSGVO + EU AI Act Art. 50.
+          Dataquard erkennt automatisch welche Dienste Ihre Website nutzt und generiert eine rechtskonforme Datenschutzerklärung nach nDSG + DSGVO + EU AI Act Art. 50.
         </p>
       </div>
 

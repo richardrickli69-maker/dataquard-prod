@@ -36,7 +36,7 @@ function KiTransparenzFaqSchema() {
         name: 'Wie kann ich meine Website auf KI-Compliance prüfen?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Mit dem kostenlosen Dataquard Website-Scanner prüfen Sie Ihre Website automatisch auf KI-Inhalte, Deepfakes und EU AI Act Art. 50 Konformität — in unter 60 Sekunden.',
+          text: 'Mit dem kostenlosen Dataquard Website-Scanner prüfen Sie Ihre Website automatisch auf KI-Inhalte, Deepfakes und EU AI Act Art. 50 Konformität, in unter 60 Sekunden.',
         },
       },
     ],
@@ -108,7 +108,7 @@ export default function KiTransparenzPage() {
           <Section title="1. Gesetzliche Grundlage">
             <p>
               Der <strong style={{ color: G.text }}>EU AI Act Artikel 50</strong> verpflichtet Anbieter
-              von KI-Systemen, KI-generierte Inhalte — insbesondere Texte, Bilder und Audioaufnahmen —
+              von KI-Systemen, KI-generierte Inhalte (insbesondere Texte, Bilder und Audioaufnahmen)
               klar erkennbar zu kennzeichnen. Diese Pflicht gilt für alle Unternehmen, die Kunden in der
               EU betreuen, unabhängig vom Firmensitz.
             </p>
@@ -124,7 +124,7 @@ export default function KiTransparenzPage() {
               {[
                 {
                   name: 'Dokumenten-Generierung',
-                  use: 'Unsere KI erstellt Datenschutzerklärungen, Impressum-Texte, Scan-Analysen und Handlungsempfehlungen — basierend auf aktuellen Schweizer und europäischen Rechtsgrundlagen.',
+                  use: 'Unsere KI erstellt Datenschutzerklärungen, Impressum-Texte, Scan-Analysen und Handlungsempfehlungen, basierend auf aktuellen Schweizer und europäischen Rechtsgrundlagen.',
                 },
                 {
                   name: 'Bild-Analyse',
@@ -146,7 +146,7 @@ export default function KiTransparenzPage() {
             <p>Folgende Bereiche der Dataquard-Plattform nutzen KI-Unterstützung:</p>
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { label: 'Datenschutzerklärungen', detail: 'Automatisch generiert auf Basis des Website-Scans — manuell geprüft und juristisch validiert.' },
+                { label: 'Datenschutzerklärungen', detail: 'Automatisch generiert auf Basis des Website-Scans, manuell geprüft und juristisch validiert.' },
                 { label: 'Scan-Analysen & Empfehlungen', detail: 'KI-gestützte Auswertung von Website-Daten mit konkreten Handlungsempfehlungen.' },
                 { label: 'Website-Texte (Marketing)', detail: 'Teile der Homepage- und Landingpage-Texte wurden mit KI-Unterstützung verfasst und redaktionell überarbeitet.' },
                 { label: 'AI-Trust Bild-Analyse', detail: 'Automatische Erkennung von KI-generierten Bildern und Deepfakes auf Kunden-Websites mit EU-konformer Analyse-Technologie.' },
@@ -187,7 +187,7 @@ export default function KiTransparenzPage() {
             </p>
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
-                { label: 'Schema.org JSON-LD', detail: 'WebPage + CreativeWork mit conditionsOfAccess und usageInfo — maschinenlesbar im HTML-Quellcode.' },
+                { label: 'Schema.org JSON-LD', detail: 'WebPage + CreativeWork mit conditionsOfAccess und usageInfo, maschinenlesbar im HTML-Quellcode.' },
                 { label: 'Meta-Tags', detail: 'ai-content-declaration und ai-policy Meta-Tags im HTML-Head erkennbar für Scanner und Crawler.' },
                 { label: 'Footer-Hinweis', detail: 'Sichtbarer KI-Transparenz-Hinweis auf jeder Seite der Dataquard-Plattform.' },
               ].map(item => (
@@ -241,7 +241,7 @@ export default function KiTransparenzPage() {
             </div>
             <p style={{ fontSize: 14, color: G.textSec, marginBottom: 14, lineHeight: 1.6 }}>
               Mit dem Dataquard AI-Trust Scanner prüfen Sie Ihre Website automatisch auf KI-Bilder
-              und Deepfakes — und erhalten alle nötigen Kennzeichnungs-Klauseln für Ihre Datenschutzerklärung.
+              und Deepfakes und erhalten alle nötigen Kennzeichnungs-Klauseln für Ihre Datenschutzerklärung.
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <Link href="/scanner" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: G.green, color: '#fff', fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 10, textDecoration: 'none' }}>
@@ -249,7 +249,7 @@ export default function KiTransparenzPage() {
                 Kostenlos scannen
               </Link>
               <Link href="/checkout?plan=ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `2px solid ${G.green}`, color: G.green, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 10, textDecoration: 'none', background: 'transparent' }}>
-                AI-Trust Abo — CHF 99/Jahr
+                AI-Trust Abo: CHF 99/Jahr
               </Link>
             </div>
           </div>

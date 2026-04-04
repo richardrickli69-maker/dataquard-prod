@@ -357,7 +357,7 @@ export default function AgencyDashboardPage() {
       const errInfo = errorCount > 0 ? `, ${errorCount} Fehler` : '';
       setScanResult(`${successCount} von ${toScan.length} Domains erfolgreich gescannt${errInfo}.`);
     } catch {
-      setScanResult('Scan fehlgeschlagen — bitte erneut versuchen');
+      setScanResult('Scan fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setScanning(false);
       setScanProgress('');
@@ -386,7 +386,7 @@ export default function AgencyDashboardPage() {
       }
       await loadData();
     } catch {
-      setScanResult(`Scan fehlgeschlagen — bitte erneut versuchen`);
+      setScanResult(`Scan fehlgeschlagen. Bitte erneut versuchen.`);
     } finally {
       setScanning(false);
       setScanProgress('');
@@ -1165,7 +1165,7 @@ export default function AgencyDashboardPage() {
               }}>
                 <img src="/dokument.png" alt="" width={16} height={16} />
                 Document Pack aktiv für <strong style={{ color: G.text }}>{docPackCount} Domain(s)</strong>
-                {' '}— CHF {(docPackCount * 9).toFixed(2)}.– / Mt. zusätzlich
+                {' '}(CHF {(docPackCount * 9).toFixed(2)}.– / Mt. zusätzlich)
               </div>
             )}
           </>
@@ -1305,7 +1305,7 @@ export default function AgencyDashboardPage() {
                     </div>
                     <div style={{ padding: '8px 16px 12px', fontSize: '11px', color: G.textMuted }}>
                       <strong style={{ color: brandColor }}>COMPLIANCE REPORT</strong>
-                      <br />example.ch — Compliance Score: 85/100
+                      <br />example.ch, Compliance Score: 85/100
                     </div>
                   </div>
                 </div>

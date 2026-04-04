@@ -83,7 +83,7 @@ const FAQ_CATEGORIES = [
       },
       {
         question: 'Brauche ich technische Fähigkeiten?',
-        answer: 'Nein. Dataquard ist für KMUs ohne IT-Abteilung entwickelt. Sie geben Ihre Website-URL ein — der Rest läuft automatisch. Keine Installation, kein Code, keine technischen Vorkenntnisse nötig.',
+        answer: 'Nein. Dataquard ist für KMUs ohne IT-Abteilung entwickelt. Sie geben Ihre Website-URL ein, der Rest läuft automatisch. Keine Installation, kein Code, keine technischen Vorkenntnisse nötig.',
       },
       {
         question: 'Wie lange dauert die Policy-Generierung?',
@@ -91,7 +91,7 @@ const FAQ_CATEGORIES = [
       },
       {
         question: 'Ist die generierte Policy wirklich nDSG/DSGVO-konform?',
-        answer: 'Ja. Die Texte werden basierend auf den aktuellen Anforderungen des nDSG (in Kraft seit 1.9.2023) und der DSGVO generiert — angepasst an die Dienste, die auf Ihrer spezifischen Website erkannt werden. Bei Gesetzesänderungen aktualisiert Dataquard die Vorlage entsprechend.',
+        answer: 'Ja. Die Texte werden basierend auf den aktuellen Anforderungen des nDSG (in Kraft seit 1.9.2023) und der DSGVO generiert, angepasst an die Dienste, die auf Ihrer spezifischen Website erkannt werden. Bei Gesetzesänderungen aktualisiert Dataquard die Vorlage entsprechend.',
       },
       {
         question: 'Was ist im Professional-Plan anders als im Starter?',
@@ -109,7 +109,7 @@ const FAQ_CATEGORIES = [
       },
       {
         question: 'Kann ich mein Abo jederzeit kündigen?',
-        answer: 'Ja, Ihr Abo läuft bis zum Ende der bezahlten Laufzeit und verlängert sich nur mit Ihrer Zustimmung. Eine Kündigung ist jederzeit möglich — direkt im Dashboard oder per E-Mail an support@dataquard.ch.',
+        answer: 'Ja, Ihr Abo läuft bis zum Ende der bezahlten Laufzeit und verlängert sich nur mit Ihrer Zustimmung. Eine Kündigung ist jederzeit möglich, direkt im Dashboard oder per E-Mail an support@dataquard.ch.',
       },
       {
         question: 'Gibt es eine Geld-zurück-Garantie?',
@@ -194,7 +194,7 @@ export default function FaqPage() {
         {/* ═══ BOTTOM CTA ═══ */}
         <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 10 }}>
-            Ihre Website jetzt prüfen — kostenlos.
+            Ihre Website jetzt prüfen, kostenlos.
           </h2>
           <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
             Ergebnis in 60 Sekunden. Ohne Anmeldung. Ohne Kreditkarte.

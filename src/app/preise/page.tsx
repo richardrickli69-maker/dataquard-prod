@@ -39,7 +39,7 @@ const PLANS = [
     n: 'Starter', sub: 'Basis', badge: 'EMPFOHLEN' as string | null,
     hl: true, best: false,
     p: 'CHF 19.–', pMt: '/Mt.' as string | null, pYear: '(CHF 228.– / Jahr)' as string | null,
-    pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+    pNote: 'Jährliche Abrechnung, jederzeit kündbar',
     d: 'Für Schweizer KMUs',
     f: ['Website-Scan & Compliance-Bericht', 'nDSG-Datenschutzerklärung & Impressum', 'Cookie-Banner inklusive', 'Autom. Scan für 50 KI-Bilder', 'Monatlicher Compliance-Report per E-Mail', 'SSL-Ablauf Warnung'],
     m: [],
@@ -49,7 +49,7 @@ const PLANS = [
     n: 'Professional', sub: 'Sorglos', badge: 'BESTSELLER' as string | null,
     hl: false, best: true,
     p: 'CHF 39.–', pMt: '/Mt.' as string | null, pYear: '(CHF 468.– / Jahr)' as string | null,
-    pNote: 'Jährliche Abrechnung — jederzeit kündbar',
+    pNote: 'Jährliche Abrechnung, jederzeit kündbar',
     d: 'Unser Bestseller',
     f: ['Alles aus Starter', 'Bis zu 5 Domains & Full AI-Scan (250 Bilder)', 'Schutz vor Deepfakes & Alerts in Echtzeit', 'AI-Shield Badge (EU AI Act)', 'Wöchentlicher Compliance-Report per E-Mail', 'Autom. Update der DSE bei neuen KI-Inhalten', 'Alert bei neuen KI-Bildern ohne Kennzeichnung'],
     m: [],
@@ -59,7 +59,7 @@ const PLANS = [
 
 const PRICE_FAQS = [
   { q: 'Kann ich mein Abo jederzeit kündigen?', a: 'Ja. Die Kündigung ist jederzeit im Dashboard unter «Abrechnung» möglich. Sie bleibt aktiv bis zum Ende der bereits bezahlten Laufzeit. Sie behalten den Zugang bis zum letzten bezahlten Tag.' },
-  { q: 'Gibt es eine Geld-zurück-Garantie?', a: 'Ja — 14 Tage ohne Angabe von Gründen. Wenn Sie nicht zufrieden sind, erstatten wir Ihnen den vollen Betrag. Einfach eine E-Mail an support@dataquard.ch genügt.' },
+  { q: 'Gibt es eine Geld-zurück-Garantie?', a: 'Ja, 14 Tage ohne Angabe von Gründen. Wenn Sie nicht zufrieden sind, erstatten wir Ihnen den vollen Betrag. Einfach eine E-Mail an support@dataquard.ch genügt.' },
   { q: 'Verlängert sich mein Abo automatisch?', a: 'Ja. Jahresabos verlängern sich automatisch um ein weiteres Jahr, sofern Sie nicht vorher kündigen. Sie erhalten 30 Tage vor der Verlängerung eine E-Mail-Erinnerung.' },
   { q: 'Was passiert nach dem Abo-Ablauf?', a: 'Wenn Sie kündigen, behalten Sie Ihren Zugang bis zum Ende der bezahlten Laufzeit. Danach werden Ihre generierten Dokumente gespeichert, aber keine neuen Scans oder Generierungen mehr möglich.' },
   { q: 'Welche Zahlungsmittel akzeptieren Sie?', a: 'Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, Amex) über Stripe. Die Zahlung erfolgt sicher und verschlüsselt. Es gibt keine versteckten Kosten.' },
@@ -155,7 +155,7 @@ export default function PreisePage() {
       {/* ═══ BOTTOM CTA ═══ */}
       <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 10 }}>
-          Starten Sie kostenlos — upgraden Sie wenn Sie bereit sind.
+          Starten Sie kostenlos und upgraden Sie wenn Sie bereit sind.
         </h2>
         <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
           Kein Risiko. 14 Tage Geld-zurück-Garantie.

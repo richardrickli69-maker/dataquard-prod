@@ -358,7 +358,7 @@ export default function ScannerPage() {
           <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
             <img src="/warnung.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />
             <p style={{ color: '#92400e', fontSize: 13, margin: 0 }}>
-              Eingeschränkter Betrieb — die KI-Bild-Analyse ist momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
+              Eingeschränkter Betrieb: die KI-Bild-Analyse ist momentan nicht verfügbar. Compliance, Performance und Security werden normal geprüft.
             </p>
           </div>
         )}
@@ -472,7 +472,7 @@ export default function ScannerPage() {
             {result.fetchError && (
               <div style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.4)', borderRadius: 12, padding: '14px 16px' }}>
                 <p style={{ color: '#92400e', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Eingeschränkter Scan</p>
-                <p style={{ color: G.textSec, fontSize: 13 }}>{result.fetchError} Einige Prüfungen (Datenschutzerklärung, Tracker, Cookie-Banner) konnten nicht durchgeführt werden — SSL und Basis-Analyse sind trotzdem verfügbar.</p>
+                <p style={{ color: G.textSec, fontSize: 13 }}>{result.fetchError} Einige Prüfungen (Datenschutzerklärung, Tracker, Cookie-Banner) konnten nicht durchgeführt werden. SSL und Basis-Analyse sind trotzdem verfügbar.</p>
               </div>
             )}
 
@@ -590,7 +590,7 @@ export default function ScannerPage() {
                     bad: (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
-                        KI-Signale erkannt —{' '}
+                        KI-Signale erkannt,{' '}
                         <a href="#ai-trust-section" style={{ color: G.violet, fontWeight: 600, textDecoration: 'none' }}>
                           Details im AI-Trust Bereich unten
                         </a>
@@ -858,7 +858,7 @@ export default function ScannerPage() {
                   <div style={{ marginBottom: 12, padding: '8px 12px', background: G.bgLight, border: `1px solid ${G.border}`, borderRadius: 8, fontSize: 12, color: G.textSec, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <IconWarn />
                     <span>
-                      5 von {result.imageAnalysis.total_images_found} Bildern geprüft —{' '}
+                      5 von {result.imageAnalysis.total_images_found} Bildern geprüft,{' '}
                       <Link href="/checkout?plan=starter" style={{ color: G.green, fontWeight: 600, textDecoration: 'none' }}>
                         für vollständigen Scan: Starter ab CHF 19/Mt.
                       </Link>

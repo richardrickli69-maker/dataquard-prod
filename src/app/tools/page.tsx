@@ -70,7 +70,7 @@ export default function ToolsPage() {
           Die einzige <span style={{ color: G.green }}>Vier-Säulen-Analyse</span> der Schweiz
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Compliance, Performance, Security und AI-Trust — gleichzeitig geprüft, direkt behoben. Kein anderes Schweizer Tool bietet alle vier Säulen in einem Scan.
+          Compliance, Performance, Security und AI-Trust, gleichzeitig geprüft und direkt behoben. Kein anderes Schweizer Tool bietet alle vier Säulen in einem Scan.
         </p>
         <Link href="/scanner" style={{ display: 'inline-block', padding: '14px 32px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 16, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
           Jetzt kostenlos prüfen →
@@ -84,12 +84,12 @@ export default function ToolsPage() {
             <span style={{ color: '#888899', fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Unsere digitalen Lösungen</span>
             <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>Für jedes Compliance-Problem das richtige Werkzeug</h2>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 580, margin: '12px auto 0', lineHeight: 1.7 }}>
-              Dataquard ist kein einzelnes Tool — sondern ein komplettes System aus Scanner, Dokumenten-Generator und Monitoring. Alle Werkzeuge arbeiten zusammen und basieren auf unserer Vier-Säulen-Analyse.
+              Dataquard ist kein einzelnes Tool, sondern ein komplettes System aus Scanner, Dokumenten-Generator und Monitoring. Alle Werkzeuge arbeiten zusammen und basieren auf unserer Vier-Säulen-Analyse.
             </p>
           </div>
           <div className="tools-saeulen-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
             {[
-              { icon: '/icon-recht.png', title: 'Compliance', desc: 'Automatischer Website-Scan, Datenschutzerklärung, Impressum und Cookie-Banner — generiert in Minuten.' },
+              { icon: '/icon-recht.png', title: 'Compliance', desc: 'Automatischer Website-Scan, Datenschutzerklärung, Impressum und Cookie-Banner, generiert in Minuten.' },
               { icon: '/icon-sicherheit.png', title: 'Sicherheit', desc: 'SSL-Überwachung, Impressum-Check und Cookie-Banner-Erkennung mit Alerts in Echtzeit.' },
               { icon: '/diagramm.png', title: 'Performance', desc: 'Tracker-Erkennung, Drittanbieter-Analyse und Handlungsempfehlungen für schnellere Ladezeiten.' },
               { icon: '/badge-ai-trust.svg', title: 'KI-Sicherheit', desc: 'KI-Bilderkennung, Deepfake-Check und automatische Kennzeichnung nach EU-Vorgaben.' },
@@ -114,7 +114,7 @@ export default function ToolsPage() {
         <div className="tools-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
           {[
             { ic: '⚖️', tag: 'RECHTSSICHERHEIT', t: 'Compliance-Check', s: 'nDSG + DSGVO', d: 'Automatische Prüfung aller rechtlichen Anforderungen. Ampel-System zeigt sofort, wo Handlungsbedarf besteht.', ch: ['Datenschutzerklärung vorhanden', 'Cookie-Banner konform', 'Tracker erkannt & dokumentiert', 'Impressum vollständig'], accent: G.green },
-            { ic: '⚡', tag: 'GESCHWINDIGKEIT', t: 'Performance-Scan', s: 'Speed & Technik', d: 'Ladezeit, externe Scripts, Google Fonts — alles was bremst und rechtlich riskant ist.', ch: ['Ladezeit < 3 Sekunden', 'Mobile-freundlich', 'SSL aktiv & gültig', 'Keine veralteten Scripts'], accent: G.green },
+            { ic: '⚡', tag: 'GESCHWINDIGKEIT', t: 'Performance-Scan', s: 'Speed & Technik', d: 'Ladezeit, externe Scripts, Google Fonts: alles was bremst und rechtlich riskant ist.', ch: ['Ladezeit < 3 Sekunden', 'Mobile-freundlich', 'SSL aktiv & gültig', 'Keine veralteten Scripts'], accent: G.green },
             { ic: '🛡️', tag: 'VERTRAUEN', t: 'Trust-Score', s: 'Sicherheit & Vertrauen', d: 'SSL, Impressum, Cookie-Handling, Datentransfer. Ihr Vertrauens-Profil auf einen Blick.', ch: ['Meta-Tags vollständig', 'Kontaktinfos sichtbar', 'Keine broken Links', 'HTTPS überall'], accent: G.green },
             { ic: '🤖', tag: 'KI-SICHERHEIT', t: 'AI-Trust Check', s: 'KI-Erkennung & Deepfakes', d: 'Automatische Erkennung von KI-generierten Bildern und Deepfakes. EU AI Act Art. 50 Konformität auf Knopfdruck.', ch: ['KI-generierte Bilder erkannt', 'Deepfake-Warnung', 'EU AI Act Art. 50 konform', 'Transparenz-Badge verfügbar'], accent: G.violet },
           ].map(c => (
@@ -187,7 +187,7 @@ export default function ToolsPage() {
               { ic: '🔍', t: 'Alle Tracker werden erkannt', d: 'Google Analytics, Facebook Pixel, Hotjar – wir finden jeden Drittanbieter.' },
               { ic: '🚦', t: 'Ampel zeigt Handlungsbedarf', d: 'Rot, Gelb, Grün – auf einen Blick sehen Sie, was behoben werden muss.' },
               { ic: '⚡', t: 'Policy mit einem Klick generieren', d: 'Datenschutzerklärung erstellen, herunterladen, einbinden. Fertig.' },
-              { ic: '🤖', t: 'KI-Bilder automatisch erkennen', d: 'Deepfakes und KI-generierte Inhalte auf Ihrer Website finden — EU AI Act konform.' },
+              { ic: '🤖', t: 'KI-Bilder automatisch erkennen', d: 'Deepfakes und KI-generierte Inhalte auf Ihrer Website finden, EU AI Act konform.' },
             ].map(p => (
               <div key={p.t} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
                 <span style={{ flexShrink: 0 }}><IconEl ic={p.ic} size={22} /></span>
@@ -220,10 +220,10 @@ export default function ToolsPage() {
               <h3 style={{ fontSize: 16, fontWeight: 800, color: '#991b1b' }}>Copy-Paste Datenschutzerklärung</h3>
             </div>
             {[
-              { ic: '⚠️', t: 'Falsche Drittanbieter', d: 'Enthält Google Analytics, obwohl Sie es nicht nutzen — aber Ihr Stripe fehlt komplett.' },
+              { ic: '⚠️', t: 'Falsche Drittanbieter', d: 'Enthält Google Analytics, obwohl Sie es nicht nutzen, aber Ihr Stripe fehlt komplett.' },
               { ic: '⚠️', t: 'Falsche Jurisdiktion', d: 'Kopiert von einer .de-Website? Dann fehlt der nDSG-Teil. Kopiert von .ch? Dann fehlt DSGVO für deutsche Kunden.' },
-              { ic: '⚠️', t: 'Veraltet ab Tag 1', d: 'Sie fügen ein Kontaktformular hinzu, wechseln den Hoster — die kopierte Policy weiss nichts davon.' },
-              { ic: '⚠️', t: 'Rechtlich angreifbar', d: 'Eine falsche DSE ist schlimmer als keine — sie beweist, dass Sie es versucht aber falsch gemacht haben.' },
+              { ic: '⚠️', t: 'Veraltet ab Tag 1', d: 'Sie fügen ein Kontaktformular hinzu, wechseln den Hoster, die kopierte Policy weiss nichts davon.' },
+              { ic: '⚠️', t: 'Rechtlich angreifbar', d: 'Eine falsche DSE ist schlimmer als keine, denn sie beweist, dass Sie es versucht aber falsch gemacht haben.' },
             ].map(r => (
               <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
                 <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
@@ -244,11 +244,11 @@ export default function ToolsPage() {
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${G.green}, transparent)` }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <IconEl ic="✅" size={24} />
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard — automatisch korrekt</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard: automatisch korrekt</h3>
             </div>
             {[
-              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen — von Google Analytics über Meta Pixel bis zu versteckten Tracking-Pixeln.' },
-              { ic: '🚦', t: 'Richtige Jurisdiktion', d: 'Automatische Erkennung: nDSG, DSGVO oder beides — basierend auf Ihrer Domain, Ihrem Server und Ihren Besuchern.' },
+              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen, von Google Analytics über Meta Pixel bis zu versteckten Tracking-Pixeln.' },
+              { ic: '🚦', t: 'Richtige Jurisdiktion', d: 'Automatische Erkennung: nDSG, DSGVO oder beides, basierend auf Ihrer Domain, Ihrem Server und Ihren Besuchern.' },
               { ic: '🔄', t: 'Immer aktuell', d: 'Neuer Tracker? Neues Plugin? Dataquard erkennt Änderungen automatisch. Im Starter-Plan: monatliche Compliance-Reports.' },
               { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14. Zusätzlich: EU AI Act Art. 50 Konformität für KI-generierte Bilder.' },
             ].map(r => (
@@ -292,7 +292,7 @@ export default function ToolsPage() {
       {/* ═══ BOTTOM CTA ═══ */}
       <section style={{ padding: '56px 24px', textAlign: 'center', borderTop: `1px solid ${G.border}` }}>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: G.text, marginBottom: 10 }}>
-          Bereit? Scannen Sie Ihre Website — kostenlos.
+          Bereit? Scannen Sie Ihre Website, kostenlos.
         </h2>
         <p style={{ color: G.textSec, fontSize: 15, marginBottom: 28 }}>
           Ergebnis in 60 Sekunden. Ohne Anmeldung. Ohne Kreditkarte.

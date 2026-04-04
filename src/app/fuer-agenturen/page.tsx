@@ -53,14 +53,14 @@ const STEPS = [
 ];
 
 const FEATURES = [
-  { icon: '/diagramm.png', title: 'Zentrales Agentur-Dashboard', desc: 'Alle Kundendaten, Scan-Ergebnisse und Dokumente auf einer Oberfläche — übersichtlich und effizient.' },
+  { icon: '/diagramm.png', title: 'Zentrales Agentur-Dashboard', desc: 'Alle Kundendaten, Scan-Ergebnisse und Dokumente auf einer Oberfläche, übersichtlich und effizient.' },
   { icon: '/suche.png', title: 'Bulk-Scan', desc: 'Scannen Sie mehrere Kunden-Websites gleichzeitig. Kein manuelles Starten einzelner Scans.' },
   { icon: '/dokument.png', title: 'White-Label-Berichte', desc: 'PDFs mit Ihrem Logo und Ihren Farben. Der Kunde sieht Ihre Marke, nicht Dataquard.' },
   { icon: '/icon-recht.png', title: 'Dokument-Pack', desc: 'Automatisch generierte Datenschutzerklärungen, Impressum und Cookie-Policy für jeden Kunden.' },
   { icon: '/badge-ai-trust.svg', title: 'Erkennung von KI-Bildern und Deepfakes', desc: 'Prüfen Sie automatisch alle Kunden-Websites auf KI-generierte Bilder und Deepfakes. Der stärkste Differenzierer, den Sie Ihren Kunden bieten können.' },
   { icon: '/diagramm.png', title: 'Monatliche Reports per E-Mail', desc: 'Automatisierte Compliance-Reports für alle Kunden. Sie informieren proaktiv, ohne Aufwand.' },
-  { icon: '/warnung.png', title: 'Alerts in Echtzeit', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf — für jeden Kunden separat.' },
-  { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO — vollständige Abdeckung', desc: 'Alle relevanten Schweizer und europäischen Datenschutzgesetze abgedeckt. Inklusive automatischer KI-Transparenzklausel für Kunden mit EU-Geschäft.' },
+  { icon: '/warnung.png', title: 'Alerts in Echtzeit', desc: 'Sofort benachrichtigt bei neuen Compliance-Problemen oder SSL-Ablauf, jeweils für jeden Kunden separat.' },
+  { icon: '/icon-sicherheit.png', title: 'nDSG + DSGVO: vollständige Abdeckung', desc: 'Alle relevanten Schweizer und europäischen Datenschutzgesetze abgedeckt. Inklusive automatischer KI-Transparenzklausel für Kunden mit EU-Geschäft.' },
 ];
 
 const PLANS = [
@@ -213,7 +213,7 @@ export default function FuerAgenturenPage() {
             margin: '0 0 20px',
             fontFamily: '"DM Serif Display", Georgia, serif',
           }}>
-            DSE, Impressum und Cookie-Banner für alle Ihre Kunden — <span style={{ color: G.green }}>von einem Dashboard aus.</span>
+            DSE, Impressum und Cookie-Banner für alle Ihre Kunden, <span style={{ color: G.green }}>von einem Dashboard aus.</span>
           </h1>
 
           <p style={{
@@ -225,7 +225,7 @@ export default function FuerAgenturenPage() {
             marginLeft: 'auto',
             marginRight: 'auto',
           }}>
-            Dataquard scannt alle Kunden-Websites Ihrer Agentur, generiert White-Label-Dokumente und liefert laufende Compliance-Reports. Inklusive KI-Bilderkennung — ein Angebot das keine andere Schweizer Agentur machen kann.
+            Dataquard scannt alle Kunden-Websites Ihrer Agentur, generiert White-Label-Dokumente und liefert laufende Compliance-Reports. Inklusive KI-Bilderkennung, ein Angebot das keine andere Schweizer Agentur machen kann.
           </p>
 
           <div className="agency-hero-ctas" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -285,7 +285,7 @@ export default function FuerAgenturenPage() {
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: G.green, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>Das Problem</div>
             <h2 style={{ fontSize: '32px', fontWeight: 800, color: G.text, margin: 0 }}>
-              Compliance kostet Zeit — und bringt kein Geld. Bis jetzt.
+              Compliance kostet Zeit und bringt kein Geld. Bis jetzt.
             </h2>
           </div>
 
@@ -326,7 +326,7 @@ export default function FuerAgenturenPage() {
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: G.text, margin: '0 0 16px' }}>Mit Dataquard</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
-                  'Ein Klick — alle Kunden gleichzeitig gescannt',
+                  'Ein Klick, alle Kunden gleichzeitig gescannt',
                   'Compliance-Dashboard für alle Kunden auf einen Blick',
                   'KI-Bilder und Deepfakes automatisch erkannt',
                   'White-Label-PDFs in Minuten generiert',
@@ -397,7 +397,7 @@ export default function FuerAgenturenPage() {
               Alles, was Ihre Agentur braucht
             </h2>
             <p style={{ fontSize: '16px', color: G.textSec, margin: 0 }}>
-              Das einzige Schweizer Compliance-Tool mit KI-Bilderkennung — und White-Label für Agenturen.
+              Das einzige Schweizer Compliance-Tool mit KI-Bilderkennung und White-Label für Agenturen.
             </p>
           </div>
 
@@ -431,7 +431,7 @@ export default function FuerAgenturenPage() {
               Transparente Agentur-Preise
             </h2>
             <p style={{ fontSize: '16px', color: G.textSec, margin: 0 }}>
-              Monatlich kündbar — keine Mindestlaufzeit
+              Monatlich kündbar, keine Mindestlaufzeit
             </p>
           </div>
 
@@ -546,10 +546,10 @@ export default function FuerAgenturenPage() {
                 <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Add-on</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: G.white, margin: '0 0 6px' }}>
-                Document Pack — CHF 9.– / Domain / Mt.
+                Document Pack: CHF 9.– / Domain / Mt.
               </h3>
               <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
-                Automatisch generierte und aktuell gehaltene Datenschutzerklärung, Impressum und Cookie-Policy — individuell für jeden Kunden, mit Ihrem Logo.
+                Automatisch generierte und aktuell gehaltene Datenschutzerklärung, Impressum und Cookie-Policy, individuell für jeden Kunden, mit Ihrem Logo.
               </p>
             </div>
             <a href="mailto:info@dataquard.ch?subject=Document Pack Anfrage" style={{

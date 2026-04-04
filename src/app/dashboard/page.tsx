@@ -654,10 +654,10 @@ export default function DashboardPage() {
             <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 12, padding: 20 }}>
               <h2 style={{ fontSize: 16, fontWeight: 700, color: '#8B5CF6', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <img src="/badge-ai-trust.svg" alt="" width={20} height={20} style={{ display: 'inline-block' }} />
-                AI-Shield — KI-Bilder Kennzeichnung
+                AI-Shield: KI-Bilder Kennzeichnung
               </h2>
               <p style={{ color: G.textSec, fontSize: 13, lineHeight: 1.6, margin: 0 }}>
-                Binden Sie ein JavaScript-Snippet in Ihre Website ein. Es erkennt KI-generierte Bilder automatisch und blendet ein Kennzeichnungs-Badge ein — konform nach EU AI Act Art. 50.
+                Binden Sie ein JavaScript-Snippet in Ihre Website ein. Es erkennt KI-generierte Bilder automatisch und blendet ein Kennzeichnungs-Badge ein, konform nach EU AI Act Art. 50.
               </p>
             </div>
 
@@ -859,7 +859,7 @@ export default function DashboardPage() {
                       }}>
                         {shieldSettings.badge_style === 'minimal' ? 'KI ✓' :
                          shieldSettings.badge_style === 'standard' ? 'KI-generiert ✓' :
-                         'KI-generiert — geprüft nach EU AI Act Art. 50'}
+                         'KI-generiert, geprüft nach EU AI Act Art. 50'}
                       </div>
                     </div>
                   </div>

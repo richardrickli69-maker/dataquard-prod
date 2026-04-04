@@ -99,6 +99,16 @@ export async function POST(request: NextRequest) {
         const { data: { user }, error: authError } = await supabaseVerify.auth.getUser(token);
         if (!authError && user?.id) {
           userId = user.id;
+          // User in public.users sicherstellen — existiert nach OAuth-Registrierung evtl. nicht
+          const { error: userUpsertErr } = await supabaseAdmin
+            .from('users')
+            .upsert(
+              { id: user.id, email: user.email ?? '' },
+              { onConflict: 'id', ignoreDuplicates: true }
+            );
+          if (userUpsertErr) {
+            console.error('[saveScan] User-Upsert Fehler:', userUpsertErr.message);
+          }
           // Rescan aktivieren wenn User aktive Subscription hat
           const { data: sub } = await supabaseAdmin
             .from('subscriptions')
