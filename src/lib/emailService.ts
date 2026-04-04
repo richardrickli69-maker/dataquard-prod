@@ -621,3 +621,120 @@ export async function sendReminderEmail(email: string) {
     return { success: false, error };
   }
 }
+
+// ─── Scan Lead E-Mail ─────────────────────────────────────────────────────────
+
+export interface ScanLeadEmailParams {
+  email: string;
+  domain: string;
+  scores: {
+    compliance: number;
+    optimization: number;
+    trust: number;
+    aiTrust: number;
+  };
+  /** Top-3 Befunde als kurze Strings */
+  topFindings: string[];
+}
+
+/**
+ * Sendet eine E-Mail nach einem Free-Scan mit den Score-Ergebnissen.
+ * Absender: info@dataquard.ch
+ * Enthält 4 Ampelwerte, Top-Befunde und zwei CTAs (Scanner + Upgrade).
+ */
+export async function sendScanLeadEmail({ email, domain, scores, topFindings }: ScanLeadEmailParams) {
+  const col = (s: number) => s >= 70 ? '#22c55e' : s >= 40 ? '#eab308' : '#ef4444';
+  const lbl = (s: number) => s >= 70 ? 'Gut' : s >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
+
+  const scoreBlock = (label: string, score: number) => `
+    <td style="padding:6px;text-align:center;">
+      <div style="background:#f8fafc;border:1px solid #e2e4ea;border-radius:8px;padding:12px 8px;">
+        <div style="width:12px;height:12px;border-radius:50%;background:${col(score)};margin:0 auto 6px;"></div>
+        <div style="font-size:22px;font-weight:900;color:${col(score)};line-height:1;">${score}</div>
+        <div style="font-size:11px;color:#555566;margin-top:2px;">${label}</div>
+        <div style="font-size:11px;font-weight:700;color:${col(score)};margin-top:2px;">${lbl(score)}</div>
+      </div>
+    </td>`;
+
+  const findingsHtml = topFindings.length > 0
+    ? topFindings.slice(0, 3).map(f =>
+        `<tr><td style="padding:4px 0;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">${f}</td></tr>`
+      ).join('')
+    : `<tr><td style="padding:4px 0;font-size:13px;color:#22c55e;">Keine kritischen Befunde.</td></tr>`;
+
+  const scanUrl = `${BASE_URL}/scanner?url=${encodeURIComponent('https://' + domain)}`;
+
+  try {
+    const result = await getResend().emails.send({
+      from: 'info@dataquard.ch',
+      to: email,
+      subject: `Ihr Dataquard Compliance-Check: ${domain}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+          <!-- Header -->
+          <div style="background:#0a0f1e;padding:28px 32px;text-align:center;border-radius:8px 8px 0 0;">
+            <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48"
+                 style="display:inline-block;vertical-align:middle;" />
+            <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28"
+                 style="display:inline-block;vertical-align:middle;margin-left:10px;" />
+          </div>
+
+          <!-- Body -->
+          <div style="background:#f8f9fb;padding:32px;border:1px solid #e2e4ea;border-top:none;border-radius:0 0 8px 8px;">
+            <p style="font-size:15px;color:#1a1a2e;margin:0 0 8px;">Hallo,</p>
+            <p style="font-size:15px;color:#374151;margin:0 0 24px;">
+              hier ist Ihr Compliance-Check f&#252;r <strong style="color:#1a1a2e;">${domain}</strong>:
+            </p>
+
+            <!-- Score-Tabelle -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                ${scoreBlock('Compliance', scores.compliance)}
+                ${scoreBlock('Optimierung', scores.optimization)}
+                ${scoreBlock('Vertrauen', scores.trust)}
+                ${scoreBlock('AI-Trust', scores.aiTrust)}
+              </tr>
+            </table>
+
+            <!-- Top Befunde -->
+            <p style="font-size:13px;font-weight:700;color:#555566;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">
+              Wichtigste Befunde
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#fff;border:1px solid #e2e4ea;border-radius:8px;padding:12px 16px;margin-bottom:24px;">
+              ${findingsHtml}
+            </table>
+
+            <!-- CTA Primär -->
+            <div style="text-align:center;margin:0 0 16px;">
+              <a href="${scanUrl}"
+                 style="background:#22c55e;color:#ffffff;text-decoration:none;padding:14px 36px;
+                        border-radius:8px;font-size:15px;font-weight:700;display:inline-block;">
+                Vollst&#228;ndigen Report ansehen &#8594;
+              </a>
+            </div>
+
+            <!-- CTA Sekundär -->
+            <div style="text-align:center;margin-bottom:28px;">
+              <a href="${BASE_URL}/preise"
+                 style="color:#22c55e;font-size:13px;text-decoration:underline;">
+                Probleme automatisch beheben &ndash; ab CHF 19.&ndash;/Mt.
+              </a>
+            </div>
+
+            <!-- Footer -->
+            <p style="font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #e2e4ea;padding-top:16px;margin:0;">
+              Sie erhalten diese E-Mail weil Sie <strong>${domain}</strong> auf
+              <a href="${BASE_URL}" style="color:#22c55e;">dataquard.ch</a> gescannt haben.<br/>
+              Dataquard &middot; Reinach BL, Schweiz
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true, messageId: result.data?.id };
+  } catch (error) {
+    console.error('[emailService] sendScanLeadEmail Fehler:', error);
+    return { success: false, error };
+  }
+}

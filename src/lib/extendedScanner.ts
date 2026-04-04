@@ -12,6 +12,30 @@ const UA_CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 /** Fallback-UA (Safari/macOS) bei 403 im Retry */
 const UA_SAFARI = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15';
 
+// ─── Scan-Cache (In-Memory, 10 Minuten) ─────────────────────────────────────
+// Verhindert redundante Scans wenn gleiche URL kurz hintereinander aufgerufen wird.
+// Funktioniert innerhalb derselben Serverless-Instanz (fängt häufigsten Use-Case ab).
+interface ScanCacheEntry {
+  result: ExtendedScanResult;
+  timestamp: number;
+}
+const scanCache = new Map<string, ScanCacheEntry>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 Minuten
+
+/**
+ * Normalisiert eine URL für den Cache-Key.
+ * Entfernt trailing Slash, Query-Parameter und Hash — nur Protocol + Hostname + Path.
+ */
+function normalizeCacheUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/\/+$/, ''); // trailing Slash entfernen
+    return `${u.protocol}//${u.hostname}${path}`.toLowerCase();
+  } catch {
+    return url.toLowerCase();
+  }
+}
+
 /**
  * Browser-ähnliche Fetch-Optionen für Website-Scans.
  * Verhindert ECONNRESET / 403 bei strikten Webservern die Bot-User-Agents blocken.
@@ -909,6 +933,8 @@ export async function detectComplianceIssues(
   jsRendering: JsRenderingResult;
   /** Fehler-Meldung wenn die Seite nicht geladen werden konnte */
   fetchError?: string;
+  /** Gefetchtes HTML — wird von performExtendedScan an die zweite Check-Gruppe weitergegeben */
+  _html: string;
 }> {
   const url = domain.startsWith('http') ? domain : `https://${domain}`;
   const fetchResult = await fetchPageHtml(url);
@@ -1084,6 +1110,9 @@ export async function detectComplianceIssues(
     ],
     jsRendering,
     fetchError,
+    // HTML weitergeben damit performExtendedScan es an die zweite Prüfgruppe weitergeben kann
+    // (verhindert 3 redundante Fetches in checkOutdatedScripts, checkMixedContent, scanSiteImagesWithSightengine)
+    _html: html,
   };
 }
 
@@ -1209,7 +1238,7 @@ interface SightengineImgResult {
   safe: boolean;
 }
 
-async function scanSiteImagesWithSightengine(url: string): Promise<{
+async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string): Promise<{
   status: 'no_images' | 'success';
   imagesAnalysed: number;
   totalImagesFound: number;
@@ -1229,9 +1258,15 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
   if (!apiUser || !apiSecret) return null;
 
   try {
-    const res = await fetch(url, buildScanFetchInit(8000));
-    if (!res.ok) return null;
-    const html = await res.text();
+    // Vorgeladenes HTML verwenden falls vorhanden — spart einen Fetch
+    let html: string;
+    if (preloadedHtml !== undefined && preloadedHtml.length > 0) {
+      html = preloadedHtml;
+    } else {
+      const res = await fetch(url, buildScanFetchInit(8000));
+      if (!res.ok) return null;
+      html = await res.text();
+    }
 
     // Filtert nur eindeutige UI-Elemente (Sprites, Favicons) aus — Content-Bilder bleiben erhalten
     const isContentImage = (absUrl: string, imgTag: string): boolean => {
@@ -1433,6 +1468,15 @@ async function scanSiteImagesWithSightengine(url: string): Promise<{
 export async function performExtendedScan(
   domain: string
 ): Promise<ExtendedScanResult> {
+  // Cache prüfen — gleiche Domain innerhalb von 10 Minuten sofort zurückgeben (kein neuer Scan)
+  const cacheKey = normalizeCacheUrl(domain);
+  const cached = scanCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.result;
+  }
+
+  const siteUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+
   const [
     sslCheck,
     performanceCheck,
@@ -1450,14 +1494,17 @@ export async function performExtendedScan(
     checkMetaTags(domain),
     analyzeThirdParty(domain),
     detectComplianceIssues(domain),
-    analyzeForAiContent(domain.startsWith('http') ? domain : `https://${domain}`),
+    analyzeForAiContent(siteUrl),
   ]);
 
-  const siteUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+  // HTML aus Compliance-Check wiederverwenden — verhindert 3 redundante Fetches
+  // (checkOutdatedScripts, checkMixedContent und scanSiteImagesWithSightengine brauchen HTML)
+  const sharedHtml = complianceCheck._html ?? '';
+
   const [outdatedScripts, mixedContent, sightengineResult, pageSpeedMobile, pageSpeedDesktop] = await Promise.all([
-    checkOutdatedScripts(domain),
-    checkMixedContent(domain),
-    scanSiteImagesWithSightengine(siteUrl),
+    checkOutdatedScripts(domain, sharedHtml || undefined),
+    checkMixedContent(domain, sharedHtml || undefined),
+    scanSiteImagesWithSightengine(siteUrl, sharedHtml || undefined),
     fetchPageSpeedData(siteUrl, 'mobile'),
     fetchPageSpeedData(siteUrl, 'desktop'),
   ]);
@@ -1520,7 +1567,7 @@ export async function performExtendedScan(
     mixedContent.hasMixedContent
   );
 
-  return {
+  const scanResult: ExtendedScanResult = {
     fetchError: complianceCheck.fetchError,
     compliance: {
       score: complianceScore,
@@ -1559,4 +1606,9 @@ export async function performExtendedScan(
     sightengine: sightengineResult,
     pageSpeed: pageSpeedData,
   };
+
+  // Ergebnis im Cache speichern (10 Minuten TTL)
+  scanCache.set(cacheKey, { result: scanResult, timestamp: Date.now() });
+
+  return scanResult;
 }

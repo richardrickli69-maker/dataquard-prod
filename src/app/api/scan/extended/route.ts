@@ -52,7 +52,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url } = body;
+    const { url, email } = body;
+    // E-Mail-Adresse optional (Lead-Capture), aber wenn vorhanden: validieren
+    const leadEmail: string | null = (typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      ? email.trim().toLowerCase()
+      : null;
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
@@ -75,6 +79,37 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Invalid URL format' },
         { status: 400 }
       );
+    }
+
+    // ─── Lead VOR dem Scan speichern (Interesse bereits vorhanden) ───────────
+    let scanLeadId: string | null = null;
+    if (leadEmail) {
+      try {
+        const { supabaseAdmin: adminForLead } = await import('@/lib/supabaseAdmin');
+        // Duplikat-Check: gleiche E-Mail + URL innerhalb 24h → kein neuer Eintrag
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data: existing } = await adminForLead
+          .from('scan_leads')
+          .select('id')
+          .eq('email', leadEmail)
+          .eq('website_url', trimmedUrl)
+          .gte('created_at', since)
+          .limit(1)
+          .maybeSingle();
+
+        if (!existing) {
+          const { data: leadData } = await adminForLead
+            .from('scan_leads')
+            .insert({ email: leadEmail, website_url: trimmedUrl, source: 'free_scan' })
+            .select('id')
+            .single();
+          scanLeadId = leadData?.id ?? null;
+        } else {
+          scanLeadId = existing.id;
+        }
+      } catch (leadErr) {
+        console.error('[scanLead] Fehler beim Speichern:', leadErr);
+      }
     }
 
     const scanResult = await performExtendedScan(trimmedUrl);
@@ -173,6 +208,42 @@ export async function POST(request: NextRequest) {
       }
     } catch (saveError) {
       console.error('[saveScan] Exception:', saveError);
+    }
+
+    // ─── Lead abschliessen + Scan-Report per E-Mail senden ──────────────────
+    if (leadEmail && scanLeadId) {
+      try {
+        const { supabaseAdmin: adminForLeadUpdate } = await import('@/lib/supabaseAdmin');
+        await adminForLeadUpdate
+          .from('scan_leads')
+          .update({ scan_completed: true })
+          .eq('id', scanLeadId);
+
+        // Top-3 Befunde aus Scan-Ergebnis zusammenstellen
+        const topFindings: string[] = [];
+        if (!scanResult.compliance.hasPrivacyPolicy) topFindings.push('Datenschutzerklaerung fehlt (Pflicht nach nDSG/DSGVO)');
+        if (scanResult.compliance.cookieBannerAssessment?.status === 'fehlt_pflicht') topFindings.push(`Cookie-Banner fehlt trotz ${scanResult.compliance.trackersFound.length} erkannter Tracker`);
+        if (!scanResult.trust.hasImpressum) topFindings.push('Impressum fehlt (gesetzlich verpflichtend)');
+        if (!scanResult.optimization.hasSSL) topFindings.push('Kein SSL/HTTPS — Sicherheitsrisiko');
+        if (scanResult.compliance.trackersFound.length > 4) topFindings.push(`${scanResult.compliance.trackersFound.length} Tracker erkannt — Optimierungspotenzial`);
+        if (topFindings.length === 0) topFindings.push('Alle wesentlichen Compliance-Kriterien erfullt');
+
+        const domain = trimmedUrl.replace(/^https?:\/\//, '').split('/')[0];
+        const { sendScanLeadEmail } = await import('@/lib/emailService');
+        await sendScanLeadEmail({
+          email: leadEmail,
+          domain,
+          scores: {
+            compliance: scanResult.compliance.score,
+            optimization: scanResult.optimization.score,
+            trust: scanResult.trust.score,
+            aiTrust: 95, // Fallback — Frontend berechnet den echten Wert
+          },
+          topFindings: topFindings.slice(0, 3),
+        });
+      } catch (leadEmailErr) {
+        console.error('[scanLead] E-Mail-Fehler:', leadEmailErr);
+      }
     }
 
     const se = scanResult.sightengine;

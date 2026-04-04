@@ -212,10 +212,27 @@ function IconErr() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+// ─── Scan-Animations-Schritte ────────────────────────────────────────────────
+
+const SCAN_STEPS = [
+  { label: 'Website wird abgerufen...', svgPath: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z' },
+  { label: 'Compliance-Check (nDSG/DSGVO)...', svgPath: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z' },
+  { label: 'Performance-Analyse...', svgPath: 'M7 2v11h3v9l7-12h-4l4-8z' },
+  { label: 'Security-Prüfung...', svgPath: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z' },
+  { label: 'AI-Trust & KI-Bilder-Scan...', svgPath: 'M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zm-2 10H6V7h12v12zm-9-6h2v2H9v-2zm0-4h2v2H9V9zm4 4h2v2h-2v-2zm0-4h2v2h-2V9z' },
+  { label: 'Bericht wird erstellt...', svgPath: 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z' },
+];
+
+// Mindest-Anzeigezeit Animation in ms
+const MIN_SCAN_DISPLAY_MS = 4000;
+
 export default function ScannerPage() {
   const router = useRouter();
   const [url, setUrl] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [scanStep, setScanStep] = useState(-1);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
   const [serviceStatus, setServiceStatus] = useState<'loading' | 'ok' | 'degraded' | 'down'>('loading');
@@ -236,6 +253,23 @@ export default function ScannerPage() {
       .catch(() => setServiceStatus('down'));
   }, []);
 
+  // Animations-Schritte starten/stoppen wenn scanning sich ändert
+  useEffect(() => {
+    if (!scanning) {
+      setScanStep(-1);
+      return;
+    }
+    setScanStep(0);
+    const timers = [
+      setTimeout(() => setScanStep(1), 1500),
+      setTimeout(() => setScanStep(2), 3000),
+      setTimeout(() => setScanStep(3), 4500),
+      setTimeout(() => setScanStep(4), 6000),
+      setTimeout(() => setScanStep(5), 8000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [scanning]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlParam = params.get('url');
@@ -249,7 +283,18 @@ export default function ScannerPage() {
   const handleScanWithUrl = async (scanUrlParam?: string) => {
     const rawUrl = scanUrlParam ?? url;
     if (!rawUrl.trim()) { setError('Bitte geben Sie eine URL ein.'); return; }
-    setError(''); setScanning(true); setResult(null);
+
+    // E-Mail validieren (nur wenn ausgefüllt — Pflicht wenn nicht via URL-Parameter)
+    if (!scanUrlParam && email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setEmailError('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+      return;
+    }
+    setEmailError('');
+    setError('');
+    setScanning(true);
+    setResult(null);
+    const scanStart = Date.now();
+
     let scanUrl = rawUrl.trim();
     if (!scanUrl.startsWith('http://') && !scanUrl.startsWith('https://')) scanUrl = 'https://' + scanUrl;
     try {
@@ -260,10 +305,18 @@ export default function ScannerPage() {
       } catch {}
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-      const res = await fetch('/api/scan/extended', { method: 'POST', headers, body: JSON.stringify({ url: scanUrl }) });
+      const body: Record<string, string> = { url: scanUrl };
+      if (email.trim()) body.email = email.trim();
+      const res = await fetch('/api/scan/extended', { method: 'POST', headers, body: JSON.stringify(body) });
       if (!res.ok) throw new Error(`Serverfehler: ${res.status}`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Scan fehlgeschlagen');
+
+      // Mindest-Anzeigezeit der Animation einhalten (4 Sekunden)
+      const elapsed = Date.now() - scanStart;
+      const remaining = Math.max(0, MIN_SCAN_DISPLAY_MS - elapsed);
+      if (remaining > 0) await new Promise(r => setTimeout(r, remaining));
+
       const scan = data.data?.scan;
       const rawJurisdiction = scan?.compliance?.jurisdiction ?? 'nDSG';
       const jurisdiction = (rawJurisdiction === 'GDPR' ? 'DSGVO' : rawJurisdiction) as 'nDSG' | 'DSGVO' | 'BEIDES';
@@ -363,13 +416,13 @@ export default function ScannerPage() {
           </div>
         )}
 
-        {/* URL-Eingabe */}
+        {/* URL + E-Mail-Eingabe */}
         <div style={{ ...card, marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: G.textSec, marginBottom: 8 }}>Website-URL eingeben</label>
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <input type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()}
-              placeholder="https://ihre-website.ch" style={inputStyle} />
-            <button onClick={handleScan} disabled={scanning || serviceStatus === 'down'} style={{ background: (scanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (scanning || serviceStatus === 'down') ? G.textMuted : '#fff', padding: '12px 24px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: (scanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', opacity: serviceStatus === 'down' ? 0.5 : 1 }}>
+              placeholder="https://ihre-website.ch" style={{ ...inputStyle, minWidth: 200, flex: 1 }} />
+            <button onClick={handleScan} disabled={scanning || serviceStatus === 'down'} style={{ background: (scanning || serviceStatus === 'down') ? G.bgLight : G.green, color: (scanning || serviceStatus === 'down') ? G.textMuted : '#fff', padding: '12px 24px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: (scanning || serviceStatus === 'down') ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', opacity: serviceStatus === 'down' ? 0.5 : 1, flexShrink: 0 }}>
               {scanning ? (
                 <>
                   <span style={{ width: 16, height: 16, border: `2px solid ${G.green}`, borderTop: '2px solid transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
@@ -378,6 +431,24 @@ export default function ScannerPage() {
               ) : <><img src="/suche.png" alt="" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />Analyse starten</>}
             </button>
           </div>
+
+          {/* E-Mail-Feld für Lead-Capture */}
+          <div style={{ marginTop: 10 }}>
+            <input
+              type="email"
+              value={email}
+              onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+              placeholder="Ihre E-Mail für den Compliance-Bericht"
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+            />
+            <p style={{ fontSize: 12, color: G.textMuted, marginTop: 5 }}>
+              Wir senden Ihnen den vollständigen Bericht per E-Mail. Keine Werbung, jederzeit abmeldbar.
+            </p>
+            {emailError && (
+              <p style={{ fontSize: 12, color: G.red, marginTop: 4 }}>{emailError}</p>
+            )}
+          </div>
+
           {error && (
             <div style={{ marginTop: 12, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 12, padding: '14px 16px' }}>
               <p style={{ color: G.red, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Scan nicht möglich</p>
@@ -439,12 +510,69 @@ export default function ScannerPage() {
           </div>
         )}
 
-        {/* Ladeanimation */}
+        {/* Animierter Scan-Fortschritt */}
         {scanning && (
-          <div style={{ ...card, textAlign: 'center', padding: 48 }}>
-            <div style={{ width: 48, height: 48, border: `4px solid ${G.green}`, borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-            <p style={{ fontWeight: 600, color: G.text }}>Analyse läuft…</p>
-            <p style={{ color: G.textSec, fontSize: 13, marginTop: 4 }}>Wir prüfen Compliance, Optimierung, Sicherheit und AI-Trust.</p>
+          <div style={{ ...card, padding: 24 }}>
+            {/* Fortschrittsbalken */}
+            <div style={{ height: 6, background: G.bgLight, borderRadius: 999, marginBottom: 24, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                background: G.green,
+                borderRadius: 999,
+                width: scanStep < 0 ? '0%' : `${Math.min(100, ((scanStep + 1) / SCAN_STEPS.length) * 100)}%`,
+                transition: 'width 0.8s ease',
+              }} />
+            </div>
+            {/* Schritt-Liste */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {SCAN_STEPS.map((step, idx) => {
+                const isDone = scanStep > idx;
+                const isActive = scanStep === idx;
+                const isWaiting = scanStep < idx;
+                return (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    opacity: isWaiting ? 0.4 : 1,
+                    transition: 'opacity 0.3s ease',
+                  }}>
+                    {/* Icon-Container */}
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: isDone ? G.greenBg : isActive ? G.greenBg : G.bgLight,
+                      border: `1.5px solid ${isDone || isActive ? G.green : G.border}`,
+                    }}>
+                      {isDone ? (
+                        /* Häkchen wenn fertig */
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill={G.green}>
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                      ) : (
+                        /* Step-Icon — aktiv: pulsierend, wartend: gedimmt */
+                        <svg width="14" height="14" viewBox="0 0 24 24"
+                          fill={isActive ? G.green : G.textMuted}
+                          style={isActive ? { animation: 'pulse 1.2s ease-in-out infinite' } : {}}>
+                          <path d={step.svgPath}/>
+                        </svg>
+                      )}
+                    </div>
+                    {/* Schritt-Text */}
+                    <span style={{
+                      fontSize: 14,
+                      fontWeight: isActive ? 600 : 400,
+                      color: isWaiting ? G.textMuted : G.text,
+                      transition: 'color 0.3s ease',
+                    }}>
+                      {step.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <style>{`
+              @keyframes spin { to { transform: rotate(360deg); } }
+              @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+            `}</style>
           </div>
         )}
 
@@ -905,6 +1033,50 @@ export default function ScannerPage() {
                 )}
               </div>
             )}
+
+            {/* ─── Upsell-CTA (kontextabhängig nach Score) ─── */}
+            {(() => {
+              const minScore = Math.min(
+                result.scores.compliance,
+                result.scores.optimization,
+                result.scores.trust,
+                result.scores.aiTrust
+              );
+              if (minScore < 60) {
+                return (
+                  <div style={{ borderRadius: 12, padding: 16, marginBottom: 8, border: '1px solid rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.04)' }}>
+                    <p style={{ fontSize: 14, color: G.text, marginBottom: 10, fontWeight: 600 }}>
+                      Compliance-Lücken gefunden. Der Starter-Plan behebt diese automatisch — ab CHF 19.–/Mt.
+                    </p>
+                    <Link href="/preise" style={{ display: 'inline-block', background: G.green, color: '#fff', fontWeight: 700, fontSize: 13, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>
+                      Jetzt Lücken schliessen →
+                    </Link>
+                  </div>
+                );
+              }
+              if (minScore <= 80) {
+                return (
+                  <div style={{ borderRadius: 12, padding: 16, marginBottom: 8, border: '1px solid rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.04)' }}>
+                    <p style={{ fontSize: 14, color: G.text, marginBottom: 10, fontWeight: 600 }}>
+                      Grundlegend konform, aber Optimierungspotenzial vorhanden.
+                    </p>
+                    <Link href="/preise" style={{ display: 'inline-block', background: G.green, color: '#fff', fontWeight: 700, fontSize: 13, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>
+                      Compliance optimieren →
+                    </Link>
+                  </div>
+                );
+              }
+              return (
+                <div style={{ borderRadius: 12, padding: 16, marginBottom: 8, border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.04)' }}>
+                  <p style={{ fontSize: 14, color: G.text, marginBottom: 10, fontWeight: 600 }}>
+                    Gut aufgestellt. Mit automatischen Reports bleiben Sie dauerhaft konform.
+                  </p>
+                  <Link href="/preise" style={{ display: 'inline-block', background: G.green, color: '#fff', fontWeight: 700, fontSize: 13, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>
+                    Reports aktivieren →
+                  </Link>
+                </div>
+              );
+            })()}
 
             {/* Aktions-Buttons */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
