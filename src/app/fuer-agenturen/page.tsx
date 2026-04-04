@@ -114,6 +114,7 @@ const PLANS = [
     href: null as string | null,
     checkoutPlan: 'agency_pro' as 'agency_basic' | 'agency_pro' | null,
   },
+  /* TEMPORÄR DEAKTIVIERT - Agency Enterprise
   {
     name: 'Agency Enterprise',
     badge: null as string | null,
@@ -136,6 +137,7 @@ const PLANS = [
     href: 'mailto:info@dataquard.ch?subject=Agency Enterprise Anfrage' as string | null,
     checkoutPlan: null as 'agency_basic' | 'agency_pro' | null,
   },
+  */
 ];
 
 const COMPARE_ROWS = [
@@ -435,7 +437,7 @@ export default function FuerAgenturenPage() {
             </p>
           </div>
 
-          <div className="agency-plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
+          <div className="agency-plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '32px', maxWidth: '800px', margin: '0 auto 32px' }}>
             {PLANS.map(plan => (
               <div key={plan.name} style={{
                 background: plan.highlight ? G.navy : G.bgWhite,
@@ -595,7 +597,7 @@ export default function FuerAgenturenPage() {
                   <th style={{ padding: '14px 20px', textAlign: 'left', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Feature</th>
                   <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Basic</th>
                   <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: G.green, background: 'rgba(34,197,94,0.1)' }}>Pro</th>
-                  <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Enterprise</th>
+                  {/* TEMPORÄR DEAKTIVIERT - Agency Enterprise <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Enterprise</th> */}
                   <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Andere Tools</th>
                 </tr>
               </thead>
@@ -605,7 +607,8 @@ export default function FuerAgenturenPage() {
                     <td style={{ padding: '12px 20px', fontSize: '13px', color: G.text, fontWeight: 500, borderBottom: `1px solid ${G.border}` }}>
                       {row.feature}
                     </td>
-                    {[row.starter, row.professional, row.enterprise, row.competitors].map((val, j) => (
+                    {/* TEMPORÄR DEAKTIVIERT - Agency Enterprise: row.enterprise aus Array entfernt */}
+                    {[row.starter, row.professional, row.competitors].map((val, j) => (
                       <td key={j} style={{
                         padding: '12px 16px',
                         textAlign: 'center',
