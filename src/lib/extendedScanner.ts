@@ -586,7 +586,13 @@ export async function checkImpressum(domain: string): Promise<{
     if (isImpressumUrl(link.href)) return true;
     // Sichtbaren Link-Text prüfen (case-insensitive)
     const textLow = link.text.toLowerCase();
-    if (textLow.includes('impressum') || textLow.includes('imprint') || textLow === 'legal notice') return true;
+    if (
+      textLow.includes('impressum') ||
+      textLow.includes('imprint') ||
+      textLow.includes('legal notice') ||
+      textLow.includes('rechtliches') ||
+      textLow.includes('pflichtangaben')
+    ) return true;
     // aria-label prüfen
     const ariaLow = link.ariaLabel.toLowerCase();
     if (ariaLow.includes('impressum') || ariaLow.includes('imprint')) return true;
@@ -599,14 +605,56 @@ export async function checkImpressum(domain: string): Promise<{
   const hasImpressumInFooter = footerLinks.some(link => {
     if (isImpressumUrl(link.href)) return true;
     const textLow = link.text.toLowerCase();
-    return textLow.includes('impressum') || textLow.includes('imprint');
+    return (
+      textLow.includes('impressum') ||
+      textLow.includes('imprint') ||
+      textLow.includes('rechtliches') ||
+      textLow.includes('pflichtangaben')
+    );
   });
 
-  const hasImpressum =
+  // Stufe 3: Kombinations-Link ("Datenschutz & Impressum" / "Impressum | Datenschutz")
+  const kombinationsPattern = /datenschutz.{0,10}impressum|impressum.{0,10}datenschutz/i;
+  const hasImpressumByKombi = allLinks.some(link =>
+    kombinationsPattern.test(link.text) || kombinationsPattern.test(link.ariaLabel)
+  );
+
+  let hasImpressum =
     hasImpressumHref ||
     hasImpressumTextInline ||
     hasImpressumByLink ||
-    hasImpressumInFooter;
+    hasImpressumInFooter ||
+    hasImpressumByKombi;
+
+  // Stufe 4: Fallback-Fetch auf /impressum und /imprint (nur wenn alle anderen Strategien fehlschlagen)
+  if (!hasImpressum) {
+    const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+    try {
+      const urlObj = new URL(baseUrl);
+      const rootUrl = `${urlObj.protocol}//${urlObj.hostname}`;
+      console.error(`[Scanner] Impressum-Fallback aktiviert für: ${baseUrl}`);
+      const fallbackPaths = ['/impressum', '/imprint'];
+      const impressumKeywords = ['adresse', 'telefon', 'e-mail', 'handelsregister', 'uid', 'verantwortlich'];
+      for (const path of fallbackPaths) {
+        try {
+          const res = await fetch(`${rootUrl}${path}`, {
+            headers: { 'User-Agent': UA_CHROME },
+            redirect: 'follow',
+            signal: AbortSignal.timeout(5000),
+          });
+          if (res.ok) {
+            const fallbackHtml = await res.text();
+            const fallbackLow = fallbackHtml.toLowerCase();
+            const matchCount = impressumKeywords.filter(k => fallbackLow.includes(k)).length;
+            if (matchCount >= 2) {
+              hasImpressum = true;
+              break;
+            }
+          }
+        } catch { /* Timeout oder Netzwerkfehler — nächste URL probieren */ }
+      }
+    } catch { /* URL-Parse-Fehler — Fallback übersprungen */ }
+  }
 
   const foundPages = hasImpressum ? ['/impressum'] : [];
 
@@ -1040,6 +1088,15 @@ export async function detectComplianceIssues(
     privacyByLink ||
     privacyInFooter;
 
+  // Kombinations-Link ("Datenschutz & Impressum") → auch Datenschutz als erkannt werten
+  if (!hasPrivacyPolicy) {
+    const kombinationsPatternCompliance = /datenschutz.{0,10}impressum|impressum.{0,10}datenschutz/i;
+    const hasKombinationsLink = allLinksCompliance.some(link =>
+      kombinationsPatternCompliance.test(link.text) || kombinationsPatternCompliance.test(link.ariaLabel)
+    );
+    if (hasKombinationsLink) hasPrivacyPolicy = true;
+  }
+
   // Fix 1: Impressum-Seite fetchen wenn kein Datenschutz-Link auf Homepage gefunden
   // (viele Schweizer KMU kombinieren Impressum + Datenschutzerklärung auf einer Seite)
   if (!hasPrivacyPolicy) {
@@ -1282,10 +1339,12 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
       if (/sprite|favicon/i.test(filename)) return false;
       // Favicon- und Sprite-Verzeichnisse ausschliessen
       if (/\/(favicons?|sprites?)\//i.test(pathname)) return false;
-      // Nur ausschliessen wenn BEIDE Dimensionen gesetzt sind UND beide < 50px
+      // Zu kleine Bilder überspringen — wenn eine bekannte Dimension < 100px (Icons, Pixel-Tracker)
       const wMatch = imgTag.match(/\bwidth=["']?(\d+)/i);
       const hMatch = imgTag.match(/\bheight=["']?(\d+)/i);
-      if (wMatch && hMatch && parseInt(wMatch[1]) < 50 && parseInt(hMatch[1]) < 50) return false;
+      const widthAttr = wMatch ? parseInt(wMatch[1]) : 0;
+      const heightAttr = hMatch ? parseInt(hMatch[1]) : 0;
+      if ((widthAttr > 0 && widthAttr < 100) || (heightAttr > 0 && heightAttr < 100)) return false;
       return true;
     };
 
@@ -1335,6 +1394,40 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
     const allImgUrls: string[] = [];
     const seenUrls = new Set<string>();
     const base = new URL(url);
+
+    // Filtert Domain-eigene Assets (Icons, Logos, WordPress-Theme-Dateien) und bekannte CDN-Bibliotheken
+    const isOwnAsset = (imgUrl: string): boolean => {
+      try {
+        const imgDomain = new URL(imgUrl).hostname;
+        const siteDomain = base.hostname;
+
+        // 1. Bilder von der eigenen Domain der gescannten Website prüfen
+        if (imgDomain === siteDomain || imgDomain.endsWith(`.${siteDomain}`)) {
+          const imgPathLow = new URL(imgUrl).pathname.toLowerCase();
+          const ownAssetPaths = [
+            '/icons/', '/icon/', '/logo', '/favicon',
+            '/assets/', '/static/', '/images/icon',
+            '/wp-content/themes/', '/wp-includes/',
+          ];
+          if (ownAssetPaths.some(p => imgPathLow.startsWith(p) || imgPathLow.includes(p))) return true;
+        }
+
+        // 2. Bekannte CDN/UI-Bibliotheks-Domains ausschliessen
+        const excludedCdnDomains = new Set([
+          'fonts.gstatic.com',
+          'fonts.googleapis.com',
+          'cdn.jsdelivr.net',
+          'cdnjs.cloudflare.com',
+          'ajax.googleapis.com',
+        ]);
+        if (excludedCdnDomains.has(imgDomain)) return true;
+
+        return false;
+      } catch {
+        return false;
+      }
+    };
+
     for (const match of html.matchAll(/<img[^>]+>/gi)) {
       try {
         const imgTag = match[0];
@@ -1343,8 +1436,10 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
         const absUrl = new URL(src, base).href;
         if (seenUrls.has(absUrl)) continue;
         seenUrls.add(absUrl);
-        // Eigene Domain überspringen
+        // Eigene Dataquard-Domain überspringen
         if (EXCLUDED_SCAN_DOMAINS.has(new URL(absUrl).hostname)) continue;
+        // Domain-eigene Assets (Icons, Theme-Dateien, CDN-Bibliotheken) überspringen
+        if (isOwnAsset(absUrl)) continue;
         // Nur jpg/png/webp — kein svg, kein gif, kein ico
         if (!/\.(jpe?g|png|webp)(\?.*)?$/i.test(absUrl)) continue;
         // Sprite/Favicon filtern
