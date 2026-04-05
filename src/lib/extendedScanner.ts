@@ -1296,6 +1296,93 @@ interface SightengineImgResult {
   safe: boolean;
 }
 
+/**
+ * Holt Content-Bilder über die WordPress REST API.
+ * Gibt leeres Array zurück wenn die Site kein WordPress ist oder die API nicht erreichbar ist.
+ * Fehler werden still ignoriert — kein WordPress ist der Normalfall.
+ */
+async function fetchWordPressImages(baseUrl: string, timeout: number = 5000): Promise<string[]> {
+  try {
+    const wpApiUrl = `${baseUrl}/wp-json/wp/v2/media?per_page=20&media_type=image`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(wpApiUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': UA_CHROME },
+    });
+    clearTimeout(timer);
+    if (!response.ok) return [];
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) return [];
+    const media: unknown = await response.json();
+    if (!Array.isArray(media)) return [];
+    const imageUrls: string[] = [];
+    for (const item of media as Record<string, unknown>[]) {
+      // source_url ist die Original-URL des Medien-Eintrags
+      if (typeof item.source_url === 'string' && item.source_url) {
+        if (!imageUrls.includes(item.source_url)) imageUrls.push(item.source_url);
+      }
+      // media_details.sizes: 'large' oder 'full' bevorzugen
+      const sizes = (item.media_details as Record<string, unknown> | undefined)?.sizes as Record<string, { source_url?: string }> | undefined;
+      if (sizes) {
+        const preferred = sizes.large?.source_url ?? sizes.medium_large?.source_url ?? sizes.full?.source_url;
+        if (preferred && !imageUrls.includes(preferred)) imageUrls.push(preferred);
+      }
+    }
+    return imageUrls.slice(0, 20);
+  } catch {
+    // Kein WordPress oder Timeout — ist normal, kein Fehler-Log nötig
+    return [];
+  }
+}
+
+/**
+ * Holt Bild-URLs aus sitemap.xml (image:loc Tags oder Bild-URL-Pattern).
+ * Probiert mehrere bekannte Sitemap-Pfade, bricht ab sobald 20 Bilder gefunden.
+ */
+async function fetchSitemapImages(baseUrl: string, timeout: number = 5000): Promise<string[]> {
+  const sitemapPaths = [
+    '/sitemap.xml',
+    '/sitemap_index.xml',
+    '/page-sitemap.xml',
+    '/post-sitemap.xml',
+    '/wp-sitemap.xml',
+  ];
+  const imageUrls: string[] = [];
+  for (const path of sitemapPaths) {
+    if (imageUrls.length >= 20) break;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+      const response = await fetch(`${baseUrl}${path}`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': UA_CHROME },
+      });
+      clearTimeout(timer);
+      if (!response.ok) continue;
+      const xml = await response.text();
+      // Google Sitemap Image Extension: <image:loc> Tags
+      const imageLoc = xml.match(/<image:loc>([\s\S]*?)<\/image:loc>/gi) ?? [];
+      for (const match of imageLoc) {
+        const imgUrl = match.replace(/<\/?image:loc>/gi, '').trim();
+        if (imgUrl && !imageUrls.includes(imgUrl)) imageUrls.push(imgUrl);
+      }
+      // Fallback: Alle jpg/jpeg/png/webp URLs im Sitemap-Text
+      if (imageLoc.length === 0) {
+        const imgPattern = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)/gi;
+        const matches = xml.match(imgPattern) ?? [];
+        for (const imgUrl of matches) {
+          if (!imageUrls.includes(imgUrl)) imageUrls.push(imgUrl);
+        }
+      }
+    } catch {
+      // Sitemap nicht vorhanden oder Timeout — weiter zur nächsten
+      continue;
+    }
+  }
+  return imageUrls.slice(0, 20);
+}
+
 async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string): Promise<{
   status: 'no_images' | 'success';
   imagesAnalysed: number;
@@ -1458,6 +1545,32 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
     if (process.env.NODE_ENV === 'development') {
       console.error(`[Sightengine] Bilder auf ${url}: ${seenUrls.size} gefunden, ${allImgUrls.length} nach Filter`);
     }
+
+    // ─── Fallback: WordPress API + Sitemap wenn HTML < 3 Bilder liefert ─────────
+    // JS-gerenderte Sites haben oft keine Bilder im rohen HTML — Fallback ergänzt den Pool
+    if (allImgUrls.length < 3) {
+      const baseUrl = `${base.protocol}//${base.hostname}`;
+      console.error(`[Scanner] Weniger als 3 Bilder im HTML (${allImgUrls.length}), versuche WP-API und Sitemap für ${baseUrl}`);
+      const [wpImages, sitemapImages] = await Promise.allSettled([
+        fetchWordPressImages(baseUrl),
+        fetchSitemapImages(baseUrl),
+      ]);
+      if (wpImages.status === 'fulfilled' && wpImages.value.length > 0) {
+        console.error(`[Scanner] WordPress API: ${wpImages.value.length} Bilder gefunden`);
+        for (const imgUrl of wpImages.value) {
+          const prepared = prepareImageUrlForSightengine(imgUrl);
+          if (!allImgUrls.includes(prepared)) allImgUrls.push(prepared);
+        }
+      }
+      if (sitemapImages.status === 'fulfilled' && sitemapImages.value.length > 0) {
+        console.error(`[Scanner] Sitemap: ${sitemapImages.value.length} Bilder gefunden`);
+        for (const imgUrl of sitemapImages.value) {
+          const prepared = prepareImageUrlForSightengine(imgUrl);
+          if (!allImgUrls.includes(prepared)) allImgUrls.push(prepared);
+        }
+      }
+    }
+
     const totalImagesFound = allImgUrls.length;
     // Free-Tier: max. 5 Bilder pro Scan
     const imgUrls = allImgUrls.slice(0, 5);
