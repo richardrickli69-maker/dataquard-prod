@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
 
         const descriptionMap: Record<string, string> = {
           starter: 'Datenschutzerklärung + Impressum + Cookie-Banner Generator + AI-Trust Scan (1 Domain) · Jahresabo',
-          professional: 'Datenschutzerklärung + Impressum + Cookie-Banner (5 Domains) + AI-Trust Scan + Priority Support · Jahresabo',
+          professional: 'Datenschutzerklärung + Impressum + Cookie-Banner (5 Domains) + AI-Trust Scan · Jahresabo',
         };
 
         try {
@@ -376,7 +376,6 @@ function generateSubscriptionEmailHtml({
       ✓ &nbsp;Impressum Generator<br/>
       ✓ &nbsp;Cookie-Banner Generator (bis 5 Domains)<br/>
       ✓ &nbsp;AI-Trust Scan inklusive<br/>
-      ✓ &nbsp;Priority Support<br/>
       ✓ &nbsp;Monatlicher Compliance-Report
     </div>` : `
     <div style="color:#374151;font-size:14px;line-height:2;">

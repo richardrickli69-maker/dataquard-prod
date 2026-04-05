@@ -29,8 +29,7 @@ export async function sendPolicyReadyEmail({ email, domain, policyContent, jobId
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <a href="https://www.dataquard.ch" style="text-decoration:none;"><span style="color:#22c55e;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">Data</span><span style="color:#1F2937;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">guard</span></a>
             </div>
             <h1 style="margin: 0; font-size: 20px;">🎉 Ihre Policy ist fertig!</h1>
           </div>
@@ -64,8 +63,7 @@ export async function sendWelcomeEmail({ email, name }: WelcomeEmailParams) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <a href="https://www.dataquard.ch" style="text-decoration:none;"><span style="color:#22c55e;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">Data</span><span style="color:#1F2937;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">guard</span></a>
             </div>
             <h1 style="margin: 0; font-size: 20px;">👋 Willkommen bei Dataquard!</h1>
           </div>
@@ -110,8 +108,7 @@ export async function sendRescanChangeEmail({ email, domain, addedTrackers, remo
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
           <div style="background:#F3F4F6;color:#1F2937;padding:30px 40px;text-align:center;border-radius:8px 8px 0 0;">
             <div style="margin-bottom:16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display:inline-block;vertical-align:middle;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display:inline-block;vertical-align:middle;margin-left:10px;" />
+              <a href="https://www.dataquard.ch" style="text-decoration:none;"><span style="color:#22c55e;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">Data</span><span style="color:#1F2937;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">guard</span></a>
             </div>
             <h1 style="margin:0;font-size:20px;">🔄 Website-Änderung erkannt</h1>
             <p style="margin:8px 0 0;opacity:0.85;">Dataquard – Wöchentlicher Re-Scan</p>
@@ -599,8 +596,7 @@ export async function sendReminderEmail(email: string) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #F3F4F6; color: #1F2937; padding: 30px 40px; text-align: center; border-radius: 8px 8px 0 0;">
             <div style="margin-bottom: 16px;">
-              <img src="${LOGO_URL}" alt="Dataquard" width="58" height="58" style="display: inline-block; vertical-align: middle;" />
-              <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="168" height="34" style="display: inline-block; vertical-align: middle; margin-left: 10px;" />
+              <a href="https://www.dataquard.ch" style="text-decoration:none;"><span style="color:#22c55e;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">Data</span><span style="color:#1F2937;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">guard</span></a>
             </div>
             <h1 style="margin: 0; font-size: 20px;">⚠️ Compliance-Lücke schliessen</h1>
           </div>
@@ -673,10 +669,7 @@ export async function sendScanLeadEmail({ email, domain, scores, topFindings }: 
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
           <!-- Header -->
           <div style="background:#0a0f1e;padding:28px 32px;text-align:center;border-radius:8px 8px 0 0;">
-            <img src="${LOGO_URL}" alt="Dataquard" width="48" height="48"
-                 style="display:inline-block;vertical-align:middle;" />
-            <img src="${SCHRIFTZUG_URL}" alt="Dataquard" width="140" height="28"
-                 style="display:inline-block;vertical-align:middle;margin-left:10px;" />
+            <a href="https://www.dataquard.ch" style="text-decoration:none;"><span style="color:#22c55e;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">Data</span><span style="color:#ffffff;font-weight:700;font-size:22px;font-family:Arial,sans-serif;">guard</span></a>
           </div>
 
           <!-- Body -->

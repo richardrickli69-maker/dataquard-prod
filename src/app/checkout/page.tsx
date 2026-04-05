@@ -94,7 +94,6 @@ const plans = [
     features: [
       'Alles aus Starter',
       'Bis zu 5 Domains',
-      'Priority Support',
       'Rechtliche Alerts',
       'Automatische DSE-Aktualisierung',
     ],

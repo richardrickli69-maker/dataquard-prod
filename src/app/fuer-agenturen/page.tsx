@@ -83,7 +83,6 @@ const PLANS = [
     missing: [
       'KI-Bilderkennung',
       'White-Label E-Mail-Versand',
-      'Priority Support',
     ],
     cta: 'Jetzt starten',
     href: null as string | null,
@@ -108,7 +107,6 @@ const PLANS = [
     ],
     missing: [
       'Unbegrenzte Kunden',
-      'Custom Domain (White-Label Portal)',
     ],
     cta: 'Jetzt starten',
     href: null as string | null,
