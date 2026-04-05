@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
           reportPeriod: getReportPeriod(sub.plan),
           scores: {
             compliance: scanResult.compliance.score,
-            performance: scanResult.optimization.score,
+            performance: scanResult.optimization.score ?? 0,
             security: scanResult.trust.score,
           },
           newTrackers: addedTrackers,

@@ -287,7 +287,8 @@ export interface ExtendedScanResult {
     jsRendering?: JsRenderingResult;
   };
   optimization: {
-    score: number;
+    /** null wenn PageSpeed API nicht verfügbar und interner Score nicht aussagekräftig */
+    score: number | null;
     loadTime: number;
     hasSSL: boolean;
     sslExpiry?: string;
@@ -1395,33 +1396,39 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
     const seenUrls = new Set<string>();
     const base = new URL(url);
 
-    // Filtert Domain-eigene Assets (Icons, Logos, WordPress-Theme-Dateien) und bekannte CDN-Bibliotheken
+    // Nur eindeutige UI-Assets ausschliessen — Content-Fotos (/images/, /uploads/, /media/) bleiben erhalten
     const isOwnAsset = (imgUrl: string): boolean => {
       try {
-        const imgDomain = new URL(imgUrl).hostname;
-        const siteDomain = base.hostname;
+        const urlObj = new URL(imgUrl);
+        const pathname = urlObj.pathname.toLowerCase();
+        const hostname = urlObj.hostname.toLowerCase();
 
-        // 1. Bilder von der eigenen Domain der gescannten Website prüfen
-        if (imgDomain === siteDomain || imgDomain.endsWith(`.${siteDomain}`)) {
-          const imgPathLow = new URL(imgUrl).pathname.toLowerCase();
-          const ownAssetPaths = [
-            '/icons/', '/icon/', '/logo', '/favicon',
-            '/assets/', '/static/', '/images/icon',
-            '/wp-content/themes/', '/wp-includes/',
-          ];
-          if (ownAssetPaths.some(p => imgPathLow.startsWith(p) || imgPathLow.includes(p))) return true;
-        }
-
-        // 2. Bekannte CDN/UI-Bibliotheks-Domains ausschliessen
-        const excludedCdnDomains = new Set([
+        // 1. Bekannte CDN/Font-Domains komplett ausschliessen
+        const excludedDomains = [
           'fonts.gstatic.com',
           'fonts.googleapis.com',
           'cdn.jsdelivr.net',
           'cdnjs.cloudflare.com',
-          'ajax.googleapis.com',
-        ]);
-        if (excludedCdnDomains.has(imgDomain)) return true;
+        ];
+        if (excludedDomains.some(d => hostname === d || hostname.endsWith('.' + d))) return true;
 
+        // 2. Nur eindeutige Asset-Pfade ausschliessen
+        // NICHT: /images/, /uploads/, /media/, /fotos/ — das sind Content-Bilder!
+        // NUR: Pfade die eindeutig UI-Elemente sind
+        const assetPathPatterns = [
+          '/favicon',
+          '/apple-touch-icon',
+          '/icon-',          // z.B. icon-arrow.png, aber nicht /uploads/icon-dienstleistung.jpg
+          '/logo.',          // logo.png, logo.webp — aber NICHT /images/logo-projekt.jpg
+          '/sprite.',
+          '/wp-includes/',   // WordPress Core-Dateien (nicht wp-content!)
+        ];
+        if (assetPathPatterns.some(p => pathname.includes(p))) return true;
+
+        // 3. Dateiendungen die nie Content-Bilder sind
+        if (pathname.endsWith('.svg') || pathname.endsWith('.ico')) return true;
+
+        // Alles andere durchlassen — lieber zu viel scannen als zu wenig
         return false;
       } catch {
         return false;
@@ -1631,8 +1638,8 @@ export async function performExtendedScan(
   const loadTimeBase = Math.round(((3 - Math.min(performanceCheck.loadTime, 3)) / 3) * 100);
   const trackerPenalty = Math.min(30, thirdPartyCheck.totalScripts * 5);
   const internalOptimizationScore = Math.max(0, loadTimeBase - trackerPenalty);
-  // PageSpeed-Daten vorhanden: echten Score verwenden; sonst intern berechneten Fallback
-  const optimizationScore = pageSpeedData ? pageSpeedData.combinedScore : internalOptimizationScore;
+  // PageSpeed-Daten vorhanden: echten Score verwenden; sonst null (kein irreführender 0%-Wert)
+  const optimizationScore: number | null = pageSpeedData ? pageSpeedData.combinedScore : null;
   
   const trustScore = Math.round(
     (
@@ -1644,7 +1651,8 @@ export async function performExtendedScan(
 
   const insights = generateInsights(
     complianceScore,
-    optimizationScore,
+    // Fallback auf internen Score für Insight-Texte (generateInsights erwartet number)
+    optimizationScore ?? internalOptimizationScore,
     thirdPartyCheck.totalScripts,
     hasPrivacyPolicy,
     sslCheck.hasSSL,

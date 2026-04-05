@@ -87,7 +87,7 @@ interface ScanResult {
   url: string;
   /** Wenn gesetzt: Seite konnte nicht vollständig geladen werden (Partial Result) */
   fetchError?: string;
-  scores: { compliance: number; optimization: number; trust: number; aiTrust: number; };
+  scores: { compliance: number; optimization: number | null; trust: number; aiTrust: number; };
   pageSpeed?: {
     mobile: PageSpeedMetric | null;
     desktop: PageSpeedMetric | null;
@@ -146,15 +146,16 @@ function JurisdictionIcon({ j }: { j: string }) {
   return <img src={src} alt={j} width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />;
 }
 
-const scoreColor = (score: number) => score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
-const scoreLabel = (score: number) => score >= 70 ? 'Gut' : score >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
+const scoreColor = (score: number | null) => score === null ? '#888899' : score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
+const scoreLabel = (score: number | null) => score === null ? 'Nicht verfügbar' : score >= 70 ? 'Gut' : score >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
 
 // ─── Score Circle ─────────────────────────────────────────────────────────────
 
-function ScoreCircle({ score, label, icon }: { score: number; label: string; icon: string }) {
+function ScoreCircle({ score, label, icon }: { score: number | null; label: string; icon: string }) {
   const r = 20;
   const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
+  // Bei null: leerer Ring (offset = voller Umfang)
+  const offset = score === null ? circ : circ - (score / 100) * circ;
   const color = scoreColor(score);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -177,8 +178,10 @@ function ScoreCircle({ score, label, icon }: { score: number; label: string; ico
             if (!src) return <span style={{ fontSize: 14 }}>{icon}</span>;
             return <img src={src} alt="" width={14} height={14} style={{ display: 'block', marginBottom: 1 }} />;
           })()}
-          {/* Prozent-Zahl im Circle */}
-          <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>{score}%</span>
+          {/* Prozent-Zahl im Circle — bei null: Strich */}
+          <span style={{ fontSize: 10, fontWeight: 700, color: G.text, lineHeight: 1 }}>
+            {score === null ? '–' : `${score}%`}
+          </span>
         </div>
       </div>
       {/* Score-Label: text-sm (14px) */}
@@ -332,7 +335,7 @@ export default function ScannerPage() {
         fetchError: scan?.fetchError ?? undefined,
         scores: {
           compliance: scan?.compliance?.score ?? 0,
-          optimization: scan?.optimization?.score ?? 0,
+          optimization: scan?.optimization?.score ?? null,
           trust: scan?.trust?.score ?? 0,
           aiTrust: aiTrustScore,
         },
@@ -1036,12 +1039,14 @@ export default function ScannerPage() {
 
             {/* ─── Upsell-CTA (kontextabhängig nach Score) ─── */}
             {(() => {
-              const minScore = Math.min(
+              // Nur vorhandene Scores berücksichtigen — null (nicht verfügbar) nicht als 0 werten
+              const availableScores = [
                 result.scores.compliance,
                 result.scores.optimization,
                 result.scores.trust,
-                result.scores.aiTrust
-              );
+                result.scores.aiTrust,
+              ].filter((s): s is number => s !== null);
+              const minScore = availableScores.length > 0 ? Math.min(...availableScores) : 0;
               if (minScore < 60) {
                 return (
                   <div style={{ borderRadius: 12, padding: 16, marginBottom: 8, border: '1px solid rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.04)' }}>

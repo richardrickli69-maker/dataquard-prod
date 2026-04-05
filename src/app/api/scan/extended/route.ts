@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
           domain,
           scores: {
             compliance: scanResult.compliance.score,
-            optimization: scanResult.optimization.score,
+            optimization: scanResult.optimization.score ?? 0,
             trust: scanResult.trust.score,
             aiTrust: 95, // Fallback — Frontend berechnet den echten Wert
           },
