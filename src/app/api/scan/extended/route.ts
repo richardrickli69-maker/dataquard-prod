@@ -135,14 +135,20 @@ export async function POST(request: NextRequest) {
         if (!authError && user?.id) {
           userId = user.id;
           // User in public.users sicherstellen — existiert nach OAuth-Registrierung evtl. nicht
+          // onConflict: 'email' verhindert duplicate-key Fehler wenn E-Mail schon existiert
           const { error: userUpsertErr } = await supabaseAdmin
             .from('users')
             .upsert(
               { id: user.id, email: user.email ?? '' },
-              { onConflict: 'id', ignoreDuplicates: true }
+              { onConflict: 'email', ignoreDuplicates: false }
             );
           if (userUpsertErr) {
             console.error('[saveScan] User-Upsert Fehler:', userUpsertErr.message);
+            // Bei echtem Fehler (nicht nur Duplikat-Toleranz): userId nicht für Scan verwenden
+            // → verhindert FK-Constraint-Fehler (scans_user_id_fkey)
+            if (!userUpsertErr.message.includes('duplicate key')) {
+              userId = null;
+            }
           }
           // Rescan aktivieren wenn User aktive Subscription hat
           const { data: sub } = await supabaseAdmin

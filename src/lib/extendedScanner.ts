@@ -1438,11 +1438,13 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
 
     /**
      * Bereitet eine Bild-URL für Sightengine vor:
-     * 1. HTML-Entities dekodieren (&amp; → &) — nötig für CDN-Query-Parameter in HTML-Attributen
-     * 2. CDN-Resize-Parameter entfernen (Shopify ?width=200, Imgix ?w=, etc.)
-     *    Sightengine erwartet das Vollbild — kleine Vorschau-URLs liefern HTTP 400
+     * 1. HTML-Entities dekodieren (&amp; → &)
+     * 2. Standard CDN-Resize-Parameter entfernen (Shopify ?width=200, Imgix ?w=, etc.)
+     * 3. Wix CDN: Transform-Pfad entfernen (/v1/fill/w_49,h_26,.../ → /)
+     * 4. Bilder mit bekannten Dimensionen < 100px überspringen (return null)
+     *    Sightengine gibt HTTP 400 für zu kleine oder stark transformierte Bilder
      */
-    const prepareImageUrlForSightengine = (rawUrl: string): string => {
+    const prepareImageUrlForSightengine = (rawUrl: string): string | null => {
       // Schritt 1: HTML-Entities dekodieren
       const decoded = rawUrl
         .replace(/&amp;/g, '&')
@@ -1450,11 +1452,39 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
         .replace(/&#39;/g, "'")
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>');
-      // Schritt 2: CDN-Resize-Parameter entfernen
       try {
         const urlObj = new URL(decoded);
+        const hostname = urlObj.hostname.toLowerCase();
+        const pathname = urlObj.pathname;
+        // Schritt 2: Standard CDN-Resize-Parameter entfernen
         ['width', 'w', 'h', 'height', 'size', 'resize', 'fit'].forEach(p => urlObj.searchParams.delete(p));
-        return urlObj.toString();
+        let cleanUrl = urlObj.toString();
+        // Schritt 3: Wix CDN — Transform-Pfad aus URL-Pfad entfernen
+        // Vorher: /media/[hash]/v1/fill/w_49,h_26,al_c,q_85,blur_2,enc_avif,.../Dateiname.jpg
+        // Nachher: /media/[hash]/Dateiname.jpg
+        if (hostname.includes('wixstatic.com')) {
+          const wixPattern = /\/v1\/[^/]+\/[^/]+\//;
+          if (wixPattern.test(pathname)) {
+            const filename = pathname.split('/').pop() ?? '';
+            if (filename) {
+              const mediaMatch = pathname.match(/\/media\/([^/]+)\//);
+              if (mediaMatch) {
+                cleanUrl = `${urlObj.protocol}//${hostname}/media/${mediaMatch[1]}/${filename}`;
+              }
+            }
+          }
+          // enc_avif → Sightengine unterstützt kein AVIF
+          cleanUrl = cleanUrl.replace(/enc_avif/g, 'enc_jpg');
+        }
+        // Schritt 4: Bilder mit bekannten Dimensionen < 100px überspringen (Icons, Pixel-Tracker)
+        // Trifft CDN-Pfad-Parameter (w_49, h_26) und Query-Parameter (?w=49)
+        const smallPattern = /[?&/,](?:w_(\d+)|h_(\d+))/gi;
+        let dimMatch: RegExpExecArray | null;
+        while ((dimMatch = smallPattern.exec(cleanUrl)) !== null) {
+          const dim = parseInt(dimMatch[1] ?? dimMatch[2] ?? '0');
+          if (dim > 0 && dim < 100) return null; // Zu klein für Sightengine
+        }
+        return cleanUrl;
       } catch {
         // URL noch nicht absolut (relative URL) — dekodierten String zurückgeben
         return decoded;
@@ -1538,7 +1568,8 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
         if (!/\.(jpe?g|png|webp)(\?.*)?$/i.test(absUrl)) continue;
         // Sprite/Favicon filtern
         if (!isContentImage(absUrl, imgTag)) continue;
-        allImgUrls.push(prepareImageUrlForSightengine(absUrl));
+        const prepared = prepareImageUrlForSightengine(absUrl);
+        if (prepared !== null) allImgUrls.push(prepared);
         if (allImgUrls.length >= 50) break; // Maximale Anzahl für Total-Zählung
       } catch { /* skip */ }
     }
@@ -1559,14 +1590,14 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
         console.error(`[Scanner] WordPress API: ${wpImages.value.length} Bilder gefunden`);
         for (const imgUrl of wpImages.value) {
           const prepared = prepareImageUrlForSightengine(imgUrl);
-          if (!allImgUrls.includes(prepared)) allImgUrls.push(prepared);
+          if (prepared !== null && !allImgUrls.includes(prepared)) allImgUrls.push(prepared);
         }
       }
       if (sitemapImages.status === 'fulfilled' && sitemapImages.value.length > 0) {
         console.error(`[Scanner] Sitemap: ${sitemapImages.value.length} Bilder gefunden`);
         for (const imgUrl of sitemapImages.value) {
           const prepared = prepareImageUrlForSightengine(imgUrl);
-          if (!allImgUrls.includes(prepared)) allImgUrls.push(prepared);
+          if (prepared !== null && !allImgUrls.includes(prepared)) allImgUrls.push(prepared);
         }
       }
     }
