@@ -14,7 +14,7 @@ export interface CookieBannerResult {
   /** Name des CMP-Anbieters, z.B. "CookieBot" oder "Eigenentwicklung" */
   provider: string | null;
   /** Erkennungsmethode */
-  detectionMethod: 'script-source' | 'inline-script' | 'html-element' | 'meta-tag' | 'text-fallback' | 'none';
+  detectionMethod: 'script-source' | 'inline-script' | 'html-element' | 'meta-tag' | 'platform-signal' | 'text-fallback' | 'none';
   /** Wie sicher ist die Erkennung */
   confidence: 'high' | 'medium' | 'low';
   /** Beschreibung was gefunden wurde */
@@ -84,6 +84,9 @@ const SCRIPT_SOURCE_PATTERNS: Array<{ pattern: RegExp; provider: string }> = [
   { pattern: /privacybee\.com/i, provider: 'PrivacyBee' },
   { pattern: /eprivacycookiesolution\.com/i, provider: 'ePrivacy' },
   { pattern: /windcave.*consent/i, provider: 'Windcave CMP' },
+  // Ergänzungen: axept.io (Axeptio-Domain-Variante) und gdpr-cookie-consent (WP-Plugin)
+  { pattern: /axept\.io/i, provider: 'Axeptio' },
+  { pattern: /gdpr-cookie-consent/i, provider: 'GDPR Cookie Consent (WordPress)' },
 ];
 
 /** Inline-Script-Pattern für Cookie-Banner-Initialisierung */
@@ -168,7 +171,28 @@ const META_PATTERNS: RegExp[] = [
 ];
 
 /**
- * Erkennt Cookie-Banner via 5 Strategien.
+ * Plattform-eigene Consent-Signale (Wix, Squarespace, Shopify, Jimdo, Webflow).
+ * Diese Plattformen haben eingebaute Cookie-Banner — erkennbar über CDN-Domains im HTML.
+ * Nur als Fallback nach CMP-Script-Erkennung verwenden.
+ */
+const PLATFORM_COOKIE_SIGNALS: Array<{ pattern: RegExp; platform: string }> = [
+  // Wix — eigenes Cookie-Consent-System (wird per JS gerendert, fehlt im rohen HTML)
+  { pattern: /static\.parastorage\.com/i, platform: 'Wix' },
+  { pattern: /wix-thunderbolt/i, platform: 'Wix' },
+  // Squarespace — eigenes Cookie-Banner
+  { pattern: /static\.squarespace\.com/i, platform: 'Squarespace' },
+  { pattern: /squarespace-cdn\.com/i, platform: 'Squarespace' },
+  // Shopify — eigenes Consent-System (seit 2023 gesetzlich vorgeschrieben)
+  { pattern: /cdn\.shopify\.com/i, platform: 'Shopify' },
+  // Jimdo — eigenes Cookie-Banner
+  { pattern: /asset\.jimstatic\.com/i, platform: 'Jimdo' },
+  // Webflow — eigenes Cookie-Banner (wenn in den Site-Einstellungen aktiviert)
+  { pattern: /assets\.website-files\.com/i, platform: 'Webflow' },
+  { pattern: /webflow\.com\/css/i, platform: 'Webflow' },
+];
+
+/**
+ * Erkennt Cookie-Banner via 5 Strategien + Plattform-Fallback.
  * Gibt false-positive-sicheres Ergebnis zurück.
  */
 export function detectCookieBanner(html: string): CookieBannerResult {
@@ -243,6 +267,20 @@ export function detectCookieBanner(html: string): CookieBannerResult {
         detectionMethod: 'meta-tag',
         confidence: 'medium',
         details: `Cookie-Consent-Link oder Meta-Tag gefunden`,
+      };
+    }
+  }
+
+  // Strategie 4.5: Plattform-Signal-Erkennung (Wix, Squarespace, Shopify, Jimdo, Webflow)
+  // Diese Plattformen haben eingebaute Cookie-Consent-Systeme — im rohen HTML oft nicht sichtbar
+  for (const { pattern, platform } of PLATFORM_COOKIE_SIGNALS) {
+    if (pattern.test(html)) {
+      return {
+        detected: true,
+        provider: `${platform} (Plattform-integriert)`,
+        detectionMethod: 'platform-signal',
+        confidence: 'medium',
+        details: `${platform} erkannt — Plattform-eigenes Cookie-Consent-System vorhanden`,
       };
     }
   }
