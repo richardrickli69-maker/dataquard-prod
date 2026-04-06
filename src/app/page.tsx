@@ -192,7 +192,7 @@ export default function HomePage() {
           <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
-          Dataquard scannt Ihre Website, findet Probleme und generiert alle Dokumente die Sie brauchen, rechtssicher nach nDSG und DSGVO. Plus: <strong style={{ color: G.text }}>Erkennung von KI-generierten Bildern und Deepfakes.</strong> Einzigartig in der Schweiz.
+          Eine URL eingeben — Dataquard prüft Ihre Website <strong style={{ color: G.text }}>sofort</strong> auf Compliance, Performance, Security und KI-Sicherheit. Schwachstellen werden erkannt, Dokumente automatisch erstellt: DSE (Datenschutzerklärung), Impressum und Cookie-Banner — rechtssicher nach nDSG und DSGVO. <strong style={{ color: G.text }}>Plus: Erkennung von KI-generierten Bildern und Deepfakes.</strong> So einfach war Website-Compliance noch nie. Einzigartig in der Schweiz.
         </p>
         {/* Status-Banner (nur bei Problemen) */}
         {serviceStatus === 'down' && (
