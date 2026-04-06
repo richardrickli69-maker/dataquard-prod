@@ -44,7 +44,7 @@ export default function DatenschutzPage() {
             Dataquard<br />
             Basel-Region, Schweiz<br />
             E-Mail: datenschutz@dataquard.ch<br />
-            Website: dataquard.ch
+            Website: www.dataquard.ch
           </p>
         </Section>
 

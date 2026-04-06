@@ -249,7 +249,7 @@ export default function KiTransparenzPage() {
                 Kostenlos scannen
               </Link>
               <Link href="/checkout?plan=ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `2px solid ${G.green}`, color: G.green, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 10, textDecoration: 'none', background: 'transparent' }}>
-                AI-Trust Abo: CHF 99/Jahr
+                Jetzt upgraden: ab CHF 19.–/Mt.
               </Link>
             </div>
           </div>
