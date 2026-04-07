@@ -25,7 +25,13 @@ export const metadata: Metadata = {
     siteName: 'Dataquard',
     locale: 'de_CH',
     type: 'website',
-    images: [{ url: 'https://www.dataquard.ch/logo-dataquard.png', width: 512, height: 512, alt: 'Dataquard Logo' }],
+    images: [{ url: 'https://www.dataquard.ch/opengraph-image', width: 1200, height: 630, alt: 'Dataquard — Der Schweizer Compliance-Scanner' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
+    description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich.',
+    images: ['https://www.dataquard.ch/opengraph-image'],
   },
 };
 
