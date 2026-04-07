@@ -23,13 +23,12 @@ export default async function Image() {
           position: 'relative',
         }}
       >
-        {/* Schriftzug-Logo */}
+        {/* Logo-Icon */}
         <img
-          src="https://www.dataquard.ch/schriftzug-dataquard.png"
-          alt="Dataquard"
-          width={340}
-          height={80}
-          style={{ marginBottom: 28, objectFit: 'contain' }}
+          src="https://www.dataquard.ch/logo-dataquard.png"
+          width={140}
+          height={140}
+          style={{ marginBottom: 24 }}
         />
 
         {/* Untertitel */}
