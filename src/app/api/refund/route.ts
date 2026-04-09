@@ -16,15 +16,18 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'richard.rickli69@gma
 
 export async function POST(req: NextRequest) {
   try {
-    const { payment_intent_id, reason, admin_email } = await req.json();
-
-    // Admin-Check: Nur autorisierte Admins dürfen erstatten
-    if (!admin_email || admin_email !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { error: 'Nicht autorisiert' },
-        { status: 403 }
-      );
+    // Admin-Check: Bearer Token aus Authorization-Header validieren
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) {
+      return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
     }
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user || user.email !== ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 403 });
+    }
+
+    const { payment_intent_id, reason } = await req.json();
 
     if (!payment_intent_id) {
       return NextResponse.json(

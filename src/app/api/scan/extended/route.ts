@@ -11,33 +11,42 @@ import { NextRequest, NextResponse } from 'next/server';
 import { performExtendedScan } from '@/lib/extendedScanner';
 import { logAudit } from '@/lib/audit';
 
-const ipScanMap = new Map<string, { count: number; resetAt: number }>();
+// Supabase-basiertes Rate Limiting (funktioniert auch auf Vercel Serverless)
 const RATE_LIMIT = 10;
-const WINDOW_MS = 60 * 60 * 1000;
+const WINDOW_MS = 60 * 60 * 1000; // 1 Stunde
 
 export async function POST(request: NextRequest) {
-  // Rate limiting for unauthenticated requests
+  // Rate limiting für nicht-authentifizierte Anfragen
   const authHeader = request.headers.get('authorization');
   const isAuthenticated = authHeader?.startsWith('Bearer ');
-  // Alte Einträge bereinigen (Memory Leak verhindern)
-  const nowClean = Date.now();
-  for (const [ip, data] of ipScanMap.entries()) {
-    if (nowClean > data.resetAt) ipScanMap.delete(ip);
-  }
+
   if (!isAuthenticated) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-    const now = Date.now();
-    const entry = ipScanMap.get(ip);
-    if (entry && now < entry.resetAt) {
-      if (entry.count >= RATE_LIMIT) {
+    const now = new Date();
+
+    const { supabaseAdmin: rateLimitClient } = await import('@/lib/supabaseAdmin');
+    const { data: existing } = await rateLimitClient
+      .from('scan_rate_limits')
+      .select('count, reset_at')
+      .eq('ip', ip)
+      .single();
+
+    if (existing && new Date(existing.reset_at) > now) {
+      if (existing.count >= RATE_LIMIT) {
         return NextResponse.json(
           { success: false, error: 'Rate limit exceeded. Please try again later.' },
           { status: 429 }
         );
       }
-      entry.count++;
+      await rateLimitClient
+        .from('scan_rate_limits')
+        .update({ count: existing.count + 1 })
+        .eq('ip', ip);
     } else {
-      ipScanMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+      // Neues Fenster oder abgelaufener Eintrag
+      await rateLimitClient
+        .from('scan_rate_limits')
+        .upsert({ ip, count: 1, reset_at: new Date(Date.now() + WINDOW_MS).toISOString() });
     }
   }
 
