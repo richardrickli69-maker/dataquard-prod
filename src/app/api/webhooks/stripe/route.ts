@@ -719,7 +719,7 @@ function generateAgencyWelcomeEmailHtml({
               <div style="font-size:24px;font-weight:800;letter-spacing:-0.5px;">
                 <span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span>
               </div>
-              <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">Ihre Website. Rechtssicher.</div>
+              <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">${plan === 'advokatur' ? 'Compliance-Analyse für Ihre Mandanten.' : 'Ihre Website. Rechtssicher.'}</div>
             </td>
           </tr>
           <!-- Begrüssung -->
