@@ -92,6 +92,10 @@ export default function FuerAdvokaturen() {
           .adv-wl-grid     { grid-template-columns: 1fr !important; }
           .adv-cta-btns    { flex-direction: column !important; align-items: stretch !important; }
         }
+        @media (max-width: 768px) {
+          .adv-wl-outer    { grid-template-columns: 1fr !important; }
+          .adv-calc-grid   { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 560px) {
           .adv-scan-grid   { grid-template-columns: 1fr !important; }
         }
@@ -267,7 +271,7 @@ export default function FuerAdvokaturen() {
       {/* ═══ SECTION 4: WHITE-LABEL ═══ */}
       <section style={{ background: '#f8f9fb', padding: '72px 24px' }}>
         <div style={{ maxWidth: '860px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
+          <div className="adv-wl-outer" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
             <div>
               <div style={{
                 display: 'inline-block',
@@ -467,7 +471,7 @@ export default function FuerAdvokaturen() {
             padding: '40px 36px',
             textAlign: 'left',
           }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+            <div className="adv-calc-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px', marginBottom: '32px' }}>
               {[
                 { label: 'Ihr Honorar pro Audit', value: 'CHF 200–500', sub: 'Pro Mandanten-Website' },
                 { label: 'Ihr Aufwand mit Dataquard', value: '< CHF 5', sub: 'Pro Website (30 für CHF 149/Mt.)' },
