@@ -28,7 +28,7 @@ const G = {
 
 interface AgencyAccount {
   id: string;
-  plan: 'agency_basic' | 'agency_pro' | 'agency_enterprise';
+  plan: 'agency_basic' | 'agency_pro' | 'agency_enterprise' | 'advokatur';
   max_domains: number;
   white_label_enabled: boolean;
   custom_logo_url: string | null;
@@ -92,6 +92,7 @@ function planLabel(plan: string): string {
   if (plan === 'agency_basic')      return 'Agency Basic';
   if (plan === 'agency_pro')        return 'Agency Pro';
   if (plan === 'agency_enterprise') return 'Agency Enterprise';
+  if (plan === 'advokatur')         return 'Advokatur-Partnerschaft';
   return plan;
 }
 
@@ -555,7 +556,7 @@ export default function AgencyDashboardPage() {
     );
   }
 
-  const canWhiteLabel = agency.plan === 'agency_pro' || agency.plan === 'agency_enterprise';
+  const canWhiteLabel = agency.plan === 'agency_pro' || agency.plan === 'agency_enterprise' || agency.plan === 'advokatur';
 
   return (
     <PageWrapper>
