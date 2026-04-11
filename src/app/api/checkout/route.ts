@@ -7,6 +7,7 @@ interface PlanConfig {
   envVar: string;
   name: string;
   planType: 'kmu' | 'agency';
+  cancelPath?: string; // Optionaler Cancel-Pfad (default für agency: /fuer-agenturen)
 }
 
 // Pläne mit zugehöriger Env-Var für die Stripe Price ID
@@ -34,6 +35,13 @@ const PLANS: Record<string, PlanConfig> = {
     planType: 'agency',
   },
   // Hinweis: agency_enterprise hat keinen Self-Service Checkout
+  // ── Advokatur-Plan (Monatsabo, speziell für Anwaltskanzleien) ────────────
+  advokatur: {
+    envVar: 'STRIPE_ADVOKATUR_PRICE_ID',
+    name: 'Dataquard Advokatur-Partnerschaft',
+    planType: 'agency',
+    cancelPath: '/fuer-advokaturen',
+  },
 };
 
 export async function POST(req: NextRequest) {
@@ -81,7 +89,7 @@ export async function POST(req: NextRequest) {
         ? `${baseUrl}/dashboard/agency?checkout=success&plan=${product}`
         : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&product=${product}`,
       cancel_url: isAgency
-        ? `${baseUrl}/fuer-agenturen`
+        ? `${baseUrl}${planConfig.cancelPath ?? '/fuer-agenturen'}`
         : `${baseUrl}/checkout?plan=${product}`,
       locale: 'de',
     });

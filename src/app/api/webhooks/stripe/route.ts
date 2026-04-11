@@ -86,9 +86,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Kein Plan in metadata' }, { status: 400 });
       }
 
-      // ── Agency-Pläne: eigener Branch ──────────────────────────────────────
+      // ── Agency-Pläne: eigener Branch (inkl. Advokatur-Partnerschaft) ─────
       const isAgencyPlan = session.metadata?.plan_type === 'agency' ||
-        plan === 'agency_basic' || plan === 'agency_pro' || plan === 'agency_enterprise';
+        plan === 'agency_basic' || plan === 'agency_pro' || plan === 'agency_enterprise' ||
+        plan === 'advokatur';
 
       if (isAgencyPlan) {
         const agencyResult = await handleAgencyCheckout({ session, plan, stripe });
@@ -533,6 +534,13 @@ const AGENCY_PLAN_CONFIG: Record<string, AgencyPlanConfig> = {
     whiteLabelEnabled: true,
     monthlyAmount: 349,
   },
+  // Advokatur-Partnerschaft: speziell fuer Anwaltskanzleien
+  advokatur: {
+    maxDomains: 30,
+    scanFrequency: 'weekly',
+    whiteLabelEnabled: true,
+    monthlyAmount: 149,
+  },
 };
 
 // ─── Agency Checkout Handler ────────────────────────────────────────────────
@@ -616,6 +624,7 @@ async function handleAgencyCheckout({
       agency_basic:      'Agency Basic',
       agency_pro:        'Agency Pro',
       agency_enterprise: 'Agency Enterprise',
+      advokatur:         'Advokatur-Partnerschaft',
     };
     const planLabel = planLabelMap[plan] ?? plan;
 
@@ -627,6 +636,8 @@ async function handleAgencyCheckout({
           customerEmail,
           nextBillingDate,
           invoiceDate,
+          // Advokatur-Rechnungen erhalten eigenes Nummernpräfix DQ-ADV-
+          invoicePrefix: plan === 'advokatur' ? 'DQ-ADV' : 'DQ-AG',
         }),
         generateAgencyGuidePdf({
           plan,
@@ -680,12 +691,14 @@ function generateAgencyWelcomeEmailHtml({
   nextBillingDate: string;
 }): string {
   const planLabelMap: Record<string, string> = {
-    agency_basic: 'Agency Basic',
-    agency_pro: 'Agency Pro',
+    agency_basic:      'Agency Basic',
+    agency_pro:        'Agency Pro',
     agency_enterprise: 'Agency Enterprise',
+    advokatur:         'Advokatur-Partnerschaft',
   };
   const planLabel = planLabelMap[plan] ?? plan;
-  const isProOrEnterprise = plan === 'agency_pro' || plan === 'agency_enterprise';
+  // White-Label-Hinweis für Pro, Enterprise und Advokatur anzeigen
+  const isProOrEnterprise = plan === 'agency_pro' || plan === 'agency_enterprise' || plan === 'advokatur';
   const domainsLabel = planConfig.maxDomains === 9999 ? 'Unbegrenzt' : `bis ${planConfig.maxDomains}`;
 
   return `<!DOCTYPE html>

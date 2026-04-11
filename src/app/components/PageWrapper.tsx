@@ -25,6 +25,8 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
                 { l: 'Digitale Lösungen', h: '/tools' },
                 { l: 'KI-Sicherheit', h: '/ki-sicherheit' },
                 { l: 'Preise', h: '/preise' },
+                { l: 'Für Agenturen', h: '/fuer-agenturen' },
+                { l: 'Für Advokaturen', h: '/fuer-advokaturen' },
               ].map(n => (
                 <Link key={n.l} href={n.h} style={{ color: '#aaaabc', textDecoration: 'none', fontSize: 14 }}>{n.l}</Link>
               ))}

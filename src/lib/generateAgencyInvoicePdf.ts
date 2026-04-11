@@ -26,12 +26,14 @@ const PLAN_LABELS: Record<string, string> = {
   agency_basic:      'Agency Basic',
   agency_pro:        'Agency Pro',
   agency_enterprise: 'Agency Enterprise',
+  advokatur:         'Advokatur-Partnerschaft',
 };
 
 const PLAN_PRICES: Record<string, number> = {
   agency_basic:      79,
   agency_pro:        179,
   agency_enterprise: 349,
+  advokatur:         149,
 };
 
 export async function generateAgencyInvoicePdf(params: {
@@ -39,6 +41,7 @@ export async function generateAgencyInvoicePdf(params: {
   customerEmail: string;
   nextBillingDate: string;   // z.B. "30.04.2026"
   invoiceDate?: string;      // z.B. "30.03.2026" – default: heute
+  invoicePrefix?: string;    // z.B. "DQ-ADV" fuer Advokatur (default: "DQ-AG")
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
@@ -65,7 +68,8 @@ export async function generateAgencyInvoicePdf(params: {
   // Rechnungsdatum + Nummer
   const now         = new Date();
   const datePart    = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-  const invoiceNum  = `DQ-AG-${datePart}-${rand4()}`;
+  const prefix      = params.invoicePrefix ?? 'DQ-AG';
+  const invoiceNum  = `${prefix}-${datePart}-${rand4()}`;
   const invoiceDate = params.invoiceDate ?? now.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   // Gruener Balken oben

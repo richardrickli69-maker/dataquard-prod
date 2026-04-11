@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface AgencyCheckoutButtonProps {
-  plan: 'agency_basic' | 'agency_pro';
+  plan: 'agency_basic' | 'agency_pro' | 'advokatur';
   label: string;
   highlight: boolean;
   green: string;
