@@ -575,15 +575,6 @@ export default function ScannerPage() {
             <style>{`
               @keyframes spin { to { transform: rotate(360deg); } }
               @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-              /* Mobile Befund-Zeilen: Dot+Label über Content statt nebeneinander */
-              .befund-header { display: contents; }
-              @media (max-width: 767px) {
-                .befund-row { flex-direction: column !important; gap: 4px !important; }
-                .befund-header { display: flex !important; align-items: center; gap: 8px; }
-                .befund-dot { margin-top: 0 !important; }
-                .befund-label { width: auto !important; font-weight: 700; }
-                .befund-content { padding-left: 16px; }
-              }
             `}</style>
           </div>
         )}
@@ -653,128 +644,166 @@ export default function ScannerPage() {
               </div>
             )}
 
-            {/* Befunde */}
+            {/* Befunde — 4 Kategorie-Blöcke */}
             <div style={card}>
               <h2 style={{ fontSize: 13, fontWeight: 600, color: G.textSec, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <img src="/diagramm.png" alt="Befunde" width={16} height={16} /> Befunde
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {(() => {
-                  // JS-Rendering aktiv wenn medium oder high confidence
-                  const jsActive = result.jsRendering?.isLikelyJsRendered &&
-                    (result.jsRendering.confidence === 'high' || result.jsRendering.confidence === 'medium');
-                  const jsHint = <span style={{ color: G.textMuted, fontSize: 12 }}> (JavaScript-Rendering)</span>;
-                  return ([
-                  {
-                    label: 'Datenschutzerklärung',
-                    ok: result.findings.datenschutz,
-                    bad: jsActive
-                      ? <><IconWarn /> Nicht erkennbar{jsHint}</>
-                      : <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
-                    good: <><IconOK /> Vorhanden</>,
-                  },
-                  {
-                    label: 'Cookie Banner',
-                    // Status bestimmt ok/nicht ok:
-                    // vorhanden → grün, nicht_erforderlich → grün (kein Banner nötig),
-                    // nicht_erkennbar → gelb (kein harter Verstoss), fehlt_pflicht → rot
-                    ok: result.findings.cookieBannerStatus !== 'fehlt_pflicht',
-                    bad: <><IconErr /> Fehlt – Pflicht wegen {result.findings.cookieBannerTrackerCount} erkannter Tracker!</>,
-                    good: (() => {
-                      switch (result.findings.cookieBannerStatus) {
-                        case 'vorhanden':
-                          return <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>;
-                        case 'nicht_erforderlich':
-                          return <><img src="/gruener-kreis.png" alt="Info" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} /> Nicht erforderlich (keine Tracker erkannt)</>;
-                        case 'nicht_erkennbar':
-                          return <><IconWarn /> Nicht erkennbar{jsHint}</>;
-                        default:
-                          return <><IconOK /> Vorhanden</>;
-                      }
-                    })(),
-                  },
-                  {
-                    label: 'Tracker gefunden',
-                    ok: result.findings.trackerCount <= 4,
-                    bad: jsActive
-                      ? <><IconWarn /> Möglicherweise mehr{jsHint}</>
-                      : <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
-                    good: <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
-                  },
-                  {
-                    label: 'SSL / HTTPS',
-                    ok: result.findings.ssl,
-                    bad: <><IconErr /> Kein SSL – Sicherheitsrisiko!</>,
-                    good: <><IconOK /> Sicher</>,
-                  },
-                  {
-                    label: 'Mobile-Optimierung',
-                    ok: result.findings.mobile,
-                    bad: <><IconWarn /> Nicht mobile-freundlich</>,
-                    good: <><IconOK /> Mobile-freundlich</>,
-                  },
-                  {
-                    label: 'Impressum',
-                    ok: result.findings.impressum,
-                    bad: <><IconErr /> Fehlt – gesetzlich verpflichtend!</>,
-                    good: result.findings.impressumVollstaendig
-                      ? <><IconOK /> Vollständig vorhanden</>
-                      : <><IconWarn /> Vorhanden, aber unvollständig</>,
-                  },
-                  {
-                    label: 'KI-Inhalte (AI-Trust)',
-                    ok: !result.aiTrust.requiresDisclosure,
-                    // Violett als AI-Trust Markenfarbe für Ampel-Punkt und Text
-                    dotColor: G.violet,
-                    textColor: G.violet,
-                    bad: (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
-                        KI-Signale erkannt,{' '}
-                        <a href="#ai-trust-section" style={{ color: G.violet, fontWeight: 600, textDecoration: 'none' }}>
-                          Details im AI-Trust Bereich unten
-                        </a>
-                      </span>
-                    ),
-                    // Unterscheide: deklarierte KI (positiv) vs. keine KI (neutral)
-                    good: result.aiTrust.signals.length > 0
-                      ? <><IconOK /> KI-Nutzung transparent deklariert (EU AI Act konform)</>
-                      : <><IconOK /> Keine KI-Inhalte erkannt</>,
-                  },
-                  ...(result.imageAnalysis ? [{
-                    label: (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <img src="/suche.png" alt="Bilder" width={14} height={14} /> Bilder-Sicherheit
-                      </span>
-                    ),
-                    ok: result.imageAnalysis.all_safe,
-                    bad: <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
-                    good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
-                  }] : []),
-                  ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode; dotColor?: string; textColor?: string }>).map((row, idx) => (
-                    <div key={idx} className="befund-row" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
-                      {/* Mobile: Dot+Label gemeinsam in einer Zeile; Desktop: display:contents → Kinder direkt im Flex-Parent */}
-                      <div className="befund-header">
-                        <div className="befund-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: row.dotColor ?? (row.ok ? G.green : G.red), flexShrink: 0, marginTop: 5 }} />
-                        <span className="befund-label" style={{ color: G.textMuted, fontSize: 14, width: 174, flexShrink: 0 }}>{row.label}</span>
-                      </div>
-                      {/* Beschreibungstext: flex-start für korrekte Ausrichtung bei mehrzeiligem Text */}
-                      <span className="befund-content" style={{ fontSize: 14, color: row.textColor ?? (row.ok ? G.green : G.red), display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap', flex: 1 }}>
-                        {row.ok ? row.good : row.bad}
-                      </span>
-                    </div>
-                  ));
-                })()}
-                {/* Unvollständige Impressum-Angaben */}
-                {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
-                  <div style={{ marginTop: 12, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>
-                    <p style={{ color: G.yellow, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Fehlende Pflichtangaben im Impressum:</p>
-                    <ul style={{ paddingLeft: 16, fontSize: 12, color: G.textSec }}>
-                      {result.findings.impressumPflichtangaben.map((a, i) => <li key={i}>{a}</li>)}
-                    </ul>
+              {(() => {
+                // JS-Rendering aktiv wenn medium oder high confidence
+                const jsActive = result.jsRendering?.isLikelyJsRendered &&
+                  (result.jsRendering.confidence === 'high' || result.jsRendering.confidence === 'medium');
+                const jsHint = <span style={{ color: G.textMuted, fontSize: 12 }}> (JavaScript-Rendering)</span>;
+
+                // Ampelfarben pro Kategorie
+                const complianceColor = scoreColor(result.scores.compliance);
+                const perfColor = scoreColor(result.scores.optimization);
+                const secColor = result.findings.ssl ? G.green : G.red;
+
+                // Hilfsfunktion: einzelner Befund-Eintrag innerhalb eines Blocks
+                // Label klein + fett über dem Befund-Text — funktioniert auf Mobile und Desktop
+                const befundZeile = (
+                  label: string,
+                  ok: boolean,
+                  bad: React.ReactNode,
+                  good: React.ReactNode,
+                  textColor?: string,
+                ) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '8px 0', borderBottom: `1px solid ${G.border}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: G.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+                    <span style={{ fontSize: 14, color: textColor ?? (ok ? G.green : G.red), display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap' }}>
+                      {ok ? good : bad}
+                    </span>
                   </div>
-                )}
-              </div>
+                );
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                    {/* ── Compliance ── */}
+                    <div style={{ background: G.bgLight, borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: complianceColor, flexShrink: 0 }} />
+                        <span style={{ fontSize: 16, fontWeight: 700, color: complianceColor }}>Compliance</span>
+                      </div>
+                      <div>
+                        {befundZeile(
+                          'Datenschutzerklärung',
+                          result.findings.datenschutz,
+                          jsActive ? <><IconWarn /> Nicht erkennbar{jsHint}</> : <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
+                          <><IconOK /> Vorhanden</>,
+                        )}
+                        {befundZeile(
+                          'Cookie Banner',
+                          result.findings.cookieBannerStatus !== 'fehlt_pflicht',
+                          <><IconErr /> Fehlt – Pflicht wegen {result.findings.cookieBannerTrackerCount} erkannter Tracker!</>,
+                          (() => {
+                            switch (result.findings.cookieBannerStatus) {
+                              case 'vorhanden': return <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>;
+                              case 'nicht_erforderlich': return <><img src="/gruener-kreis.png" alt="Info" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} /> Nicht erforderlich (keine Tracker erkannt)</>;
+                              case 'nicht_erkennbar': return <><IconWarn /> Nicht erkennbar{jsHint}</>;
+                              default: return <><IconOK /> Vorhanden</>;
+                            }
+                          })(),
+                        )}
+                        {befundZeile(
+                          'Tracker gefunden',
+                          result.findings.trackerCount <= 4,
+                          jsActive ? <><IconWarn /> Möglicherweise mehr{jsHint}</> : <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
+                          <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
+                        )}
+                        {befundZeile(
+                          'Impressum',
+                          result.findings.impressum,
+                          <><IconErr /> Fehlt – gesetzlich verpflichtend!</>,
+                          result.findings.impressumVollstaendig
+                            ? <><IconOK /> Vollständig vorhanden</>
+                            : <><IconWarn /> Vorhanden, aber unvollständig</>,
+                        )}
+                        {/* Unvollständige Impressum-Pflichtangaben direkt im Compliance-Block */}
+                        {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
+                          <div style={{ marginTop: 8, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>
+                            <p style={{ color: G.yellow, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Fehlende Pflichtangaben im Impressum:</p>
+                            <ul style={{ paddingLeft: 16, fontSize: 12, color: G.textSec }}>
+                              {result.findings.impressumPflichtangaben.map((a, i) => <li key={i}>{a}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── Performance ── */}
+                    <div style={{ background: G.bgLight, borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: perfColor, flexShrink: 0 }} />
+                        <span style={{ fontSize: 16, fontWeight: 700, color: perfColor }}>Performance</span>
+                      </div>
+                      <div>
+                        {befundZeile(
+                          'Mobile-Optimierung',
+                          result.findings.mobile,
+                          <><IconWarn /> Nicht mobile-freundlich</>,
+                          <><IconOK /> Mobile-freundlich</>,
+                        )}
+                        {result.scores.optimization === null && (
+                          <div style={{ paddingTop: 8, fontSize: 13, color: G.textMuted }}>PageSpeed-Messung nicht verfügbar — Details siehe unten.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── Security ── */}
+                    <div style={{ background: G.bgLight, borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: secColor, flexShrink: 0 }} />
+                        <span style={{ fontSize: 16, fontWeight: 700, color: secColor }}>Security</span>
+                      </div>
+                      <div>
+                        {befundZeile(
+                          'SSL / HTTPS',
+                          result.findings.ssl,
+                          <><IconErr /> Kein SSL – Sicherheitsrisiko!</>,
+                          <><IconOK /> Sicher</>,
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── AI-Trust ── */}
+                    <div style={{ background: G.violetBg, border: `1px solid rgba(139,92,246,0.2)`, borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: G.violet, flexShrink: 0 }} />
+                        <span style={{ fontSize: 16, fontWeight: 700, color: G.violet }}>AI-Trust</span>
+                      </div>
+                      <div>
+                        {befundZeile(
+                          'KI-Inhalte',
+                          !result.aiTrust.requiresDisclosure,
+                          // Violett als AI-Trust Markenfarbe
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <img src="/suche.png" alt="KI" width={16} height={16} style={{ flexShrink: 0 }} />
+                            KI-Signale erkannt,{' '}
+                            <a href="#ai-trust-section" style={{ color: G.violet, fontWeight: 600, textDecoration: 'none' }}>
+                              Details im AI-Trust Bereich unten
+                            </a>
+                          </span>,
+                          // Unterscheide: deklarierte KI (positiv) vs. keine KI (neutral)
+                          result.aiTrust.signals.length > 0
+                            ? <><IconOK /> KI-Nutzung transparent deklariert (EU AI Act konform)</>
+                            : <><IconOK /> Keine KI-Inhalte erkannt</>,
+                          G.violet,
+                        )}
+                        {result.imageAnalysis && befundZeile(
+                          'Bilder-Sicherheit',
+                          result.imageAnalysis.all_safe,
+                          <><IconErr /> {result.imageAnalysis.unsafe_count + result.imageAnalysis.ai_generated_count} Problem(e) erkannt</>,
+                          <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
+                          G.violet,
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Erkenntnisse */}
