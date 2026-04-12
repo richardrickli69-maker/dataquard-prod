@@ -63,8 +63,18 @@ async function scanAndSaveDomain(domainRow: {
     const complianceScore  = result.compliance?.score ?? null;
     const performanceScore = result.optimization?.score ?? null;
     const securityScore    = result.trust?.score ?? null;
-    // realityScore: 0–100, höher = mehr KI-Inhalt. AI-Trust = 100 - realityScore
-    const aiTrustScore     = result.aiAudit ? Math.max(0, 100 - (result.aiAudit.realityScore ?? 0)) : null;
+    // AI-Trust Score: identische Formel wie in page.tsx (normaler Scanner-Frontend)
+    // realityScore bedeutet Vertrauenswürdigkeit (höher = besser), NICHT KI-Anteil.
+    // Mit Sightengine: 40% realityScore + 60% Bild-Sicherheit (100 - maxAiScore)
+    // Ohne Sightengine: realityScore direkt verwenden
+    // Bei fehlgeschlagenem Fetch (blockierte Website): null (nicht prüfbar)
+    const fetchFailed = result.fetchStatus !== 'success';
+    const baseAiScore = result.aiAudit?.realityScore ?? 95;
+    const aiTrustScore: number | null = fetchFailed
+      ? null
+      : result.sightengine
+        ? Math.round(baseAiScore * 0.4 + Math.max(0, 100 - result.sightengine.maxAiScore) * 0.6)
+        : baseAiScore;
     const aiImagesFound    = result.sightengine?.aiImagesFound ?? 0;
     // Automatisch gekennzeichnet: ai_score > 0.7 (gleiche Schwelle wie in extended scan)
     const aiImagesLabeled  = result.sightengine?.imageDetails
