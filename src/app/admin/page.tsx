@@ -58,6 +58,33 @@ interface BehaviorData {
   userActivity: UserActivity[];
 }
 
+interface CancelledEntry {
+  email: string;
+  plan: string;
+  cancelledAt: string;    // updated_at
+  periodEnd: string | null; // current_period_end
+}
+
+// Plan-Label mit Preis für alle 6 Pläne + Fallback
+function getPlanLabel(plan: string): string {
+  const labels: Record<string, string> = {
+    starter:           'Starter (CHF 19.–/Mt.)',
+    professional:      'Professional (CHF 39.–/Mt.)',
+    agency_basic:      'Agency Basic (CHF 79/Mt.)',
+    agency_pro:        'Agency Pro (CHF 179/Mt.)',
+    agency_enterprise: 'Agency Enterprise (CHF 349/Mt.)',
+    advokatur:         'Advokatur-Partnerschaft (CHF 149/Mt.)',
+  };
+  return labels[plan] ?? plan;
+}
+
+// Plan-Kategorie für Kategorie-Badge
+function getPlanCategory(plan: string): 'KMU' | 'Agency' | 'Advokatur' {
+  if (plan === 'starter' || plan === 'professional') return 'KMU';
+  if (plan === 'advokatur') return 'Advokatur';
+  return 'Agency';
+}
+
 // Relatives Datum (z.B. "vor 2 Std.", "gestern", "vor 3 Tagen")
 function timeAgo(dateString: string): string {
   const now = new Date();
@@ -89,6 +116,7 @@ export default function AdminDashboard() {
   const [refundResult, setRefundResult] = useState<RefundResult | null>(null);
   const [behaviorData, setBehaviorData] = useState<BehaviorData | null>(null);
   const [activitySearch, setActivitySearch] = useState('');
+  const [cancelledEntries, setCancelledEntries] = useState<CancelledEntry[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -98,7 +126,7 @@ export default function AdminDashboard() {
         return;
       }
       setAuthorized(true);
-      await Promise.all([loadAdminData(), loadBehaviorData(session.access_token)]);
+      await Promise.all([loadAdminData(), loadBehaviorData(session.access_token), loadCancelledData()]);
       setLoading(false);
     };
     init();
@@ -152,6 +180,64 @@ export default function AdminDashboard() {
     } catch {
       // Fehler still ignorieren – Admin-Dashboard lädt trotzdem
     }
+  };
+
+  // Letzte Kündigungen aus subscriptions (KMU) und agency_accounts (Agency/Advokatur) laden
+  const loadCancelledData = async () => {
+    // KMU-Kündigungen aus subscriptions (hat email-Spalte)
+    const { data: kmuCancelled } = await supabase
+      .from('subscriptions')
+      .select('email, plan, updated_at, current_period_end')
+      .eq('status', 'cancelled')
+      .order('updated_at', { ascending: false })
+      .limit(10);
+
+    // Agency/Advokatur-Kündigungen aus agency_accounts (hat user_id statt email)
+    const { data: agencyCancelled } = await supabase
+      .from('agency_accounts')
+      .select('user_id, plan, updated_at, current_period_end')
+      .eq('status', 'cancelled')
+      .order('updated_at', { ascending: false })
+      .limit(10);
+
+    const kmuEntries: CancelledEntry[] = (kmuCancelled ?? []).map((s: Record<string, unknown>) => ({
+      email:       String(s.email ?? '–'),
+      plan:        String(s.plan ?? '–'),
+      cancelledAt: String(s.updated_at ?? ''),
+      periodEnd:   s.current_period_end ? String(s.current_period_end) : null,
+    }));
+
+    // E-Mails für Agency-Einträge über user_id aus users-Tabelle holen
+    let agencyEntries: CancelledEntry[] = [];
+    if (agencyCancelled && agencyCancelled.length > 0) {
+      const userIds = (agencyCancelled as Record<string, unknown>[])
+        .map(a => a.user_id)
+        .filter((id): id is string => typeof id === 'string');
+
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email')
+        .in('id', userIds);
+
+      const emailMap: Record<string, string> = {};
+      (usersData ?? []).forEach((u: Record<string, unknown>) => {
+        emailMap[String(u.id)] = String(u.email);
+      });
+
+      agencyEntries = (agencyCancelled as Record<string, unknown>[]).map(a => ({
+        email:       emailMap[String(a.user_id)] ?? '–',
+        plan:        String(a.plan ?? '–'),
+        cancelledAt: String(a.updated_at ?? ''),
+        periodEnd:   a.current_period_end ? String(a.current_period_end) : null,
+      }));
+    }
+
+    // Zusammenfassen, nach Datum sortieren, max 10
+    const all = [...kmuEntries, ...agencyEntries]
+      .sort((a, b) => new Date(b.cancelledAt).getTime() - new Date(a.cancelledAt).getTime())
+      .slice(0, 10);
+
+    setCancelledEntries(all);
   };
 
   const handleRefund = async () => {
@@ -233,7 +319,7 @@ export default function AdminDashboard() {
             <Link href="/dashboard" style={{ padding: '8px 16px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>← Dashboard</Link>
             <button onClick={async () => {
               const { data: { session } } = await supabase.auth.getSession();
-              await Promise.all([loadAdminData(), session?.access_token ? loadBehaviorData(session.access_token) : Promise.resolve()]);
+              await Promise.all([loadAdminData(), session?.access_token ? loadBehaviorData(session.access_token) : Promise.resolve(), loadCancelledData()]);
             }} style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>↻ Aktualisieren</button>
           </div>
         </div>
@@ -448,7 +534,7 @@ export default function AdminDashboard() {
 
         {/* ═══ ABSCHNITT 3: Kunden-Aktivität ═══ */}
         {behaviorData && behaviorData.userActivity.length > 0 && (
-          <div style={{ marginTop: 28, marginBottom: 40 }}>
+          <div style={{ marginTop: 28 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 14 }}>
               👥 Kunden-Aktivität
             </h2>
@@ -522,6 +608,78 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* ═══ ABSCHNITT 4: Letzte Kündigungen ═══ */}
+        <div style={{ marginTop: 28, marginBottom: 40 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} />
+            Letzte Kündigungen
+          </h2>
+          <div style={{ background: '#ffffff', border: '1px solid #fca5a5', borderRadius: 12, overflow: 'hidden' }}>
+            {cancelledEntries.length === 0 ? (
+              <div style={{ padding: 32, textAlign: 'center', color: '#888899', fontSize: 14 }}>
+                Keine Kündigungen vorhanden.
+              </div>
+            ) : (
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #fee2e2', background: '#fef2f2' }}>
+                    {['E-Mail', 'Plan', 'Kategorie', 'Gekündigt am', 'Aktiv bis', 'Status'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: '#888899', fontWeight: 600, fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {cancelledEntries.map((entry, i) => {
+                    const category = getPlanCategory(entry.plan);
+                    // Kategorie-Badge Farben: KMU blau, Agency violett, Advokatur orange
+                    const catColors: Record<string, { bg: string; text: string }> = {
+                      KMU:       { bg: 'rgba(59,130,246,0.10)',  text: '#1d4ed8' },
+                      Agency:    { bg: 'rgba(139,92,246,0.10)',  text: '#7c3aed' },
+                      Advokatur: { bg: 'rgba(249,115,22,0.10)',  text: '#c2410c' },
+                    };
+                    const cc = catColors[category] ?? catColors.KMU;
+
+                    // Datumsformatierung dd.mm.yyyy
+                    const cancelledDateStr = entry.cancelledAt
+                      ? new Date(entry.cancelledAt).toLocaleDateString('de-CH')
+                      : '–';
+                    const periodEndStr = entry.periodEnd
+                      ? new Date(entry.periodEnd).toLocaleDateString('de-CH')
+                      : '–';
+
+                    return (
+                      <tr key={i} style={{ borderBottom: '1px solid #fef2f2', background: i % 2 === 0 ? '#ffffff' : '#fffafa' }}>
+                        <td style={{ padding: '10px 14px', color: '#1a1a2e', fontWeight: 500, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {entry.email}
+                        </td>
+                        <td style={{ padding: '10px 14px', color: '#374151', fontSize: 12 }}>
+                          {getPlanLabel(entry.plan)}
+                        </td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ background: cc.bg, color: cc.text, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+                            {category}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 14px', color: '#888899', whiteSpace: 'nowrap', fontSize: 12 }}>
+                          {cancelledDateStr}
+                        </td>
+                        <td style={{ padding: '10px 14px', color: '#888899', whiteSpace: 'nowrap', fontSize: 12 }}>
+                          {periodEndStr}
+                        </td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ background: 'rgba(239,68,68,0.10)', color: '#dc2626', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+                            Gekündigt
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
 
       </div>
     </div>

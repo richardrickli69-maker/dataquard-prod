@@ -267,8 +267,17 @@ export async function POST(request: NextRequest) {
 
     // ─── customer.subscription.deleted ─────────────────────────────────────────
     if (event.type === 'customer.subscription.deleted') {
-      const sub = event.data.object as unknown as { id: string; customer: string | null };
+      const sub = event.data.object as unknown as {
+        id: string;
+        customer: string | null;
+        current_period_end?: number | null;
+      };
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
+
+      // Laufzeitende aus Stripe Event (Sekunden → Millisekunden)
+      const periodEndFormatted = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : null;
 
       if (customerId) {
         // KMU-Subscriptions deaktivieren
@@ -285,7 +294,96 @@ export async function POST(request: NextRequest) {
 
         if (agencyDelErr) console.error('[Webhook] subscription.deleted Agency DB error:', agencyDelErr.message);
 
-        console.log(`[Webhook] Abo gekündigt: customer=${customerId}`);
+        // ── Plan und Kunden-E-Mail für Kündigungs-Benachrichtigungen ermitteln ──
+        let planKey: string | null = null;
+        let customerEmail: string | null = null;
+
+        // Zuerst KMU-Subscriptions prüfen (hat email-Spalte)
+        const { data: subData } = await supabaseAdmin
+          .from('subscriptions')
+          .select('plan, email')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+        if (subData) {
+          planKey = (subData.plan as string | null) ?? null;
+          customerEmail = (subData.email as string | null) ?? null;
+        }
+
+        // Falls nicht gefunden: Agency-Accounts prüfen (kein email, hat user_id)
+        if (!planKey) {
+          const { data: agencyData } = await supabaseAdmin
+            .from('agency_accounts')
+            .select('plan, user_id')
+            .eq('stripe_customer_id', customerId)
+            .maybeSingle();
+          if (agencyData) {
+            planKey = (agencyData.plan as string | null) ?? null;
+            if (agencyData.user_id) {
+              const { data: userData } = await supabaseAdmin
+                .from('users')
+                .select('email')
+                .eq('id', agencyData.user_id)
+                .maybeSingle();
+              customerEmail = (userData?.email as string | null) ?? null;
+            }
+          }
+        }
+
+        // Fallback: E-Mail aus Stripe Customer-Objekt holen
+        if (!customerEmail) {
+          try {
+            const stripeCustomer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+            customerEmail = stripeCustomer.email ?? null;
+          } catch {
+            console.error('[Webhook] Stripe Customer konnte nicht geladen werden:', customerId);
+          }
+        }
+
+        const planLabelStr   = planKey ? getCancellationPlanLabel(planKey) : 'Unbekannt';
+        const planCategoryStr = planKey ? getCancellationPlanCategory(planKey) : 'Unbekannt';
+        const nowFormatted   = new Date().toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        // ── Admin-Benachrichtigung (eigener try/catch) ─────────────────────────
+        try {
+          await resend.emails.send({
+            from: 'Dataquard <info@dataquard.ch>',
+            to: 'info@dataquard.ch',
+            subject: `Kündigung: ${customerEmail ?? customerId} hat ${planLabelStr} gekündigt`,
+            html: generateCancellationAdminEmailHtml({
+              customerEmail: customerEmail ?? customerId,
+              planLabel:     planLabelStr,
+              planCategory:  planCategoryStr,
+              customerId,
+              cancelledAt:   nowFormatted,
+              periodEnd:     periodEndFormatted ?? '–',
+            }),
+          });
+        } catch (adminEmailErr) {
+          console.error('[Webhook] Admin-Kündigungs-E-Mail fehlgeschlagen:', adminEmailErr instanceof Error ? adminEmailErr.message : adminEmailErr);
+        }
+
+        // ── Kunden-Bestätigung (eigener try/catch) ─────────────────────────────
+        if (customerEmail) {
+          try {
+            const returnUrl = planKey ? getCancellationReturnUrl(planKey) : 'https://www.dataquard.ch/preise';
+            await resend.emails.send({
+              from:    'Dataquard <info@dataquard.ch>',
+              to:      customerEmail,
+              replyTo: 'support@dataquard.ch',
+              subject: 'Ihre Kündigung bei Dataquard wurde bestätigt',
+              html:    generateCancellationCustomerEmailHtml({
+                planLabel:       planLabelStr,
+                planKey:         planKey ?? '',
+                periodEnd:       periodEndFormatted ?? '–',
+                returnUrl,
+              }),
+            });
+          } catch (custEmailErr) {
+            console.error('[Webhook] Kunden-Kündigungs-E-Mail fehlgeschlagen:', custEmailErr instanceof Error ? custEmailErr.message : custEmailErr);
+          }
+        }
+
+        console.log(`[Webhook] Abo gekündigt: customer=${customerId}, plan=${planKey ?? 'unbekannt'}`);
       }
 
       return NextResponse.json({ received: true });
@@ -869,6 +967,207 @@ function generateAgencyWelcomeEmailHtml({
         </table>
       </td>
     </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ─── Kündigungs-Hilfsfunktionen ────────────────────────────────────────────
+
+// Plan-Label mit Preis für alle 6 Pläne + Fallback
+function getCancellationPlanLabel(plan: string): string {
+  const labels: Record<string, string> = {
+    starter:           'Starter (CHF 19.–/Mt.)',
+    professional:      'Professional (CHF 39.–/Mt.)',
+    agency_basic:      'Agency Basic (CHF 79/Mt.)',
+    agency_pro:        'Agency Pro (CHF 179/Mt.)',
+    agency_enterprise: 'Agency Enterprise (CHF 349/Mt.)',
+    advokatur:         'Advokatur-Partnerschaft (CHF 149/Mt.)',
+  };
+  return labels[plan] ?? plan;
+}
+
+// Plan-Kategorie für Admin-Anzeige
+function getCancellationPlanCategory(plan: string): string {
+  if (plan === 'starter' || plan === 'professional') return 'KMU';
+  if (plan === 'advokatur') return 'Advokatur';
+  return 'Agency';
+}
+
+// Rückkehr-URL je nach Plan-Typ für den CTA in der Kunden-E-Mail
+function getCancellationReturnUrl(plan: string): string {
+  if (plan === 'starter' || plan === 'professional') return 'https://www.dataquard.ch/preise';
+  if (plan === 'advokatur') return 'https://www.dataquard.ch/fuer-advokaturen';
+  return 'https://www.dataquard.ch/fuer-agenturen';
+}
+
+// ─── Admin-Benachrichtigung bei Kündigung ──────────────────────────────────
+
+function generateCancellationAdminEmailHtml(params: {
+  customerEmail: string;
+  planLabel: string;
+  planCategory: string;
+  customerId: string;
+  cancelledAt: string;
+  periodEnd: string;
+}): string {
+  const rows: [string, string][] = [
+    ['Kunde',            params.customerEmail],
+    ['Plan',             params.planLabel],
+    ['Kategorie',        params.planCategory],
+    ['Stripe Customer',  params.customerId],
+    ['Gekündigt am',     params.cancelledAt],
+    ['Zugang aktiv bis', params.periodEnd],
+  ];
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>Kündigung</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0a0f1e;padding:24px 32px;">
+            <div style="font-size:20px;font-weight:800;"><span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span></div>
+            <div style="color:#888;font-size:12px;margin-top:4px;">Admin-Benachrichtigung</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px;">
+            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px 18px;margin-bottom:24px;">
+              <div style="font-size:15px;font-weight:700;color:#991b1b;">Kündigung eingegangen</div>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${rows.map(([label, value]) => `
+              <tr>
+                <td style="font-size:13px;color:#6b7280;padding:6px 0;width:160px;">${label}</td>
+                <td style="font-size:13px;color:#1a1a2e;font-weight:600;padding:6px 0;">${value}</td>
+              </tr>`).join('')}
+            </table>
+            <div style="margin-top:24px;">
+              <a href="https://dashboard.stripe.com/customers/${params.customerId}"
+                style="display:inline-block;background:#22c55e;color:#040c1c;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;text-decoration:none;">
+                Stripe Dashboard →
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">Dataquard · Reinach BL · Schweiz</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ─── Kunden-Bestätigung bei Kündigung ─────────────────────────────────────
+
+function generateCancellationCustomerEmailHtml(params: {
+  planLabel: string;
+  planKey: string;
+  periodEnd: string;
+  returnUrl: string;
+}): string {
+  const isKmu      = params.planKey === 'starter' || params.planKey === 'professional';
+  const isAdvokatur = params.planKey === 'advokatur';
+  const isAgency   = !isKmu && !isAdvokatur;
+
+  // Plan-spezifischer Text
+  const accessNote = isAgency
+    ? 'Bis zu diesem Datum können Sie alle Domains und Funktionen Ihres Plans weiterhin nutzen. Danach werden keine weiteren Zahlungen eingezogen.'
+    : 'Bis zu diesem Datum können Sie alle Funktionen Ihres Plans weiterhin nutzen. Danach werden keine weiteren Zahlungen eingezogen.';
+
+  const dataNote = isAgency
+    ? 'Ihre Domain-Daten und Scan-Reports bleiben nach Ablauf noch 30 Tage gespeichert.'
+    : 'Ihre Scan-Daten bleiben nach Ablauf noch 30 Tage gespeichert.';
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ihre Kündigung bei Dataquard wurde bestätigt</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#0b1829,#0d1f35);padding:32px 40px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;letter-spacing:-0.5px;">
+              <span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span>
+            </div>
+            <div style="color:#9ab0c8;font-size:13px;margin-top:4px;">Ihre Website. Rechtssicher.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px 40px 24px;text-align:center;">
+            <h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#1a1a2e;">Kündigung bestätigt</h1>
+            <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.7;">
+              Guten Tag,<br/><br/>
+              Ihre Kündigung wurde erfolgreich verarbeitet.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+              <div style="background:#f9fafb;padding:12px 20px;border-bottom:1px solid #e5e7eb;">
+                <span style="font-size:13px;font-weight:700;color:#374151;">Ihre Kündigung im Überblick</span>
+              </div>
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:16px 20px;">
+                <tr>
+                  <td style="font-size:13px;color:#6b7280;padding:5px 0;">Plan</td>
+                  <td style="font-size:13px;color:#374151;font-weight:600;text-align:right;">${params.planLabel}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#6b7280;padding:5px 0;">Zugang aktiv bis</td>
+                  <td style="font-size:13px;color:#374151;font-weight:600;text-align:right;">${params.periodEnd}</td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <p style="margin:0 0 12px;color:#374151;font-size:15px;line-height:1.7;">${accessNote}</p>
+            <p style="margin:0 0 12px;color:#374151;font-size:15px;line-height:1.7;">${dataNote}</p>
+            <p style="margin:0;color:#374151;font-size:15px;line-height:1.7;">Sie können jederzeit wieder einsteigen.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 28px;text-align:center;">
+            <a href="${params.returnUrl}"
+              style="display:inline-block;background:#22c55e;color:#040c1c;font-weight:700;font-size:15px;padding:14px 28px;border-radius:8px;text-decoration:none;">
+              Wieder einsteigen →
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;text-align:center;">
+              <div style="font-size:13px;color:#1e40af;">
+                Haben Sie Fragen? Antworten Sie direkt auf diese E-Mail oder schreiben Sie an<br/>
+                <a href="mailto:support@dataquard.ch" style="color:#2563eb;font-weight:600;">support@dataquard.ch</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              © 2026 Dataquard · Reinach BL, Schweiz<br/>
+              <a href="https://www.dataquard.ch" style="color:#9ca3af;">dataquard.ch</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;
