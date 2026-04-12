@@ -575,6 +575,15 @@ export default function ScannerPage() {
             <style>{`
               @keyframes spin { to { transform: rotate(360deg); } }
               @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+              /* Mobile Befund-Zeilen: Dot+Label über Content statt nebeneinander */
+              .befund-header { display: contents; }
+              @media (max-width: 767px) {
+                .befund-row { flex-direction: column !important; gap: 4px !important; }
+                .befund-header { display: flex !important; align-items: center; gap: 8px; }
+                .befund-dot { margin-top: 0 !important; }
+                .befund-label { width: auto !important; font-weight: 700; }
+                .befund-content { padding-left: 16px; }
+              }
             `}</style>
           </div>
         )}
@@ -743,12 +752,14 @@ export default function ScannerPage() {
                     good: <><IconOK /> Alle {result.imageAnalysis.total_images_scanned} Bilder sicher</>,
                   }] : []),
                   ] as Array<{ label: React.ReactNode; ok: boolean; bad: React.ReactNode; good: React.ReactNode; dotColor?: string; textColor?: string }>).map((row, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
-                      {/* Ampel-Punkt: farbiger Kreis für schnellen Status-Überblick */}
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: row.dotColor ?? (row.ok ? G.green : G.red), flexShrink: 0, marginTop: 5 }} />
-                      <span style={{ color: G.textMuted, fontSize: 14, width: 174, flexShrink: 0 }}>{row.label}</span>
+                    <div key={idx} className="befund-row" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 0', borderBottom: `1px solid ${G.border}` }}>
+                      {/* Mobile: Dot+Label gemeinsam in einer Zeile; Desktop: display:contents → Kinder direkt im Flex-Parent */}
+                      <div className="befund-header">
+                        <div className="befund-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: row.dotColor ?? (row.ok ? G.green : G.red), flexShrink: 0, marginTop: 5 }} />
+                        <span className="befund-label" style={{ color: G.textMuted, fontSize: 14, width: 174, flexShrink: 0 }}>{row.label}</span>
+                      </div>
                       {/* Beschreibungstext: flex-start für korrekte Ausrichtung bei mehrzeiligem Text */}
-                      <span style={{ fontSize: 14, color: row.textColor ?? (row.ok ? G.green : G.red), display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap', flex: 1 }}>
+                      <span className="befund-content" style={{ fontSize: 14, color: row.textColor ?? (row.ok ? G.green : G.red), display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap', flex: 1 }}>
                         {row.ok ? row.good : row.bad}
                       </span>
                     </div>
