@@ -236,11 +236,19 @@ export async function POST(request: NextRequest) {
 
         // Top-3 Befunde aus Scan-Ergebnis zusammenstellen
         const topFindings: string[] = [];
-        if (!scanResult.compliance.hasPrivacyPolicy) topFindings.push('Datenschutzerklaerung fehlt (Pflicht nach nDSG/DSGVO)');
-        if (scanResult.compliance.cookieBannerAssessment?.status === 'fehlt_pflicht') topFindings.push(`Cookie-Banner fehlt trotz ${scanResult.compliance.trackersFound.length} erkannter Tracker`);
-        if (!scanResult.trust.hasImpressum) topFindings.push('Impressum fehlt (gesetzlich verpflichtend)');
+        const fetchFailed = scanResult.fetchStatus !== 'success';
+
+        if (fetchFailed) {
+          // Bei blockiertem Fetch: "konnte nicht geprueft werden" statt fälschlich "fehlt"
+          topFindings.push('Datenschutzerklaerung konnte nicht geprueft werden (Website blockierte den Zugriff)');
+          topFindings.push('Impressum konnte nicht geprueft werden (Website blockierte den Zugriff)');
+        } else {
+          if (scanResult.compliance.hasPrivacyPolicy === false) topFindings.push('Datenschutzerklaerung fehlt (Pflicht nach nDSG/DSGVO)');
+          if (scanResult.compliance.cookieBannerAssessment?.status === 'fehlt_pflicht') topFindings.push(`Cookie-Banner fehlt trotz ${scanResult.compliance.trackersFound.length} erkannter Tracker`);
+          if (scanResult.trust.hasImpressum === false) topFindings.push('Impressum fehlt (gesetzlich verpflichtend)');
+          if (scanResult.compliance.trackersFound.length > 4) topFindings.push(`${scanResult.compliance.trackersFound.length} Tracker erkannt — Optimierungspotenzial`);
+        }
         if (!scanResult.optimization.hasSSL) topFindings.push('Kein SSL/HTTPS — Sicherheitsrisiko');
-        if (scanResult.compliance.trackersFound.length > 4) topFindings.push(`${scanResult.compliance.trackersFound.length} Tracker erkannt — Optimierungspotenzial`);
         if (topFindings.length === 0) topFindings.push('Alle wesentlichen Compliance-Kriterien erfullt');
 
         const domain = trimmedUrl.replace(/^https?:\/\//, '').split('/')[0];
@@ -248,7 +256,9 @@ export async function POST(request: NextRequest) {
         await sendScanLeadEmail({
           email: leadEmail,
           domain,
+          fetchStatus: scanResult.fetchStatus,
           scores: {
+            // null weitergeben — E-Mail zeigt "—" statt falscher Zahl
             compliance: scanResult.compliance.score,
             optimization: scanResult.optimization.score ?? 0,
             trust: scanResult.trust.score,

@@ -189,9 +189,10 @@ export async function GET(request: NextRequest) {
           plan: sub.plan as 'starter' | 'professional',
           reportPeriod: getReportPeriod(sub.plan),
           scores: {
-            compliance: scanResult.compliance.score,
+            // null-Fallback auf 0 falls Website beim Rescan blockiert war
+            compliance: scanResult.compliance.score ?? 0,
             performance: scanResult.optimization.score ?? 0,
-            security: scanResult.trust.score,
+            security: scanResult.trust.score ?? 0,
           },
           newTrackers: addedTrackers,
           removedTrackers,

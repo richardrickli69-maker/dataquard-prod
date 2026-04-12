@@ -85,24 +85,31 @@ interface PageSpeedMetric {
 
 interface ScanResult {
   url: string;
-  /** Wenn gesetzt: Seite konnte nicht vollständig geladen werden (Partial Result) */
+  /** Wenn gesetzt: Seite konnte nicht vollständig geladen werden */
   fetchError?: string;
-  scores: { compliance: number; optimization: number | null; trust: number; aiTrust: number; };
+  /** Status des HTML-Fetches — 'success' = normaler Scan, alle anderen = eingeschränkt */
+  fetchStatus?: 'success' | 'blocked' | 'server_error' | 'timeout' | 'empty' | 'dns_error' | 'not_found';
+  scores: { compliance: number | null; optimization: number | null; trust: number | null; aiTrust: number; };
   pageSpeed?: {
     mobile: PageSpeedMetric | null;
     desktop: PageSpeedMetric | null;
     combinedScore: number;
   };
   findings: {
-    datenschutz: boolean;
+    /** null wenn Website Zugriff blockiert hat — nicht prüfbar */
+    datenschutz: boolean | null;
     cookieBanner: boolean;
     cookieBannerProvider?: string;
     /** Kontextabhängiger Status: vorhanden | fehlt_pflicht | nicht_erforderlich | nicht_erkennbar */
     cookieBannerStatus: 'vorhanden' | 'fehlt_pflicht' | 'nicht_erforderlich' | 'nicht_erkennbar';
     cookieBannerTrackerCount: number;
     trackerCount: number;
-    ssl: boolean; mobile: boolean; impressum: boolean;
-    impressumVollstaendig: boolean; impressumPflichtangaben: string[];
+    ssl: boolean; mobile: boolean;
+    /** null wenn Website Zugriff blockiert hat — nicht prüfbar */
+    impressum: boolean | null;
+    /** null wenn Website Zugriff blockiert hat — nicht prüfbar */
+    impressumVollstaendig: boolean | null;
+    impressumPflichtangaben: string[];
   };
   jsRendering?: JsRenderingInfo;
   jurisdiction: 'nDSG' | 'DSGVO' | 'BEIDES';
@@ -333,14 +340,17 @@ export default function ScannerPage() {
       setResult({
         url: scanUrl,
         fetchError: scan?.fetchError ?? undefined,
+        fetchStatus: scan?.fetchStatus ?? 'success',
         scores: {
-          compliance: scan?.compliance?.score ?? 0,
+          // null beibehalten — nicht als 0 mappen (ScoreCircle unterstützt bereits null)
+          compliance: scan?.compliance?.score ?? null,
           optimization: scan?.optimization?.score ?? null,
-          trust: scan?.trust?.score ?? 0,
+          trust: scan?.trust?.score ?? null,
           aiTrust: aiTrustScore,
         },
         findings: {
-          datenschutz: scan?.compliance?.hasPrivacyPolicy ?? false,
+          // null beibehalten bei blockiertem Fetch (nicht als false mappen)
+          datenschutz: scan?.compliance?.hasPrivacyPolicy ?? null,
           cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
           cookieBannerProvider: scan?.compliance?.cookieBannerProvider ?? undefined,
           cookieBannerStatus: scan?.compliance?.cookieBannerAssessment?.status ?? 'fehlt_pflicht',
@@ -348,8 +358,8 @@ export default function ScannerPage() {
           trackerCount: scan?.optimization?.trackerCount ?? 0,
           ssl: scan?.trust?.hasSSL ?? scan?.optimization?.hasSSL ?? false,
           mobile: scan?.optimization?.isMobileFriendly ?? false,
-          impressum: scan?.trust?.hasImpressum ?? false,
-          impressumVollstaendig: scan?.trust?.impressumComplete ?? false,
+          impressum: scan?.trust?.hasImpressum ?? null,
+          impressumVollstaendig: scan?.trust?.impressumComplete ?? null,
           impressumPflichtangaben: scan?.trust?.impressumMissing ?? [],
         },
         jsRendering: scan?.compliance?.jsRendering ?? undefined,
@@ -599,11 +609,23 @@ export default function ScannerPage() {
               </div>
             </div>
 
-            {/* Partial-Result-Warnung wenn Seite nicht vollständig geladen werden konnte */}
-            {result.fetchError && (
-              <div style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.4)', borderRadius: 12, padding: '14px 16px' }}>
-                <p style={{ color: '#92400e', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Eingeschränkter Scan</p>
-                <p style={{ color: G.textSec, fontSize: 13 }}>{result.fetchError} Einige Prüfungen (Datenschutzerklärung, Tracker, Cookie-Banner) konnten nicht durchgeführt werden. SSL und Basis-Analyse sind trotzdem verfügbar.</p>
+            {/* Eingeschränkte-Analyse-Banner bei blockiertem oder fehlgeschlagenem Fetch */}
+            {result.fetchStatus && result.fetchStatus !== 'success' && (
+              <div style={{ background: 'rgba(180,83,9,0.08)', border: '1px solid rgba(217,119,6,0.5)', borderRadius: 12, padding: '14px 16px' }}>
+                <p style={{ color: '#92400e', fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Eingeschränkte Analyse</p>
+                <p style={{ color: '#78350f', fontSize: 13, lineHeight: 1.5 }}>
+                  {result.fetchStatus === 'blocked'
+                    ? 'Diese Website blockiert automatische Zugriffe (z.B. Cloudflare-Schutz oder Paywall). Datenschutzerklärung, Impressum und KI-Bilder konnten nicht geprüft werden. SSL- und Performance-Check wurden trotzdem durchgeführt.'
+                    : result.fetchStatus === 'timeout'
+                    ? 'Die Website hat nicht rechtzeitig geantwortet. HTML-abhängige Prüfungen (Datenschutz, Impressum) konnten nicht durchgeführt werden. Bitte versuchen Sie es später erneut.'
+                    : result.fetchStatus === 'dns_error'
+                    ? 'Die Domain konnte nicht aufgelöst werden. Bitte prüfen Sie die URL auf Tippfehler.'
+                    : result.fetchStatus === 'empty'
+                    ? 'Die Website liefert keinen auswertbaren Inhalt — sie wird möglicherweise vollständig per JavaScript geladen. Datenschutz und Impressum konnten nicht geprüft werden.'
+                    : result.fetchStatus === 'not_found'
+                    ? 'Die angegebene Seite wurde nicht gefunden (404). Bitte prüfen Sie die URL.'
+                    : 'Die Website konnte nicht vollständig analysiert werden. HTML-abhängige Prüfungen wurden übersprungen.'}
+                </p>
               </div>
             )}
 
@@ -687,12 +709,21 @@ export default function ScannerPage() {
                         <span style={{ fontSize: 16, fontWeight: 700, color: complianceColor }}>Compliance</span>
                       </div>
                       <div>
-                        {befundZeile(
-                          'Datenschutzerklärung',
-                          result.findings.datenschutz,
-                          jsActive ? <><IconWarn /> Nicht erkennbar{jsHint}</> : <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
-                          <><IconOK /> Vorhanden</>,
-                        )}
+                        {result.findings.datenschutz === null
+                          ? befundZeile(
+                              'Datenschutzerklärung',
+                              true,
+                              null,
+                              <><IconWarn /> Nicht prüfbar – Website blockierte den Zugriff</>,
+                              '#6b7280',
+                            )
+                          : befundZeile(
+                              'Datenschutzerklärung',
+                              result.findings.datenschutz,
+                              jsActive ? <><IconWarn /> Nicht erkennbar{jsHint}</> : <><IconErr /> Fehlt – Pflicht nach nDSG/DSGVO!</>,
+                              <><IconOK /> Vorhanden</>,
+                            )
+                        }
                         {befundZeile(
                           'Cookie Banner',
                           result.findings.cookieBannerStatus !== 'fehlt_pflicht',
@@ -706,20 +737,38 @@ export default function ScannerPage() {
                             }
                           })(),
                         )}
-                        {befundZeile(
-                          'Tracker gefunden',
-                          result.findings.trackerCount <= 4,
-                          jsActive ? <><IconWarn /> Möglicherweise mehr{jsHint}</> : <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
-                          <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
-                        )}
-                        {befundZeile(
-                          'Impressum',
-                          result.findings.impressum,
-                          <><IconErr /> Fehlt – gesetzlich verpflichtend!</>,
-                          result.findings.impressumVollstaendig
-                            ? <><IconOK /> Vollständig vorhanden</>
-                            : <><IconWarn /> Vorhanden, aber unvollständig</>,
-                        )}
+                        {result.fetchStatus && result.fetchStatus !== 'success'
+                          ? befundZeile(
+                              'Tracker gefunden',
+                              true,
+                              null,
+                              <><IconWarn /> Nicht prüfbar – Website blockierte den Zugriff</>,
+                              '#6b7280',
+                            )
+                          : befundZeile(
+                              'Tracker gefunden',
+                              result.findings.trackerCount <= 4,
+                              jsActive ? <><IconWarn /> Möglicherweise mehr{jsHint}</> : <><IconWarn /> {result.findings.trackerCount} Tracker – zu viele</>,
+                              <><IconOK /> {result.findings.trackerCount} Tracker (akzeptabel)</>,
+                            )
+                        }
+                        {result.findings.impressum === null
+                          ? befundZeile(
+                              'Impressum',
+                              true,
+                              null,
+                              <><IconWarn /> Nicht prüfbar – Website blockierte den Zugriff</>,
+                              '#6b7280',
+                            )
+                          : befundZeile(
+                              'Impressum',
+                              result.findings.impressum,
+                              <><IconErr /> Fehlt – gesetzlich verpflichtend!</>,
+                              result.findings.impressumVollstaendig
+                                ? <><IconOK /> Vollständig vorhanden</>
+                                : <><IconWarn /> Vorhanden, aber unvollständig</>,
+                            )
+                        }
                         {/* Unvollständige Impressum-Pflichtangaben direkt im Compliance-Block */}
                         {result.findings.impressum && !result.findings.impressumVollstaendig && result.findings.impressumPflichtangaben.length > 0 && (
                           <div style={{ marginTop: 8, padding: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10 }}>

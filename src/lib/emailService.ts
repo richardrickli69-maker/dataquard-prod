@@ -623,10 +623,14 @@ export async function sendReminderEmail(email: string) {
 export interface ScanLeadEmailParams {
   email: string;
   domain: string;
+  /** Status des HTML-Fetches — beeinflusst Score-Anzeige und Befunde-Text */
+  fetchStatus?: 'success' | 'blocked' | 'server_error' | 'timeout' | 'empty' | 'dns_error' | 'not_found';
   scores: {
-    compliance: number;
+    /** null wenn Website blockiert war — E-Mail zeigt "—" */
+    compliance: number | null;
     optimization: number;
-    trust: number;
+    /** null wenn Website blockiert war — E-Mail zeigt "—" */
+    trust: number | null;
     aiTrust: number;
   };
   /** Top-3 Befunde als kurze Strings */
@@ -638,11 +642,25 @@ export interface ScanLeadEmailParams {
  * Absender: info@dataquard.ch
  * Enthält 4 Ampelwerte, Top-Befunde und zwei CTAs (Scanner + Upgrade).
  */
-export async function sendScanLeadEmail({ email, domain, scores, topFindings }: ScanLeadEmailParams) {
+export async function sendScanLeadEmail({ email, domain, fetchStatus, scores, topFindings }: ScanLeadEmailParams) {
   const col = (s: number) => s >= 70 ? '#22c55e' : s >= 40 ? '#eab308' : '#ef4444';
   const lbl = (s: number) => s >= 70 ? 'Gut' : s >= 40 ? 'Verbesserungsbedarf' : 'Kritisch';
+  const fetchFailed = fetchStatus && fetchStatus !== 'success';
 
-  const scoreBlock = (label: string, score: number) => `
+  // scoreBlock: null-Score zeigt "—" mit grauem Punkt (nicht prüfbar)
+  const scoreBlock = (label: string, score: number | null) => {
+    if (score === null) {
+      return `
+    <td style="padding:6px;text-align:center;">
+      <div style="background:#f8fafc;border:1px solid #e2e4ea;border-radius:8px;padding:12px 8px;">
+        <div style="width:12px;height:12px;border-radius:50%;background:#9ca3af;margin:0 auto 6px;"></div>
+        <div style="font-size:22px;font-weight:900;color:#9ca3af;line-height:1;">—</div>
+        <div style="font-size:11px;color:#555566;margin-top:2px;">${label}</div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;margin-top:2px;">Nicht geprüft</div>
+      </div>
+    </td>`;
+    }
+    return `
     <td style="padding:6px;text-align:center;">
       <div style="background:#f8fafc;border:1px solid #e2e4ea;border-radius:8px;padding:12px 8px;">
         <div style="width:12px;height:12px;border-radius:50%;background:${col(score)};margin:0 auto 6px;"></div>
@@ -651,6 +669,7 @@ export async function sendScanLeadEmail({ email, domain, scores, topFindings }: 
         <div style="font-size:11px;font-weight:700;color:${col(score)};margin-top:2px;">${lbl(score)}</div>
       </div>
     </td>`;
+  };
 
   const findingsHtml = topFindings.length > 0
     ? topFindings.slice(0, 3).map(f =>
@@ -678,6 +697,17 @@ export async function sendScanLeadEmail({ email, domain, scores, topFindings }: 
             <p style="font-size:15px;color:#374151;margin:0 0 24px;">
               hier ist Ihr Compliance-Check f&#252;r <strong style="color:#1a1a2e;">${domain}</strong>:
             </p>
+
+            ${fetchFailed ? `
+            <!-- Hinweis bei blockiertem Fetch -->
+            <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+              <p style="font-size:13px;font-weight:700;color:#92400e;margin:0 0 4px;">&#9888;&#65039; Eingeschr&#228;nkte Analyse</p>
+              <p style="font-size:13px;color:#78350f;margin:0;">
+                Die Website blockiert automatische Zugriffe. Datenschutzerkl&#228;rung, Impressum und KI-Bilder konnten nicht gepr&#252;ft werden.
+                F&#252;r eine vollst&#228;ndige Analyse kontaktieren Sie uns unter
+                <a href="mailto:support@dataquard.ch" style="color:#d97706;">support@dataquard.ch</a>.
+              </p>
+            </div>` : ''}
 
             <!-- Score-Tabelle -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">

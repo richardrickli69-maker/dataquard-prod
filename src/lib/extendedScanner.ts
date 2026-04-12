@@ -73,6 +73,9 @@ interface FetchHtmlError {
   message: string;
 }
 
+/** Status des initialen HTML-Fetches — 'success' bei Erfolg, sonst Fehlerklasse */
+export type FetchStatus = 'success' | 'blocked' | 'server_error' | 'timeout' | 'empty' | 'dns_error' | 'not_found';
+
 /**
  * Baut den Cookie-String aus einem Set-Cookie-Header zusammen.
  * Extrahiert nur Name=Value Paare, ignoriert Direktiven (Path, Domain, SameSite, …).
@@ -267,16 +270,24 @@ export interface PageSpeedScore {
 
 export interface ExtendedScanResult {
   /**
+   * Status des initialen HTML-Fetches.
+   * 'success' = normaler Scan; alle anderen Werte = HTML nicht ladbar,
+   * HTML-abhängige Felder sind null (nicht prüfbar, nicht falsch).
+   */
+  fetchStatus: FetchStatus;
+  /**
    * Wenn der Haupt-Fetch der Seite fehlgeschlagen ist, enthält dieses Feld
    * eine deutschsprachige Benutzer-Meldung. Die übrigen Felder enthalten
-   * dann Fallback-Werte (Partial Result).
+   * dann null-Werte (Partial Result).
    */
   fetchError?: string;
   compliance: {
-    score: number;
+    /** null wenn HTML-Fetch fehlschlug — Wert nicht prüfbar */
+    score: number | null;
     jurisdiction: string;
     ampel: string;
-    hasPrivacyPolicy: boolean;
+    /** null wenn HTML-Fetch fehlschlug — nicht prüfbar */
+    hasPrivacyPolicy: boolean | null;
     trackersFound: string[];
     hasCookieBanner: boolean;
     /** Name des erkannten CMP-Anbieters, z.B. "CookieBot" */
@@ -298,12 +309,16 @@ export interface ExtendedScanResult {
     estimatedSpeedImpact: string;
   };
   trust: {
-    score: number;
+    /** null wenn HTML-Fetch fehlschlug — Wert nicht prüfbar */
+    score: number | null;
     hasSSL: boolean;
-    hasImpressum: boolean;
-    impressumComplete: boolean;
+    /** null wenn HTML-Fetch fehlschlug — nicht prüfbar */
+    hasImpressum: boolean | null;
+    /** null wenn HTML-Fetch fehlschlug — nicht prüfbar */
+    impressumComplete: boolean | null;
     impressumMissing: string[];
-    hasContact: boolean;
+    /** null wenn HTML-Fetch fehlschlug — nicht prüfbar */
+    hasContact: boolean | null;
     metaTagsComplete: boolean;
     noBrokenLinks: boolean;
   };
@@ -982,6 +997,8 @@ export async function detectComplianceIssues(
   jsRendering: JsRenderingResult;
   /** Fehler-Meldung wenn die Seite nicht geladen werden konnte */
   fetchError?: string;
+  /** Fetch-Code für FetchStatus-Mapping in performExtendedScan — 'OK' bei Erfolg */
+  fetchCode: FetchHtmlError['code'] | 'OK';
   /** Gefetchtes HTML — wird von performExtendedScan an die zweite Check-Gruppe weitergegeben */
   _html: string;
 }> {
@@ -989,11 +1006,14 @@ export async function detectComplianceIssues(
   const fetchResult = await fetchPageHtml(url);
   let html = '';
   let fetchError: string | undefined;
+  // Fetch-Code für Status-Mapping speichern
+  let fetchCode: FetchHtmlError['code'] | 'OK' = 'OK';
 
   if (fetchResult.ok) {
     html = fetchResult.html;
   } else {
     fetchError = fetchResult.message;
+    fetchCode = fetchResult.code;
     // Leeres HTML → alle HTML-basierten Checks schlagen fehl (Partial Result)
     html = '';
   }
@@ -1168,6 +1188,7 @@ export async function detectComplianceIssues(
     ],
     jsRendering,
     fetchError,
+    fetchCode,
     // HTML weitergeben damit performExtendedScan es an die zweite Prüfgruppe weitergeben kann
     // (verhindert 3 redundante Fetches in checkOutdatedScripts, checkMixedContent, scanSiteImagesWithSightengine)
     _html: html,
@@ -1755,6 +1776,18 @@ export async function performExtendedScan(
     fetchPageSpeedData(siteUrl, 'desktop'),
   ]);
 
+  // fetchStatus aus Compliance-Check ableiten (Ergebnis des HTML-Fetches)
+  const fetchCode = complianceCheck.fetchCode;
+  const fetchStatus: FetchStatus =
+    fetchCode === 'OK'          ? 'success'     :
+    (fetchCode === 'CLOUDFLARE' || fetchCode === 'BLOCKED') ? 'blocked' :
+    fetchCode === 'TIMEOUT'     ? 'timeout'     :
+    fetchCode === 'EMPTY'       ? 'empty'       :
+    fetchCode === 'DNS'         ? 'dns_error'   :
+    fetchCode === 'NOT_FOUND'   ? 'not_found'   : 'server_error';
+  // Fehlgeschlagener Fetch: HTML-abhängige Felder als null (nicht prüfbar, nicht falsch)
+  const fetchFailed = fetchStatus !== 'success';
+
   const hasPrivacyPolicy = !complianceCheck.needsPrivacyPolicy;
   // cookieBannerOk: vorhanden, nicht erforderlich (keine Tracker) oder nicht erkennbar (JS)
   // Nur 'fehlt_pflicht' zieht Punkte ab (Banner fehlt obwohl Tracker erkannt)
@@ -1815,42 +1848,48 @@ export async function performExtendedScan(
   );
 
   const scanResult: ExtendedScanResult = {
+    fetchStatus,
     fetchError: complianceCheck.fetchError,
     compliance: {
-      score: complianceScore,
+      // Bei fehlgeschlagenem Fetch: null (nicht prüfbar) statt falscher Wert
+      score: fetchFailed ? null : complianceScore,
       jurisdiction: domain.includes('.ch') ? 'nDSG' : 'DSGVO',
-      ampel: complianceScore > 70 ? '🟢' : complianceScore > 50 ? '🟡' : '🔴',
-      hasPrivacyPolicy: !complianceCheck.needsPrivacyPolicy,
-      trackersFound: complianceCheck.trackersFound,
-      hasCookieBanner: complianceCheck.hasCookieBanner,
-      cookieBannerProvider: complianceCheck.cookieBannerProvider ?? undefined,
-      cookieBannerAssessment: complianceCheck.cookieBannerAssessment,
-      jsRendering: complianceCheck.jsRendering,
+      ampel: fetchFailed ? '⚪' : (complianceScore > 70 ? '🟢' : complianceScore > 50 ? '🟡' : '🔴'),
+      hasPrivacyPolicy: fetchFailed ? null : !complianceCheck.needsPrivacyPolicy,
+      trackersFound: fetchFailed ? [] : complianceCheck.trackersFound,
+      hasCookieBanner: fetchFailed ? false : complianceCheck.hasCookieBanner,
+      cookieBannerProvider: fetchFailed ? undefined : (complianceCheck.cookieBannerProvider ?? undefined),
+      cookieBannerAssessment: fetchFailed ? undefined : complianceCheck.cookieBannerAssessment,
+      jsRendering: fetchFailed ? undefined : complianceCheck.jsRendering,
     },
     optimization: {
+      // SSL und PageSpeed brauchen kein HTML — immer verfügbar
       score: optimizationScore,
       loadTime: performanceCheck.loadTime,
       hasSSL: sslCheck.hasSSL,
       sslExpiry: sslCheck.expiry,
       isMobileFriendly: mobileCheck.isMobileFriendly,
       lighthouseScore: performanceCheck.lighthouseScore,
-      trackerCount: thirdPartyCheck.totalScripts,
-      estimatedSpeedImpact: `${Math.round((thirdPartyCheck.estimatedImpactMs / performanceCheck.loadTime) * 100)}% slower`,
+      trackerCount: fetchFailed ? 0 : thirdPartyCheck.totalScripts,
+      estimatedSpeedImpact: fetchFailed ? '—' : `${Math.round((thirdPartyCheck.estimatedImpactMs / performanceCheck.loadTime) * 100)}% slower`,
     },
     trust: {
-      score: trustScore,
+      // Bei fehlgeschlagenem Fetch: null (nicht prüfbar) — SSL bleibt verfügbar
+      score: fetchFailed ? null : trustScore,
       hasSSL: sslCheck.hasSSL,
-      hasImpressum: impressumCheck.hasImpressum,
-      impressumComplete: impressumCheck.impressumComplete,
-      impressumMissing: impressumCheck.impressumMissing,
-      hasContact: impressumCheck.hasContact,
-      metaTagsComplete: metaTagsCheck.completeness > 80,
+      hasImpressum: fetchFailed ? null : impressumCheck.hasImpressum,
+      impressumComplete: fetchFailed ? null : impressumCheck.impressumComplete,
+      impressumMissing: fetchFailed ? [] : impressumCheck.impressumMissing,
+      hasContact: fetchFailed ? null : impressumCheck.hasContact,
+      metaTagsComplete: fetchFailed ? false : metaTagsCheck.completeness > 80,
       noBrokenLinks: true,
     },
-    insights,
-    recommendations,
+    // Insights und Empfehlungen nur bei erfolgreichem Scan sinnvoll
+    insights: fetchFailed ? [] : insights,
+    recommendations: fetchFailed ? [] : recommendations,
     aiAudit,
-    sightengine: sightengineResult,
+    // Sightengine-Bildscan überspringen wenn HTML nicht ladbar (keine Bilder extrahierbar)
+    sightengine: fetchFailed ? null : sightengineResult,
     pageSpeed: pageSpeedData,
   };
 
