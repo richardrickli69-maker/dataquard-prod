@@ -306,12 +306,39 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <div style={{ background: G.bgLight, borderRadius: 12, padding: '14px 16px', fontSize: 14, color: G.textSec, lineHeight: 1.8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gruener-kreis.png" alt="OK" width={14} height={14} /><strong style={{ color: '#22c55e' }}>Compliance:</strong>{' '}nDSG-konform, Datenschutzerklärung vorhanden</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} /><strong style={{ color: '#eab308' }}>Performance:</strong>{' '}Google Fonts extern geladen (Datentransfer USA)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><img src="/roter-kreis.png" alt="Fehler" width={14} height={14} /><strong style={{ color: '#dc2626' }}>Security:</strong>{' '}Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
-            {/* Violetter Punkt als AI-Trust Markenfarbe */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0, boxShadow: '0 0 6px #8B5CF660' }} /><strong style={{ color: '#8B5CF6' }}>AI-Trust:</strong>{' '}3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Compliance */}
+            <div style={{ background: G.bgLight, borderRadius: 10, padding: '12px 14px', fontSize: 13, color: G.textSec }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <img src="/gruener-kreis.png" alt="OK" width={14} height={14} />
+                <strong style={{ color: '#22c55e' }}>Compliance</strong>
+              </div>
+              <div style={{ lineHeight: 1.5 }}>nDSG-konform, Datenschutzerklärung vorhanden</div>
+            </div>
+            {/* Performance */}
+            <div style={{ background: G.bgLight, borderRadius: 10, padding: '12px 14px', fontSize: 13, color: G.textSec }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <img src="/gelber-kreis.png" alt="Warnung" width={14} height={14} />
+                <strong style={{ color: '#eab308' }}>Performance</strong>
+              </div>
+              <div style={{ lineHeight: 1.5 }}>Google Fonts extern geladen (Datentransfer USA)</div>
+            </div>
+            {/* Security */}
+            <div style={{ background: G.bgLight, borderRadius: 10, padding: '12px 14px', fontSize: 13, color: G.textSec }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <img src="/roter-kreis.png" alt="Fehler" width={14} height={14} />
+                <strong style={{ color: '#dc2626' }}>Security</strong>
+              </div>
+              <div style={{ lineHeight: 1.5 }}>Kein Impressum gefunden, SSL läuft in 14 Tagen ab</div>
+            </div>
+            {/* AI-Trust – violetter Punkt als Markenfarbe */}
+            <div style={{ background: G.bgLight, borderRadius: 10, padding: '12px 14px', fontSize: 13, color: G.textSec }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0, boxShadow: '0 0 6px #8B5CF660' }} />
+                <strong style={{ color: '#8B5CF6' }}>AI-Trust</strong>
+              </div>
+              <div style={{ lineHeight: 1.5 }}>3 KI-generierte Bilder erkannt, keine Kennzeichnung vorhanden</div>
+            </div>
           </div>
         </div>
       </section>
