@@ -89,7 +89,7 @@ interface ScanResult {
   fetchError?: string;
   /** Status des HTML-Fetches — 'success' = normaler Scan, alle anderen = eingeschränkt */
   fetchStatus?: 'success' | 'blocked' | 'server_error' | 'timeout' | 'empty' | 'dns_error' | 'not_found';
-  scores: { compliance: number | null; optimization: number | null; trust: number | null; aiTrust: number; };
+  scores: { compliance: number | null; optimization: number | null; trust: number | null; aiTrust: number | null; };
   pageSpeed?: {
     mobile: PageSpeedMetric | null;
     desktop: PageSpeedMetric | null;
@@ -116,7 +116,8 @@ interface ScanResult {
   insights: string[];
   recommendations: string[];
   aiTrust: {
-    score: number;
+    /** null wenn Website blockiert war — nicht prüfbar */
+    score: number | null;
     deepfakeRisk: 'none' | 'low' | 'medium' | 'high';
     requiresDisclosure: boolean;
     summary: string;
@@ -330,17 +331,22 @@ export default function ScannerPage() {
       const scan = data.data?.scan;
       const rawJurisdiction = scan?.compliance?.jurisdiction ?? 'nDSG';
       const jurisdiction = (rawJurisdiction === 'GDPR' ? 'DSGVO' : rawJurisdiction) as 'nDSG' | 'DSGVO' | 'BEIDES';
+      const fetchStatusValue = scan?.fetchStatus ?? 'success';
+      const fetchFailed = fetchStatusValue !== 'success';
       const aiAudit = scan?.aiAudit;
       const sightengine = scan?.sightengine;
-      // AI-Trust score: Sightengine schlägt Metadaten-Analyse (realistischer)
+      // AI-Trust score: Bei blockiertem Fetch kein sinnvoller Score möglich → null
+      // Bei normalem Scan: Sightengine schlägt Metadaten-Analyse (realistischer)
       const baseScore = aiAudit?.realityScore ?? 95;
-      const aiTrustScore = sightengine
-        ? Math.round(baseScore * 0.4 + Math.max(0, 100 - sightengine.maxAiScore) * 0.6)
-        : baseScore;
+      const aiTrustScore: number | null = fetchFailed
+        ? null
+        : sightengine
+          ? Math.round(baseScore * 0.4 + Math.max(0, 100 - sightengine.maxAiScore) * 0.6)
+          : baseScore;
       setResult({
         url: scanUrl,
         fetchError: scan?.fetchError ?? undefined,
-        fetchStatus: scan?.fetchStatus ?? 'success',
+        fetchStatus: fetchStatusValue,
         scores: {
           // null beibehalten — nicht als 0 mappen (ScoreCircle unterstützt bereits null)
           compliance: scan?.compliance?.score ?? null,
@@ -353,7 +359,10 @@ export default function ScannerPage() {
           datenschutz: scan?.compliance?.hasPrivacyPolicy ?? null,
           cookieBanner: scan?.compliance?.hasCookieBanner ?? false,
           cookieBannerProvider: scan?.compliance?.cookieBannerProvider ?? undefined,
-          cookieBannerStatus: scan?.compliance?.cookieBannerAssessment?.status ?? 'fehlt_pflicht',
+          // Bei fetchFailed: kein Assessment verfügbar → eigener Sentinel 'nicht_erkennbar'
+          cookieBannerStatus: fetchFailed
+            ? 'nicht_erkennbar'
+            : (scan?.compliance?.cookieBannerAssessment?.status ?? 'nicht_erkennbar'),
           cookieBannerTrackerCount: scan?.compliance?.cookieBannerAssessment?.trackerCount ?? 0,
           trackerCount: scan?.optimization?.trackerCount ?? 0,
           ssl: scan?.trust?.hasSSL ?? scan?.optimization?.hasSSL ?? false,
@@ -724,19 +733,28 @@ export default function ScannerPage() {
                               <><IconOK /> Vorhanden</>,
                             )
                         }
-                        {befundZeile(
-                          'Cookie Banner',
-                          result.findings.cookieBannerStatus !== 'fehlt_pflicht',
-                          <><IconErr /> Fehlt – Pflicht wegen {result.findings.cookieBannerTrackerCount} erkannter Tracker!</>,
-                          (() => {
-                            switch (result.findings.cookieBannerStatus) {
-                              case 'vorhanden': return <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>;
-                              case 'nicht_erforderlich': return <><img src="/gruener-kreis.png" alt="Info" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} /> Nicht erforderlich (keine Tracker erkannt)</>;
-                              case 'nicht_erkennbar': return <><IconWarn /> Nicht erkennbar{jsHint}</>;
-                              default: return <><IconOK /> Vorhanden</>;
-                            }
-                          })(),
-                        )}
+                        {result.fetchStatus && result.fetchStatus !== 'success'
+                          ? befundZeile(
+                              'Cookie Banner',
+                              true,
+                              null,
+                              <><IconWarn /> Nicht prüfbar – Website blockierte den Zugriff</>,
+                              '#6b7280',
+                            )
+                          : befundZeile(
+                              'Cookie Banner',
+                              result.findings.cookieBannerStatus !== 'fehlt_pflicht',
+                              <><IconErr /> Fehlt – Pflicht wegen {result.findings.cookieBannerTrackerCount} erkannter Tracker!</>,
+                              (() => {
+                                switch (result.findings.cookieBannerStatus) {
+                                  case 'vorhanden': return <><IconOK /> {result.findings.cookieBannerProvider ? `Vorhanden (${result.findings.cookieBannerProvider})` : 'Vorhanden'}</>;
+                                  case 'nicht_erforderlich': return <><img src="/gruener-kreis.png" alt="Info" width={16} height={16} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} /> Nicht erforderlich (keine Tracker erkannt)</>;
+                                  case 'nicht_erkennbar': return <><IconWarn /> Nicht erkennbar{jsHint}</>;
+                                  default: return <><IconOK /> Vorhanden</>;
+                                }
+                              })(),
+                            )
+                        }
                         {result.fetchStatus && result.fetchStatus !== 'success'
                           ? befundZeile(
                               'Tracker gefunden',
