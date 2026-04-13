@@ -117,6 +117,7 @@ export default function AdminDashboard() {
   const [behaviorData, setBehaviorData] = useState<BehaviorData | null>(null);
   const [activitySearch, setActivitySearch] = useState('');
   const [cancelledEntries, setCancelledEntries] = useState<CancelledEntry[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -133,37 +134,48 @@ export default function AdminDashboard() {
   }, []);
 
   const loadAdminData = async () => {
-    const { data: usersData } = await supabase
-      .from('users')
-      .select('id, email, plan, created_at')
-      .order('created_at', { ascending: false });
+    try {
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, email, plan, created_at')
+        .order('created_at', { ascending: false });
 
-    if (usersData) {
-      setCustomers(usersData);
+      if (usersError) {
+        console.error('[Admin] users laden fehlgeschlagen:', usersError.message);
+        return;
+      }
 
-      const planBreakdown: Record<string, number> = {};
-      let paidCount = 0;
-      usersData.forEach((u: Customer) => {
-        const tier = u.plan || 'free';
-        planBreakdown[tier] = (planBreakdown[tier] || 0) + 1;
-        if (tier !== 'free' && tier !== null) paidCount++;
-      });
+      if (usersData) {
+        setCustomers(usersData);
 
-      const { count: scanCount } = await supabase
-        .from('scans')
-        .select('*', { count: 'exact', head: true });
+        const planBreakdown: Record<string, number> = {};
+        let paidCount = 0;
+        usersData.forEach((u: Customer) => {
+          const tier = u.plan || 'free';
+          planBreakdown[tier] = (planBreakdown[tier] || 0) + 1;
+          if (tier !== 'free' && tier !== null) paidCount++;
+        });
 
-      const { count: policyCount } = await supabase
-        .from('policies')
-        .select('*', { count: 'exact', head: true });
+        const { count: scanCount, error: scanErr } = await supabase
+          .from('scans')
+          .select('*', { count: 'exact', head: true });
+        if (scanErr) console.error('[Admin] scans count Fehler:', scanErr.message);
 
-      setStats({
-        totalCustomers: usersData.length,
-        totalPaidCustomers: paidCount,
-        totalScans: scanCount || 0,
-        totalPolicies: policyCount || 0,
-        planBreakdown,
-      });
+        const { count: policyCount, error: policyErr } = await supabase
+          .from('policies')
+          .select('*', { count: 'exact', head: true });
+        if (policyErr) console.error('[Admin] policies count Fehler:', policyErr.message);
+
+        setStats({
+          totalCustomers: usersData.length,
+          totalPaidCustomers: paidCount,
+          totalScans: scanCount || 0,
+          totalPolicies: policyCount || 0,
+          planBreakdown,
+        });
+      }
+    } catch (err) {
+      console.error('[Admin] loadAdminData Fehler:', err instanceof Error ? err.message : err);
     }
   };
 
@@ -177,8 +189,8 @@ export default function AdminDashboard() {
         const data: BehaviorData = await res.json();
         setBehaviorData(data);
       }
-    } catch {
-      // Fehler still ignorieren – Admin-Dashboard lädt trotzdem
+    } catch (err) {
+      console.error('[Admin] loadBehaviorData Fehler:', err instanceof Error ? err.message : err);
     }
   };
 
@@ -317,10 +329,25 @@ export default function AdminDashboard() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Link href="/dashboard" style={{ padding: '8px 16px', border: '1px solid #e2e4ea', color: '#555566', borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>← Dashboard</Link>
-            <button onClick={async () => {
-              const { data: { session } } = await supabase.auth.getSession();
-              await Promise.all([loadAdminData(), session?.access_token ? loadBehaviorData(session.access_token) : Promise.resolve(), loadCancelledData()]);
-            }} style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>↻ Aktualisieren</button>
+            <button
+              disabled={refreshing}
+              onClick={async () => {
+                setRefreshing(true);
+                try {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  await Promise.all([
+                    loadAdminData(),
+                    session?.access_token ? loadBehaviorData(session.access_token) : Promise.resolve(),
+                    loadCancelledData(),
+                  ]);
+                } catch (err) {
+                  console.error('[Admin] Refresh fehlgeschlagen:', err instanceof Error ? err.message : err);
+                } finally {
+                  setRefreshing(false);
+                }
+              }}
+              style={{ padding: '8px 16px', background: refreshing ? '#d97706' : '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.7 : 1, transition: 'opacity 0.2s' }}
+            >{refreshing ? '⏳ Laden…' : '↻ Aktualisieren'}</button>
           </div>
         </div>
       </div>
