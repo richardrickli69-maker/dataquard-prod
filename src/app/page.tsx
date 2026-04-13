@@ -187,9 +187,11 @@ export default function HomePage() {
         <p style={{ fontSize: 13, fontWeight: 700, color: G.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
           Der Schweizer Website-Check für KMU
         </p>
-        <h1 lang="de" style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.12, marginBottom: 18, letterSpacing: -1.5, color: G.text, wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
-          DSE, <span style={{ hyphens: 'none' }}>Impressum</span> und Cookie-Banner:{' '}
-          <span style={{ color: G.green }}>fertig in 3 Minuten.</span>
+        <h1 lang="de" style={{ fontSize: 'clamp(28px, 8vw, 46px)', fontWeight: 900, lineHeight: 1.2, marginBottom: 18, letterSpacing: -1.5, color: G.text, hyphens: 'none', wordBreak: 'normal' }}>
+          DSE, Impressum
+          <br className="md:hidden" />
+          {' '}und Cookie-Banner:{' '}
+          <span style={{ color: G.green, display: 'block' }}>fertig in 3 Minuten.</span>
         </h1>
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
           Eine URL eingeben — Dataquard prüft Ihre Website <strong style={{ color: G.text }}>sofort</strong> auf Compliance, Performance, Security und KI-Sicherheit. Schwachstellen werden erkannt, Dokumente automatisch erstellt: DSE (Datenschutzerklärung), Impressum und Cookie-Banner — rechtssicher nach nDSG und DSGVO. <strong style={{ color: G.text }}>Plus: Erkennung von KI-generierten Bildern und Deepfakes.</strong> So einfach war Website-Compliance noch nie. Einzigartig in der Schweiz.
