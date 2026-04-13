@@ -720,17 +720,48 @@ async function handleAgencyCheckout({
     }
   }
 
-  // User-ID per E-Mail auflösen falls nicht in Metadata
-  let resolvedUserId = userId;
+  // User-ID auflösen — 3-stufige Fallback-Kette
+  let resolvedUserId: string | null = userId ?? null;
+
+  // Stufe 1: users-Tabelle nach E-Mail (schnell, keine Pagination)
   if (!resolvedUserId && customerEmail) {
-    const { data } = await supabaseAdmin.auth.admin.listUsers();
-    const match = data?.users?.find((u) => u.email === customerEmail);
+    const { data: usersRow } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', customerEmail)
+      .maybeSingle();
+    if (usersRow?.id) resolvedUserId = usersRow.id as string;
+  }
+
+  // Stufe 2: Auth Admin listUsers paginiert (Fallback)
+  if (!resolvedUserId && customerEmail) {
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const match = authData?.users?.find((u) => u.email === customerEmail);
     if (match) resolvedUserId = match.id;
   }
 
+  // Stufe 3: Neuen Auth-User anlegen (Gast-Checkout ohne Supabase-Konto)
+  if (!resolvedUserId && customerEmail) {
+    try {
+      const { data: newAuthUser, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email: customerEmail,
+        email_confirm: true,
+      });
+      if (newAuthUser?.user?.id) {
+        resolvedUserId = newAuthUser.user.id;
+        console.error('[Webhook] Agency-Checkout: Neuer Auth-User angelegt für', customerEmail);
+      } else if (createErr) {
+        console.error('[Webhook] Agency-Checkout: createUser fehlgeschlagen:', createErr.message);
+      }
+    } catch (createUserErr) {
+      console.error('[Webhook] Agency-Checkout: createUser Fehler:', createUserErr instanceof Error ? createUserErr.message : createUserErr);
+    }
+  }
+
   if (!resolvedUserId) {
+    // 200 zurückgeben damit Stripe nicht endlos retried — manuelles Nacharbeiten nötig
     console.error('[Webhook] Agency-Checkout: User-ID konnte nicht aufgelöst werden', { customerEmail, session_id: session.id });
-    return NextResponse.json({ error: 'User nicht gefunden' }, { status: 400 });
+    return NextResponse.json({ received: true });
   }
 
   // agency_accounts upsert – on conflict user_id
