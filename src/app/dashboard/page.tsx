@@ -152,12 +152,22 @@ export default function DashboardPage() {
       .from('audit_log').select('id, action, resource, details, ip_address, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(3);
     if (auditData) setAuditLog(auditData);
 
-    // Nur Starter/Professional laden – alte 'ai-trust' Einzel-Einträge ignorieren
+    // Schritt 1: KMU-Abos aus subscriptions laden (starter/professional)
     const { data: subData } = await supabase
       .from('subscriptions').select('*').eq('user_id', userId)
       .eq('status', 'active').in('plan', ['starter', 'professional'])
-      .order('created_at', { ascending: false }).limit(1).single();
-    if (subData) setSubscription(subData);
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+    if (subData) {
+      setSubscription(subData);
+    } else {
+      // Schritt 2: Fallback auf agency_accounts (Agency/Advokatur-Pläne)
+      const { data: agencyData } = await supabase
+        .from('agency_accounts').select('*').eq('user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false }).limit(1).maybeSingle();
+      if (agencyData) setSubscription(agencyData as unknown as Subscription);
+    }
 
     const { data: scanData } = await supabase
       .from('scans').select('url, jurisdiction, ampel').eq('user_id', userId)
@@ -272,9 +282,13 @@ export default function DashboardPage() {
   }[status] || G.textMuted);
 
   const getPlanLabel = (plan: string) => ({
-    starter: '🟢 Starter – CHF 19.–/Mt. (CHF 228.–/Jahr)',
-    professional: '🔵 Professional – CHF 39.–/Mt. (CHF 468.–/Jahr)',
-    enterprise: '🟣 Enterprise',
+    starter:           '🟢 Starter – CHF 19.–/Mt. (CHF 228.–/Jahr)',
+    professional:      '🔵 Professional – CHF 39.–/Mt. (CHF 468.–/Jahr)',
+    enterprise:        '🟣 Enterprise',
+    agency_basic:      '🟠 Agency Basic – CHF 79.–/Mt.',
+    agency_pro:        '🟡 Agency Pro – CHF 179.–/Mt.',
+    agency_enterprise: '⚫ Agency Enterprise – CHF 349.–/Mt.',
+    advokatur:         '⚖️ Advokatur-Partnerschaft – CHF 149.–/Mt.',
   }[plan] || plan);
 
   const card: React.CSSProperties = {
