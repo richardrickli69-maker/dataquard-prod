@@ -138,11 +138,12 @@ export async function GET(request: NextRequest) {
       .eq('agency_id', agency.id)
       .eq('document_pack_enabled', true);
 
-    // Planpreise
+    // Planpreise (inkl. Advokatur-Partnerschaft)
     const planPrices: Record<string, number> = {
       agency_basic:      79,
       agency_pro:        179,
       agency_enterprise: 349,
+      advokatur:         149,
     };
     const planPrice     = planPrices[agency.plan] ?? 0;
     const docPackTotal  = (docPackCount ?? 0) * 9;
