@@ -271,12 +271,19 @@ export async function POST(request: NextRequest) {
         id: string;
         customer: string | null;
         current_period_end?: number | null;
+        cancel_at?: number | null;
+        canceled_at?: number | null;
+        metadata?: Record<string, string>;
+        items?: {
+          data: Array<{ price: { product: string | { name?: string } | null } }>;
+        };
       };
       const customerId = typeof sub.customer === 'string' ? sub.customer : null;
 
-      // Laufzeitende aus Stripe Event (Sekunden → Millisekunden)
-      const periodEndFormatted = sub.current_period_end
-        ? new Date(sub.current_period_end * 1000).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      // Laufzeitende aus Stripe Event — Fallback-Kette: current_period_end → cancel_at → canceled_at
+      const periodEndTs = sub.current_period_end || sub.cancel_at || sub.canceled_at || null;
+      const periodEndFormatted = periodEndTs && periodEndTs > 0
+        ? new Date(periodEndTs * 1000).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : null;
 
       if (customerId) {
@@ -336,6 +343,37 @@ export async function POST(request: NextRequest) {
             customerEmail = stripeCustomer.email ?? null;
           } catch {
             console.error('[Webhook] Stripe Customer konnte nicht geladen werden:', customerId);
+          }
+        }
+
+        // Fallback: Plan aus Stripe Subscription ermitteln (Metadata → Product-Name)
+        if (!planKey) {
+          try {
+            // Schritt 1: Metadata direkt aus dem Event-Objekt
+            const metaPlan = sub.metadata?.plan ?? null;
+            if (metaPlan) {
+              planKey = metaPlan;
+            } else {
+              // Schritt 2: Vollständige Subscription abrufen (inkl. Product)
+              const stripeSub = await stripe.subscriptions.retrieve(sub.id, {
+                expand: ['items.data.price.product'],
+              }) as Stripe.Subscription & {
+                metadata?: Record<string, string>;
+                items: { data: Array<{ price: { product: Stripe.Product | string | null } }> };
+              };
+              if (stripeSub.metadata?.plan) {
+                // metadata.plan wurde beim Checkout gesetzt
+                planKey = stripeSub.metadata.plan;
+              } else {
+                // Schritt 3: Product-Name als letzter Fallback
+                const product = stripeSub.items?.data?.[0]?.price?.product;
+                if (product && typeof product === 'object' && 'name' in product) {
+                  planKey = (product as Stripe.Product).name ?? null;
+                }
+              }
+            }
+          } catch (stripeSubErr) {
+            console.error('[Webhook] Plan-Fallback via Stripe Subscription fehlgeschlagen:', stripeSubErr instanceof Error ? stripeSubErr.message : stripeSubErr);
           }
         }
 
