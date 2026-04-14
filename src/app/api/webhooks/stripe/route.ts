@@ -212,6 +212,27 @@ export async function POST(request: NextRequest) {
         await logAudit({ user_id: resolvedUserId, action: 'purchase', resource: plan, details: { stripe_subscription_id: stripeSubscriptionId } });
       }
 
+      // ── Admin-Benachrichtigung bei Kauf (eigener try/catch) ────────────────
+      try {
+        const kmuPlanLabel: Record<string, string> = { starter: 'Starter', professional: 'Professional' };
+        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+        const nowStr = new Date().toLocaleString('de-CH', { timeZone: 'Europe/Zurich' });
+        await resend.emails.send({
+          from: 'Dataquard <info@dataquard.ch>',
+          to: 'info@dataquard.ch',
+          subject: `Neuer Abschluss: ${kmuPlanLabel[plan] ?? plan} — ${customerEmail ?? 'unbekannt'}`,
+          html: generateCheckoutNotificationHtml({
+            planLabel: kmuPlanLabel[plan] ?? plan,
+            customerEmail: customerEmail ?? '–',
+            amount: `${amountTotal.toFixed(2)} ${currency}`,
+            timestamp: nowStr,
+            paymentIntentId,
+          }),
+        });
+      } catch (notifyErr) {
+        console.error('[Webhook] Admin-Benachrichtigung (KMU) fehlgeschlagen:', notifyErr instanceof Error ? notifyErr.message : notifyErr);
+      }
+
       console.log(`[Webhook] ✅ Abo "${plan}" aktiviert für ${resolvedUserId ?? customerEmail}`);
       return NextResponse.json({ received: true });
     }
@@ -840,6 +861,35 @@ async function handleAgencyCheckout({
     }
   }
 
+  // ── Admin-Benachrichtigung bei Agency-Kauf (eigener try/catch) ────────────
+  try {
+    const agencyPlanLabelMap: Record<string, string> = {
+      agency_basic:      'Agency Basic',
+      agency_pro:        'Agency Pro',
+      agency_enterprise: 'Agency Enterprise',
+      advokatur:         'Advokatur-Partnerschaft',
+    };
+    const agencyPlanLabel = agencyPlanLabelMap[plan] ?? plan;
+    const agencyAmount = (session.amount_total ?? 0) / 100;
+    const agencyCurrency = session.currency?.toUpperCase() ?? 'CHF';
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+    const nowStr = new Date().toLocaleString('de-CH', { timeZone: 'Europe/Zurich' });
+    await resend.emails.send({
+      from: 'Dataquard <info@dataquard.ch>',
+      to: 'info@dataquard.ch',
+      subject: `Neuer Abschluss: ${agencyPlanLabel} — ${customerEmail ?? 'unbekannt'}`,
+      html: generateCheckoutNotificationHtml({
+        planLabel: agencyPlanLabel,
+        customerEmail: customerEmail ?? '–',
+        amount: `${agencyAmount.toFixed(2)} ${agencyCurrency}`,
+        timestamp: nowStr,
+        paymentIntentId,
+      }),
+    });
+  } catch (notifyErr) {
+    console.error('[Webhook] Admin-Benachrichtigung (Agency) fehlgeschlagen:', notifyErr instanceof Error ? notifyErr.message : notifyErr);
+  }
+
   console.log(`[Webhook] ✅ Agency-Account "${plan}" erstellt für user=${resolvedUserId}`);
   return NextResponse.json({ received: true });
 }
@@ -1036,6 +1086,55 @@ function generateAgencyWelcomeEmailHtml({
         </table>
       </td>
     </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ─── Admin-Benachrichtigung bei Abschluss ──────────────────────────────────
+
+function generateCheckoutNotificationHtml(params: {
+  planLabel: string;
+  customerEmail: string;
+  amount: string;
+  timestamp: string;
+  paymentIntentId: string | null;
+}): string {
+  const stripeRow = params.paymentIntentId
+    ? `<tr><td style="padding:6px 0;color:#555566;width:130px;">Stripe</td><td style="padding:6px 0;"><a href="https://dashboard.stripe.com/payments/${params.paymentIntentId}" style="color:#22c55e;">Zahlung ansehen →</a></td></tr>`
+    : '';
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>Neuer Abschluss</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0a0f1e;padding:20px 28px;">
+            <div style="font-size:18px;font-weight:800;"><span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span></div>
+            <div style="color:#888;font-size:12px;margin-top:2px;">Neuer Abschluss</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 28px;">
+            <p style="margin:0 0 16px;font-size:22px;">🎉</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="padding:6px 0;color:#555566;width:130px;">Plan</td><td style="padding:6px 0;font-weight:700;color:#1a1a2e;">${params.planLabel}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Kunde</td><td style="padding:6px 0;color:#1a1a2e;">${params.customerEmail}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Betrag</td><td style="padding:6px 0;font-weight:700;color:#22c55e;">${params.amount}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Zeitpunkt</td><td style="padding:6px 0;color:#1a1a2e;">${params.timestamp}</td></tr>
+              ${stripeRow}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 28px;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">© 2026 Dataquard · Reinach BL, Schweiz</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;
