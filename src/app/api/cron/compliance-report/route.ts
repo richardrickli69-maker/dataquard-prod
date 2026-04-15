@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { performExtendedScan } from '@/lib/extendedScanner';
-import { sendComplianceReport, sendSslWarning, sendDseUpdateNotification, sendDseUpsellNotification } from '@/lib/emailService';
+import { sendComplianceReport, sendSslWarning, sendDseUpdateNotification, sendDseUpsellNotification, sendScannerErrorAlert, type ScannerErrorEntry } from '@/lib/emailService';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -116,6 +116,8 @@ export async function GET(request: NextRequest) {
   }
 
   const results = { processed: 0, emailsSent: 0, skipped: 0, errors: 0 };
+  // Gesammelte Scan-Fehler — am Ende des Runs als EIN Alert gesendet
+  const scanErrors: ScannerErrorEntry[] = [];
 
   try {
     // Alle aktiven Subscriber mit user_id laden
@@ -294,14 +296,31 @@ export async function GET(request: NextRequest) {
 
         results.processed++;
       } catch (scanErr) {
-        console.error(`[ComplianceReport] Scan-Fehler f\u00fcr ${lastScan.url}:`, scanErr);
+        console.error(`[ComplianceReport] Scan-Fehler für ${lastScan.url}:`, scanErr);
         results.errors++;
-        // Nicht abbrechen — n\u00e4chster User wird verarbeitet
+        // Fehler sammeln — am Ende als EIN Alert-Mail versenden
+        scanErrors.push({
+          domain: lastScan.domain || lastScan.url,
+          email: email ?? '—',
+          plan: sub.plan,
+          error: scanErr instanceof Error ? scanErr.message : String(scanErr),
+          timestamp: new Date().toISOString(),
+        });
+        // Nicht abbrechen — nächster User wird verarbeitet
+      }
+    }
+
+    // Scanner-Fehler-Alert: eine E-Mail für alle Fehler dieses Runs
+    if (scanErrors.length > 0) {
+      try {
+        await sendScannerErrorAlert(scanErrors);
+      } catch (alertErr) {
+        console.error('[ComplianceReport] Scanner-Fehler-Alert konnte nicht gesendet werden:', alertErr);
       }
     }
 
     return NextResponse.json({
-      message: `${results.processed} Reports gesendet, ${results.emailsSent} E-Mails total, ${results.skipped} \u00fcbersprungen, ${results.errors} Fehler`,
+      message: `${results.processed} Reports gesendet, ${results.emailsSent} E-Mails total, ${results.skipped} übersprungen, ${results.errors} Fehler`,
       ...results,
     });
 

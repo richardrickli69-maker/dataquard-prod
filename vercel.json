@@ -18,6 +18,10 @@
       "schedule": "0 7 * * 1"
     },
     {
+      "path": "/api/cron/admin-digest",
+      "schedule": "30 7 * * 1"
+    },
+    {
       "path": "/api/cron/subscription-reminder",
       "schedule": "0 8 * * *"
     }

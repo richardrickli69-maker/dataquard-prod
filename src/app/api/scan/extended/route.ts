@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
 
     // ─── Lead VOR dem Scan speichern (Interesse bereits vorhanden) ───────────
     let scanLeadId: string | null = null;
+    let isNewLead = false;
     if (leadEmail) {
       try {
         const { supabaseAdmin: adminForLead } = await import('@/lib/supabaseAdmin');
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
             .select('id')
             .single();
           scanLeadId = leadData?.id ?? null;
+          isNewLead = true;
         } else {
           scanLeadId = existing.id;
         }
@@ -252,7 +254,7 @@ export async function POST(request: NextRequest) {
         if (topFindings.length === 0) topFindings.push('Alle wesentlichen Compliance-Kriterien erfullt');
 
         const domain = trimmedUrl.replace(/^https?:\/\//, '').split('/')[0];
-        const { sendScanLeadEmail } = await import('@/lib/emailService');
+        const { sendScanLeadEmail, sendNewLeadAlert } = await import('@/lib/emailService');
         await sendScanLeadEmail({
           email: leadEmail,
           domain,
@@ -266,6 +268,24 @@ export async function POST(request: NextRequest) {
           },
           topFindings: topFindings.slice(0, 3),
         });
+
+        // Admin-Alert: nur bei echtem neuen Lead (nicht bei Duplikat innerhalb 24h)
+        if (isNewLead) {
+          try {
+            await sendNewLeadAlert({
+              leadEmail,
+              domain,
+              scores: {
+                compliance: scanResult.compliance.score,
+                optimization: scanResult.optimization.score ?? null,
+                trust: scanResult.trust.score,
+              },
+              timestamp: new Date().toLocaleString('de-CH', { timeZone: 'Europe/Zurich' }),
+            });
+          } catch (alertErr) {
+            console.error('[scanLead] Admin-Alert Fehler:', alertErr);
+          }
+        }
       } catch (leadEmailErr) {
         console.error('[scanLead] E-Mail-Fehler:', leadEmailErr);
       }

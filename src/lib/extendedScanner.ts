@@ -1404,6 +1404,83 @@ async function fetchSitemapImages(baseUrl: string, timeout: number = 5000): Prom
   return imageUrls.slice(0, 20);
 }
 
+/**
+ * Sightengine-Nutzung in Supabase tracken und Warnung senden wenn >80% verbraucht.
+ * Fire-and-Forget — darf Scan-Logik nicht verzögern oder abbrechen.
+ */
+async function trackSightengineUsage(callsThisScan: number): Promise<void> {
+  if (callsThisScan <= 0) return;
+
+  try {
+    const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+    const month = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+
+    // Zähler inkrementieren (upsert — erstellt Row falls noch nicht vorhanden)
+    const { data, error } = await supabaseAdmin
+      .from('sightengine_usage')
+      .upsert(
+        { month, calls_used: callsThisScan },
+        { onConflict: 'month', ignoreDuplicates: false }
+      )
+      .select('calls_used, last_warning_sent')
+      .single();
+
+    if (error) {
+      // Fallback: Row existiert bereits → manuell incrementieren
+      const { data: current } = await supabaseAdmin
+        .from('sightengine_usage')
+        .select('calls_used, last_warning_sent')
+        .eq('month', month)
+        .single();
+
+      if (!current) return;
+
+      const newCount = (current.calls_used as number) + callsThisScan;
+      await supabaseAdmin
+        .from('sightengine_usage')
+        .update({ calls_used: newCount })
+        .eq('month', month);
+
+      const limit = parseInt(process.env.SIGHTENGINE_MONTHLY_LIMIT ?? '2000', 10);
+      const percentage = Math.round((newCount / limit) * 100);
+
+      if (percentage >= 80) {
+        // Max 1 Warnung pro Tag
+        const lastWarning = current.last_warning_sent as string | null;
+        const today = new Date().toISOString().slice(0, 10);
+        if (!lastWarning || lastWarning.slice(0, 10) !== today) {
+          const { sendSightengineWarningAlert } = await import('@/lib/emailService');
+          await sendSightengineWarningAlert({ callsUsed: newCount, limit, percentage, month });
+          await supabaseAdmin
+            .from('sightengine_usage')
+            .update({ last_warning_sent: new Date().toISOString() })
+            .eq('month', month);
+        }
+      }
+      return;
+    }
+
+    const finalCount = (data?.calls_used as number) ?? callsThisScan;
+    const limit = parseInt(process.env.SIGHTENGINE_MONTHLY_LIMIT ?? '2000', 10);
+    const percentage = Math.round((finalCount / limit) * 100);
+
+    if (percentage >= 80) {
+      const lastWarning = data?.last_warning_sent as string | null;
+      const today = new Date().toISOString().slice(0, 10);
+      if (!lastWarning || lastWarning.slice(0, 10) !== today) {
+        const { sendSightengineWarningAlert } = await import('@/lib/emailService');
+        await sendSightengineWarningAlert({ callsUsed: finalCount, limit, percentage, month });
+        await supabaseAdmin
+          .from('sightengine_usage')
+          .update({ last_warning_sent: new Date().toISOString() })
+          .eq('month', month);
+      }
+    }
+  } catch (err) {
+    console.error('[Sightengine] Tracking-Fehler:', err instanceof Error ? err.message : String(err));
+  }
+}
+
 async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string): Promise<{
   status: 'no_images' | 'success';
   imagesAnalysed: number;
@@ -1712,6 +1789,12 @@ async function scanSiteImagesWithSightengine(url: string, preloadedHtml?: string
     const nudityCount = details.filter(r => r.nudity_detected).length;
     const weaponCount = details.filter(r => r.weapon_detected).length;
     const unsafeCount = details.filter(r => !r.safe).length;
+
+    // Sightengine-Nutzung asynchron tracken (Fire-and-Forget — bricht Scan nicht ab)
+    trackSightengineUsage(imgUrls.length).catch(err => {
+      console.error('[Sightengine] Tracking konnte nicht gestartet werden:', err instanceof Error ? err.message : String(err));
+    });
+
     return {
       status: 'success',
       imagesAnalysed: details.length,

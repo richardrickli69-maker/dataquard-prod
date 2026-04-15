@@ -761,3 +761,382 @@ export async function sendScanLeadEmail({ email, domain, fetchStatus, scores, to
     return { success: false, error };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin-Alerts (intern, an info@dataquard.ch)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ADMIN_EMAIL = 'info@dataquard.ch';
+
+/** Hilfsfunktion: Ampelfarbe als farbiger Badge */
+function ampelBadge(score: number | null): string {
+  if (score === null) return '<span style="color:#6b7280;">—</span>';
+  const color = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+  return `<span style="background:${color};color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;">${score}</span>`;
+}
+
+// ─── Feature 4: Wöchentlicher Admin-Digest ───────────────────────────────────
+
+export interface AdminDigestParams {
+  weekNumber: number;
+  year: number;
+  newCustomers: { email: string; plan: string }[];
+  cancellations: { email: string; plan: string }[];
+  activeByPlan: Record<string, number>;
+  mrr: number;
+  scansTotal: number;
+  scansFree: number;
+  scansPaid: number;
+  newLeads: number;
+  failedPayments: number;
+}
+
+export async function sendAdminDigest(params: AdminDigestParams) {
+  const {
+    weekNumber, year, newCustomers, cancellations,
+    activeByPlan, mrr, scansTotal, scansFree, scansPaid,
+    newLeads, failedPayments,
+  } = params;
+
+  const planLabel: Record<string, string> = {
+    free: 'Free',
+    starter: 'Starter',
+    professional: 'Professional',
+    agency_basic: 'Agency Basic',
+    agency_pro: 'Agency Pro',
+    agency_enterprise: 'Agency Enterprise',
+    advokatur: 'Advokatur',
+  };
+
+  const activeRows = Object.entries(activeByPlan)
+    .map(([plan, count]) =>
+      `<tr>
+        <td style="padding:6px 12px;color:#374151;">${planLabel[plan] ?? plan}</td>
+        <td style="padding:6px 12px;color:#111827;font-weight:700;text-align:right;">${count}</td>
+      </tr>`
+    )
+    .join('');
+
+  const totalActive = Object.values(activeByPlan).reduce((a, b) => a + b, 0);
+
+  const newCustomerRows = newCustomers.length > 0
+    ? newCustomers.map(c =>
+        `<tr>
+          <td style="padding:4px 12px;color:#374151;">${c.email.replace(/&/g, '&amp;')}</td>
+          <td style="padding:4px 12px;color:#22c55e;font-weight:600;">${planLabel[c.plan] ?? c.plan}</td>
+        </tr>`
+      ).join('')
+    : `<tr><td colspan="2" style="padding:6px 12px;color:#9ca3af;">Keine neuen Kunden diese Woche</td></tr>`;
+
+  const cancellationRows = cancellations.length > 0
+    ? cancellations.map(c =>
+        `<tr>
+          <td style="padding:4px 12px;color:#374151;">${c.email.replace(/&/g, '&amp;')}</td>
+          <td style="padding:4px 12px;color:#ef4444;">${planLabel[c.plan] ?? c.plan}</td>
+        </tr>`
+      ).join('')
+    : `<tr><td colspan="2" style="padding:6px 12px;color:#9ca3af;">Keine Kündigungen diese Woche</td></tr>`;
+
+  try {
+    await getResend().emails.send({
+      from: 'info@dataquard.ch',
+      to: ADMIN_EMAIL,
+      subject: `Dataquard Weekly Digest \u2014 KW ${weekNumber} / ${year}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;">
+          <div style="background:#0f172a;padding:24px 32px;border-radius:8px 8px 0 0;">
+            <div><span style="color:#22c55e;font-weight:700;font-size:20px;">Data</span><span style="color:#fff;font-weight:700;font-size:20px;">guard</span></div>
+            <h1 style="color:#fff;margin:8px 0 0;font-size:18px;font-weight:600;">
+              Weekly Digest &mdash; KW ${weekNumber} / ${year}
+            </h1>
+          </div>
+          <div style="padding:28px 32px;border:1px solid #e2e4ea;border-top:none;border-radius:0 0 8px 8px;">
+
+            <!-- Kennzahlen -->
+            <h2 style="font-size:14px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">
+              Kennzahlen
+            </h2>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;margin-bottom:24px;border:1px solid #e2e4ea;border-radius:8px;overflow:hidden;">
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">Aktive Subscriber total</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;text-align:right;border-bottom:1px solid #e2e4ea;">${totalActive}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">Monatlich wiederkehrender Umsatz (MRR)</td>
+                <td style="padding:10px 16px;font-weight:700;color:#22c55e;text-align:right;border-bottom:1px solid #e2e4ea;">CHF ${mrr.toLocaleString('de-CH')}.&mdash;</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">Scans diese Woche (total)</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;text-align:right;border-bottom:1px solid #e2e4ea;">${scansTotal}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">&nbsp;&nbsp;davon Free-Scans</td>
+                <td style="padding:10px 16px;color:#6b7280;text-align:right;border-bottom:1px solid #e2e4ea;">${scansFree}</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">&nbsp;&nbsp;davon bezahlende Kunden</td>
+                <td style="padding:10px 16px;color:#6b7280;text-align:right;border-bottom:1px solid #e2e4ea;">${scansPaid}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;font-size:13px;color:#374151;border-bottom:1px solid #e2e4ea;">Neue Leads (E-Mail-Gate)</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;text-align:right;border-bottom:1px solid #e2e4ea;">${newLeads}</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;font-size:13px;color:#374151;">Fehlgeschlagene Zahlungen</td>
+                <td style="padding:10px 16px;font-weight:700;color:${failedPayments > 0 ? '#ef4444' : '#374151'};text-align:right;">${failedPayments}</td>
+              </tr>
+            </table>
+
+            <!-- Subscriber nach Plan -->
+            <h2 style="font-size:14px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">
+              Subscriber nach Plan
+            </h2>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;margin-bottom:24px;border:1px solid #e2e4ea;border-radius:8px;overflow:hidden;">
+              ${activeRows || '<tr><td colspan="2" style="padding:6px 12px;color:#9ca3af;">Keine aktiven Subscriber</td></tr>'}
+            </table>
+
+            <!-- Neue Kunden -->
+            <h2 style="font-size:14px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">
+              Neue Kunden diese Woche (${newCustomers.length})
+            </h2>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;margin-bottom:24px;border:1px solid #e2e4ea;border-radius:8px;overflow:hidden;">
+              ${newCustomerRows}
+            </table>
+
+            <!-- Kündigungen -->
+            <h2 style="font-size:14px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">
+              Kündigungen diese Woche (${cancellations.length})
+            </h2>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;margin-bottom:24px;border:1px solid #e2e4ea;border-radius:8px;overflow:hidden;">
+              ${cancellationRows}
+            </table>
+
+            <p style="font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #e2e4ea;padding-top:16px;margin:0;">
+              Dataquard Admin &middot; Reinach BL, Schweiz &middot;
+              <a href="${BASE_URL}/admin" style="color:#22c55e;">Admin-Dashboard</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('[emailService] sendAdminDigest Fehler:', error);
+    return { success: false, error };
+  }
+}
+
+// ─── Feature 5: Scanner-Fehler-Alert ─────────────────────────────────────────
+
+export interface ScannerErrorEntry {
+  domain: string;
+  email: string;
+  plan: string;
+  error: string;
+  timestamp: string;
+}
+
+export async function sendScannerErrorAlert(errors: ScannerErrorEntry[]) {
+  if (errors.length === 0) return { success: true };
+
+  const planLabel: Record<string, string> = {
+    starter: 'Starter', professional: 'Professional',
+    agency_basic: 'Agency Basic', agency_pro: 'Agency Pro',
+    agency_enterprise: 'Agency Enterprise', advokatur: 'Advokatur',
+  };
+
+  const rows = errors.map(e =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e4ea;color:#111827;font-weight:600;">${e.domain.replace(/&/g, '&amp;')}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e4ea;color:#374151;">${e.email.replace(/&/g, '&amp;')}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e4ea;color:#6b7280;">${planLabel[e.plan] ?? e.plan}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e4ea;color:#ef4444;font-size:12px;">${e.error.slice(0, 120).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>
+    </tr>`
+  ).join('');
+
+  try {
+    await getResend().emails.send({
+      from: 'info@dataquard.ch',
+      to: ADMIN_EMAIL,
+      subject: `Scanner-Fehler: ${errors.length} Scan${errors.length > 1 ? 's' : ''} fehlgeschlagen`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;background:#fff;">
+          <div style="background:#7f1d1d;padding:20px 28px;border-radius:8px 8px 0 0;">
+            <div><span style="color:#22c55e;font-weight:700;font-size:18px;">Data</span><span style="color:#fff;font-weight:700;font-size:18px;">guard</span></div>
+            <h1 style="color:#fff;margin:8px 0 0;font-size:16px;">&#x26A0;&#xFE0F; Scanner-Fehler im Compliance-Report Cron</h1>
+          </div>
+          <div style="padding:24px 28px;border:1px solid #fecaca;border-top:none;border-radius:0 0 8px 8px;background:#fff5f5;">
+            <p style="color:#374151;margin:0 0 16px;">
+              Beim wöchentlichen Compliance-Report-Lauf sind <strong>${errors.length} Scan-Fehler</strong> aufgetreten:
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;border:1px solid #fecaca;border-radius:8px;overflow:hidden;background:#fff;">
+              <tr style="background:#fee2e2;">
+                <th style="padding:8px 12px;text-align:left;font-size:12px;color:#7f1d1d;">Domain</th>
+                <th style="padding:8px 12px;text-align:left;font-size:12px;color:#7f1d1d;">Kunden-E-Mail</th>
+                <th style="padding:8px 12px;text-align:left;font-size:12px;color:#7f1d1d;">Plan</th>
+                <th style="padding:8px 12px;text-align:left;font-size:12px;color:#7f1d1d;">Fehler</th>
+              </tr>
+              ${rows}
+            </table>
+            <p style="font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #fecaca;padding-top:16px;margin:16px 0 0;">
+              Dataquard Admin &middot; <a href="${BASE_URL}/admin" style="color:#22c55e;">Admin-Dashboard</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('[emailService] sendScannerErrorAlert Fehler:', error);
+    return { success: false, error };
+  }
+}
+
+// ─── Feature 6: Sightengine-Kontingent-Warnung ───────────────────────────────
+
+export interface SightengineWarningParams {
+  callsUsed: number;
+  limit: number;
+  percentage: number;
+  month: string;
+}
+
+export async function sendSightengineWarningAlert(params: SightengineWarningParams) {
+  const { callsUsed, limit, percentage, month } = params;
+  const remaining = limit - callsUsed;
+  const daysInMonth = new Date(
+    parseInt(month.slice(0, 4)),
+    parseInt(month.slice(5, 7)),
+    0
+  ).getDate();
+  const dayOfMonth = new Date().getUTCDate();
+  const daysLeft = Math.max(0, daysInMonth - dayOfMonth);
+
+  try {
+    await getResend().emails.send({
+      from: 'info@dataquard.ch',
+      to: ADMIN_EMAIL,
+      subject: `Sightengine-Kontingent: ${percentage}% verbraucht`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;">
+          <div style="background:#78350f;padding:20px 28px;border-radius:8px 8px 0 0;">
+            <div><span style="color:#22c55e;font-weight:700;font-size:18px;">Data</span><span style="color:#fff;font-weight:700;font-size:18px;">guard</span></div>
+            <h1 style="color:#fff;margin:8px 0 0;font-size:16px;">&#x26A0;&#xFE0F; Sightengine-Kontingent: ${percentage}% verbraucht</h1>
+          </div>
+          <div style="padding:24px 28px;border:1px solid #fed7aa;border-top:none;border-radius:0 0 8px 8px;background:#fffbf5;">
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;border:1px solid #fed7aa;border-radius:8px;overflow:hidden;background:#fff;margin-bottom:20px;">
+              <tr style="background:#ffedd5;">
+                <td style="padding:10px 16px;color:#374151;">Monat</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;text-align:right;">${month}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #fed7aa;">Verbrauchte Calls</td>
+                <td style="padding:10px 16px;font-weight:700;color:#d97706;text-align:right;border-top:1px solid #fed7aa;">${callsUsed.toLocaleString('de-CH')}</td>
+              </tr>
+              <tr style="background:#ffedd5;">
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #fed7aa;">Monatliches Limit</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;text-align:right;border-top:1px solid #fed7aa;">${limit.toLocaleString('de-CH')}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #fed7aa;">Verbleibende Calls</td>
+                <td style="padding:10px 16px;font-weight:700;color:#374151;text-align:right;border-top:1px solid #fed7aa;">${remaining.toLocaleString('de-CH')}</td>
+              </tr>
+              <tr style="background:#ffedd5;">
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #fed7aa;">Verbleibende Tage im Monat</td>
+                <td style="padding:10px 16px;font-weight:700;color:#374151;text-align:right;border-top:1px solid #fed7aa;">${daysLeft}</td>
+              </tr>
+            </table>
+            <p style="color:#374151;font-size:14px;margin:0 0 8px;">
+              <strong>Empfehlung:</strong> Upgrade auf den nächsten Sightengine-Plan erwägen, um Unterbrechungen zu vermeiden.
+            </p>
+            <p style="font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #fed7aa;padding-top:16px;margin:16px 0 0;">
+              Dataquard Admin &middot; <a href="https://sightengine.com/dashboard" style="color:#22c55e;">Sightengine Dashboard</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('[emailService] sendSightengineWarningAlert Fehler:', error);
+    return { success: false, error };
+  }
+}
+
+// ─── Feature 7: Neuer Lead-Alert ─────────────────────────────────────────────
+
+export interface NewLeadAlertParams {
+  leadEmail: string;
+  domain: string;
+  scores: {
+    compliance: number | null;
+    optimization: number | null;
+    trust: number | null;
+  };
+  timestamp: string;
+}
+
+export async function sendNewLeadAlert(params: NewLeadAlertParams) {
+  const { leadEmail, domain, scores, timestamp } = params;
+  const scanUrl = `${BASE_URL}/scanner?url=${encodeURIComponent(domain)}`;
+
+  try {
+    await getResend().emails.send({
+      from: 'info@dataquard.ch',
+      to: ADMIN_EMAIL,
+      subject: `Neuer Lead: ${leadEmail} hat ${domain} gescannt`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;background:#fff;">
+          <div style="background:#0f172a;padding:20px 28px;border-radius:8px 8px 0 0;">
+            <div><span style="color:#22c55e;font-weight:700;font-size:18px;">Data</span><span style="color:#fff;font-weight:700;font-size:18px;">guard</span></div>
+            <h1 style="color:#fff;margin:8px 0 0;font-size:16px;">&#x1F4E7; Neuer Lead</h1>
+          </div>
+          <div style="padding:24px 28px;border:1px solid #e2e4ea;border-top:none;border-radius:0 0 8px 8px;">
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;border:1px solid #e2e4ea;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;color:#374151;">E-Mail</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;">${leadEmail.replace(/&/g, '&amp;')}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">Domain</td>
+                <td style="padding:10px 16px;font-weight:700;color:#111827;border-top:1px solid #e2e4ea;">
+                  <a href="${scanUrl}" style="color:#22c55e;">${domain.replace(/&/g, '&amp;')}</a>
+                </td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">Zeitpunkt</td>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">${timestamp}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">Compliance</td>
+                <td style="padding:10px 16px;border-top:1px solid #e2e4ea;">${ampelBadge(scores.compliance)}</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">Performance</td>
+                <td style="padding:10px 16px;border-top:1px solid #e2e4ea;">${ampelBadge(scores.optimization)}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#374151;border-top:1px solid #e2e4ea;">Security</td>
+                <td style="padding:10px 16px;border-top:1px solid #e2e4ea;">${ampelBadge(scores.trust)}</td>
+              </tr>
+            </table>
+            <p style="font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #e2e4ea;padding-top:16px;margin:0;">
+              Dataquard Admin &middot; <a href="${BASE_URL}/admin" style="color:#22c55e;">Alle Leads ansehen</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('[emailService] sendNewLeadAlert Fehler:', error);
+    return { success: false, error };
+  }
+}
