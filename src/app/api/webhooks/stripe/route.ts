@@ -259,12 +259,13 @@ export async function POST(request: NextRequest) {
       const dbStatus: string = isActive ? 'active' : sub.status === 'past_due' ? 'past_due' : 'cancelled';
 
       if (customerId) {
-        // KMU-Subscriptions aktualisieren
+        // KMU-Subscriptions aktualisieren (bei Verlängerung reminder_30d_sent zurücksetzen)
         const { error: updErr } = await supabaseAdmin.from('subscriptions')
           .update({
             status: dbStatus,
             current_period_end: currentPeriodEnd.toISOString(),
             stripe_subscription_id: sub.id,
+            ...(dbStatus === 'active' ? { reminder_30d_sent: false } : {}),
           })
           .eq('stripe_customer_id', customerId);
 
@@ -452,7 +453,10 @@ export async function POST(request: NextRequest) {
     if (event.type === 'invoice.payment_failed') {
       const invoice = event.data.object as Stripe.Invoice;
       const customerEmail = typeof invoice.customer_email === 'string' ? invoice.customer_email : null;
-      const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+      const customerId    = typeof invoice.customer === 'string' ? invoice.customer : null;
+      const invoiceId     = invoice.id ?? null;
+      const amountDue     = ((invoice.amount_due ?? 0) / 100).toFixed(2);
+      const currency      = (invoice.currency ?? 'chf').toUpperCase();
 
       // Status auf past_due setzen
       if (customerId) {
@@ -462,20 +466,44 @@ export async function POST(request: NextRequest) {
         if (pdErr) console.error('[Webhook] past_due update error:', pdErr.message);
       }
 
-      // Kundin per E-Mail benachrichtigen
+      // Plan-Name für Admin-Mail aus subscriptions holen
+      let planLabelForAdmin = 'Unbekannt';
+      if (customerId) {
+        const { data: subRow } = await supabaseAdmin
+          .from('subscriptions').select('plan').eq('stripe_customer_id', customerId).maybeSingle();
+        if (subRow?.plan) planLabelForAdmin = getCancellationPlanLabel(subRow.plan as string);
+      }
+
+      // ── Kunden-E-Mail (eigener try/catch) ─────────────────────────────────
       if (customerEmail) {
+        try {
+          await resend.emails.send({
+            from:    'Dataquard <info@dataquard.ch>',
+            to:      customerEmail,
+            replyTo: 'support@dataquard.ch',
+            subject: 'Dataquard — Ihre Zahlung konnte nicht verarbeitet werden',
+            html:    generatePaymentFailedCustomerEmailHtml({ customerEmail }),
+          });
+        } catch (custPayErr) {
+          console.error('[Webhook] Zahlungsausfall Kunden-E-Mail fehlgeschlagen:', custPayErr instanceof Error ? custPayErr.message : custPayErr);
+        }
+      }
+
+      // ── Admin-E-Mail (eigener try/catch) ───────────────────────────────────
+      try {
         await resend.emails.send({
-          from: 'Dataquard <info@dataquard.ch>',
-          to: customerEmail,
-          subject: '⚠️ Zahlung fehlgeschlagen – Dataquard Abo',
-          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
-            <h2 style="color:#1a1a2e;">Zahlung fehlgeschlagen</h2>
-            <p style="color:#555566;">Die Zahlung für Ihr Dataquard-Abo konnte nicht verarbeitet werden. Bitte aktualisieren Sie Ihre Zahlungsmethode um Ihren Zugang nicht zu verlieren.</p>
-            <a href="https://www.dataquard.ch/dashboard" style="display:inline-block;background:#22c55e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Zahlungsmethode aktualisieren →</a>
-            <p style="color:#888899;font-size:12px;margin-top:24px;">Dataquard · Reinach BL, Schweiz · <a href="https://www.dataquard.ch" style="color:#888899;">dataquard.ch</a></p>
-          </div>`,
+          from:    'Dataquard <info@dataquard.ch>',
+          to:      'info@dataquard.ch',
+          subject: `Zahlungsausfall: ${customerEmail ?? customerId ?? 'unbekannt'} — ${amountDue} ${currency}`,
+          html:    generatePaymentFailedAdminEmailHtml({
+            customerEmail: customerEmail ?? customerId ?? '–',
+            planLabel:     planLabelForAdmin,
+            amount:        `${amountDue} ${currency}`,
+            invoiceId:     invoiceId ?? '–',
+          }),
         });
-        console.log(`[Webhook] Zahlungsfehlschlag-E-Mail gesendet an: ${customerEmail}`);
+      } catch (adminPayErr) {
+        console.error('[Webhook] Zahlungsausfall Admin-E-Mail fehlgeschlagen:', adminPayErr instanceof Error ? adminPayErr.message : adminPayErr);
       }
 
       return NextResponse.json({ received: true });
@@ -1086,6 +1114,104 @@ function generateAgencyWelcomeEmailHtml({
         </table>
       </td>
     </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ─── Zahlungsausfall E-Mail Templates ──────────────────────────────────────
+
+function generatePaymentFailedCustomerEmailHtml(params: {
+  customerEmail: string;
+}): string {
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>Zahlung fehlgeschlagen</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0a0f1e;padding:24px 32px;">
+            <div style="font-size:20px;font-weight:800;"><span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span></div>
+            <div style="color:#888;font-size:12px;margin-top:4px;">Zahlung fehlgeschlagen</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="margin:0 0 8px;font-size:28px;">⚠️</p>
+            <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#1a1a2e;">Ihre Zahlung konnte nicht verarbeitet werden</h2>
+            <p style="margin:0 0 20px;font-size:14px;color:#555566;line-height:1.6;">
+              Leider konnte die Zahlung für Ihr Dataquard-Abo nicht erfolgreich abgewickelt werden.<br />
+              Bitte aktualisieren Sie Ihre Zahlungsmethode, damit Ihr Zugang weiterhin aktiv bleibt.
+            </p>
+            <a href="https://www.dataquard.ch/dashboard"
+               style="display:inline-block;background:#22c55e;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
+              Zahlungsmethode aktualisieren →
+            </a>
+            <p style="margin:24px 0 0;font-size:13px;color:#888899;line-height:1.6;">
+              Haben Sie Fragen? Schreiben Sie uns an
+              <a href="mailto:support@dataquard.ch" style="color:#22c55e;">support@dataquard.ch</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">
+              © 2026 Dataquard · Reinach BL, Schweiz ·
+              <a href="https://www.dataquard.ch/datenschutz" style="color:#9ca3af;">Datenschutz</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function generatePaymentFailedAdminEmailHtml(params: {
+  customerEmail: string;
+  planLabel: string;
+  amount: string;
+  invoiceId: string;
+}): string {
+  const stripeLink = params.invoiceId !== '–'
+    ? `<tr><td style="padding:6px 0;color:#555566;width:130px;">Stripe Invoice</td><td style="padding:6px 0;"><a href="https://dashboard.stripe.com/invoices/${params.invoiceId}" style="color:#22c55e;">Rechnung ansehen →</a></td></tr>`
+    : '';
+  const nowStr = new Date().toLocaleString('de-CH', { timeZone: 'Europe/Zurich' });
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /><title>Zahlungsausfall</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0a0f1e;padding:20px 28px;">
+            <div style="font-size:18px;font-weight:800;"><span style="color:#22c55e;">Data</span><span style="color:#ffffff;">quard</span></div>
+            <div style="color:#888;font-size:12px;margin-top:2px;">Zahlungsausfall</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 28px;">
+            <p style="margin:0 0 16px;font-size:22px;">🔴</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="padding:6px 0;color:#555566;width:130px;">Kunde</td><td style="padding:6px 0;color:#1a1a2e;">${params.customerEmail}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Plan</td><td style="padding:6px 0;color:#1a1a2e;">${params.planLabel}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Betrag</td><td style="padding:6px 0;font-weight:700;color:#dc2626;">${params.amount}</td></tr>
+              <tr><td style="padding:6px 0;color:#555566;">Zeitpunkt</td><td style="padding:6px 0;color:#1a1a2e;">${nowStr}</td></tr>
+              ${stripeLink}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 28px;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">© 2026 Dataquard · Reinach BL, Schweiz</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;
