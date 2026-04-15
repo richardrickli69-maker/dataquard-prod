@@ -434,7 +434,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 6. PRICING ═══ */}
+      {/* ═══ 6. COPY-PASTE DSE VERGLEICH ═══ */}
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <span style={{ color: G.red, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>HÄUFIGSTER FEHLER</span>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 6, color: G.text }}>
+            &laquo;Ich kopiere einfach eine Datenschutzerklärung von einer anderen Website.&raquo;
+          </h2>
+          <p style={{ color: G.textSec, fontSize: 14, marginTop: 8 }}>Das machen 90% der KMUs. Und genau deshalb sind 73% nicht rechtskonform.</p>
+        </div>
+
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          {/* Links: Copy-Paste Risiken */}
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #ef4444, transparent)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <img src="/fehler.png" alt="Fehler" width={24} height={24} />
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#991b1b' }}>Copy-Paste Datenschutzerklärung</h3>
+            </div>
+            {[
+              { ic: '⚠️', t: 'Falsche Drittanbieter', d: 'Enthält Google Analytics, obwohl Sie es nicht nutzen, aber Ihr Stripe fehlt komplett.' },
+              { ic: '⚠️', t: 'Falsche Jurisdiktion', d: 'Kopiert von einer .de-Website? Dann fehlt der nDSG-Teil. Kopiert von .ch? Dann fehlt DSGVO für deutsche Kunden.' },
+              { ic: '⚠️', t: 'Veraltet ab Tag 1', d: 'Sie fügen ein Kontaktformular hinzu, wechseln den Hoster, die kopierte Policy weiss nichts davon.' },
+              { ic: '⚠️', t: 'Rechtlich angreifbar', d: 'Eine falsche DSE ist schlimmer als keine, denn sie beweist, dass Sie es versucht aber falsch gemacht haben.' },
+            ].map(r => (
+              <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#991b1b', marginBottom: 2 }}>{r.t}</div>
+                  <div style={{ fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, opacity: 0.85 }}>{r.d}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, padding: '12px 14px', background: '#fee2e2', borderRadius: 10, fontSize: 12, color: '#991b1b', fontWeight: 600, textAlign: 'center' }}>
+              <img src="/warnung.png" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />
+              Bussgeld: bis CHF 250&apos;000 (nDSG) · bis €20 Mio. oder 4% (DSGVO)
+            </div>
+          </div>
+
+          {/* Rechts: Dataquard Lösung */}
+          <div style={{ background: 'rgba(34,197,94,0.04)', border: `1px solid ${G.green}33`, borderRadius: 16, padding: 26, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${G.green}, transparent)` }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <IconEl ic="✅" size={24} />
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: G.green }}>Dataquard: automatisch korrekt</h3>
+            </div>
+            {[
+              { ic: '🔍', t: 'Echte Drittanbieter erkannt', d: 'Dataquard scannt Ihre Website und erkennt automatisch welche Dienste Sie wirklich nutzen, von Google Analytics über Meta Pixel bis zu versteckten Tracking-Pixeln.' },
+              { ic: '🚦', t: 'Richtige Jurisdiktion', d: 'Automatische Erkennung: nDSG, DSGVO oder beides, basierend auf Ihrer Domain, Ihrem Server und Ihren Besuchern.' },
+              { ic: '🔄', t: 'Immer aktuell', d: 'Neuer Tracker? Neues Plugin? Dataquard erkennt Änderungen automatisch. Im Starter-Plan: monatliche Compliance-Reports.' },
+              { ic: '🛡️', t: 'Rechtlich fundiert', d: 'Generiert nach nDSG Art. 19 und DSGVO Art. 13/14. Zusätzlich: EU AI Act Art. 50 Konformität für KI-generierte Bilder.' },
+            ].map(r => (
+              <div key={r.t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <span style={{ flexShrink: 0, marginTop: 2 }}><IconEl ic={r.ic} size={18} /></span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: G.green, marginBottom: 2 }}>{r.t}</div>
+                  <div style={{ fontSize: 12, color: G.textSec, lineHeight: 1.6 }}>{r.d}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, padding: '12px 14px', background: `${G.green}12`, borderRadius: 10, fontSize: 12, color: G.green, fontWeight: 600, textAlign: 'center' }}>
+              &#10003; Ab CHF 19.–/Mt. · Jährliche Abrechnung · Rechtssicher · In 3 Minuten fertig
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 7. PRICING ═══ */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '50px 24px', borderTop: `1px solid ${G.border}` }} id="preise">
         <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Transparent. Fair. Schweizer Qualität.</h2>
         <p style={{ textAlign: 'center', color: G.textSec, fontSize: 13, marginBottom: 36 }}>Alle Preise in CHF · Jährliche Abrechnung · Jederzeit kündbar</p>
