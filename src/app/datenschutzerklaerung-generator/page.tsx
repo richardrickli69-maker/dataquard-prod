@@ -4,7 +4,7 @@ import Article from '@/content/articles/datenschutzerklaerung-generator.mdx'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.dataquard.ch'),
-  title: 'Datenschutzerklärung Schweiz: Generator-Vergleich und nDSG-Leitfaden für KMU | Dataquard',
+  title: 'Datenschutzerklärung Schweiz: Generator-Vergleich und nDSG-Leitfaden für KMU',
   description: 'Welcher Datenschutzerklärung-Generator ist für Schweizer KMU wirklich nDSG-konform? Ehrlicher Vergleich, rechtlicher Kontext und ein scan-basierter Weg.',
   keywords: 'datenschutzerklärung generator schweiz, nDSG datenschutzerklärung, datenschutzerklärung kmu schweiz',
   alternates: {
