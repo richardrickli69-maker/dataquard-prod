@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema, WebSiteSchema } from '@/components/seo/SchemaOrg';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.dataquard.ch'),
   title: {
     default: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
     template: '%s | Dataquard',
