@@ -177,6 +177,8 @@ export default function HomePage() {
           .grid-trust > div:last-child { border-bottom: none; }
           .hero-input-row { flex-direction: column !important; }
           .hero-input-row button { border-radius: 0 0 12px 12px !important; }
+          .hero-dual-cta { flex-direction: column !important; align-items: stretch !important; }
+          .dual-track-grid { grid-template-columns: 1fr !important; }
           .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -196,6 +198,16 @@ export default function HomePage() {
         <p style={{ fontSize: 16, color: G.textSec, maxWidth: 640, margin: '0 auto 28px', lineHeight: 1.7 }}>
           Eine URL eingeben — Dataquard prüft Ihre Website <strong style={{ color: G.text }}>sofort</strong> auf Compliance, Performance, Security und KI-Sicherheit. Schwachstellen werden erkannt, Dokumente automatisch erstellt: DSE (Datenschutzerklärung), Impressum und Cookie-Banner — rechtssicher nach nDSG und DSGVO. <strong style={{ color: G.text }}>Plus: Erkennung von KI-generierten Bildern und Deepfakes.</strong> So einfach war Website-Compliance noch nie. Einzigartig in der Schweiz.
         </p>
+        {/* Dual-CTA: KMU + Agentur */}
+        <div className="hero-dual-cta" style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
+          <Link href="/scanner" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 28px', background: G.green, color: '#fff', fontWeight: 800, borderRadius: 12, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
+            Kostenlos scannen →
+          </Link>
+          <Link href="/fuer-agenturen" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 28px', background: 'transparent', color: G.text, fontWeight: 700, borderRadius: 12, fontSize: 15, textDecoration: 'none', border: `2px solid ${G.border}` }}>
+            Für Webagenturen →
+          </Link>
+        </div>
+
         {/* Status-Banner (nur bei Problemen) */}
         {serviceStatus === 'down' && (
           <div style={{ maxWidth: 520, margin: '0 auto 12px', padding: '10px 16px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -260,6 +272,61 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* ═══ FÜR WEN IST DATAQUARD? ═══ */}
+      <section style={{ background: '#0d1425', padding: '56px 24px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <span style={{ color: G.green, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>Die richtige Lösung für Sie</span>
+            <h2 style={{ fontSize: 28, fontWeight: 800, marginTop: 8, color: '#ffffff' }}>Für wen ist Dataquard?</h2>
+          </div>
+          <div className="dual-track-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 24 }}>
+
+            {/* Card 1: KMU */}
+            <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 32, display: 'flex', flexDirection: 'column' }}>
+              <img src="/icon-recht.png" alt="" width={48} height={48} style={{ marginBottom: 16 }} />
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', margin: '0 0 10px' }}>Für mein Unternehmen</h3>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.65, margin: '0 0 16px' }}>
+                Eine Website, eine Lösung. Datenschutzerklärung, Impressum und Cookie-Banner — automatisch generiert und immer aktuell.
+              </p>
+              <ul style={{ margin: '0 0 16px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {['Compliance-Scan in 30 Sekunden', 'Rechtssichere Dokumente in 3 Minuten', 'EU AI Act Art. 50 inklusive'].map(item => (
+                  <li key={item} style={{ display: 'flex', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.82)', alignItems: 'flex-start' }}>
+                    <img src="/checkmark.png" alt="" width={16} height={16} style={{ marginTop: 2, flexShrink: 0 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginBottom: 20 }}>ab CHF 19.–/Mt.</div>
+              <Link href="/preise" style={{ display: 'block', textAlign: 'center', padding: '12px 20px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 10, fontSize: 14, textDecoration: 'none', marginTop: 'auto' }}>
+                Pläne ansehen →
+              </Link>
+            </div>
+
+            {/* Card 2: Webagenturen */}
+            <div style={{ background: '#1e293b', border: `2px solid ${G.greenBorder}`, borderRadius: 16, padding: 32, display: 'flex', flexDirection: 'column' }}>
+              <img src="/diagramm.png" alt="" width={48} height={48} style={{ marginBottom: 16 }} />
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', margin: '0 0 10px' }}>Für meine Webagentur</h3>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.65, margin: '0 0 16px' }}>
+                Eine Plattform, alle Kunden. Compliance-Scanning und Reporting für 15 bis 100+ Domains, mit White-Label-Option.
+              </p>
+              <ul style={{ margin: '0 0 16px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {['Multi-Domain-Dashboard', 'Bulk-CSV-Import', 'White-Label-Reports (Agency Pro+)', 'EU AI Act Art. 50 für alle Kunden'].map(item => (
+                  <li key={item} style={{ display: 'flex', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.82)', alignItems: 'flex-start' }}>
+                    <img src="/checkmark.png" alt="" width={16} height={16} style={{ marginTop: 2, flexShrink: 0 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginBottom: 20 }}>ab CHF 79.–/Mt.</div>
+              <Link href="/fuer-agenturen" style={{ display: 'block', textAlign: 'center', padding: '12px 20px', background: 'transparent', border: `2px solid ${G.green}`, color: G.green, fontWeight: 700, borderRadius: 10, fontSize: 14, textDecoration: 'none', marginTop: 'auto' }}>
+                Agentur-Pricing →
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* ═══ WAS WIR PRÜFEN ═══ */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '56px 24px' }}>

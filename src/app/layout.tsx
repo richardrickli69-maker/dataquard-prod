@@ -7,10 +7,10 @@ import { SoftwareApplicationSchema, OrganizationSchema, KiTransparenzSchema, Web
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.dataquard.ch'),
   title: {
-    default: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
+    default: 'Dataquard — Compliance für KMU & Webagenturen | KI-Bilder, Datenschutz & Sicherheit',
     template: '%s | Dataquard',
   },
-  description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich. Kostenlos starten.',
+  description: 'Schweizer Compliance-Plattform für KMU und Webagenturen. Datenschutzerklärung, Impressum, Cookie-Banner und EU AI Act-konforme KI-Bilder-Erkennung — automatisch generiert. Daten in Zürich.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -20,8 +20,8 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
-    description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich. Kostenlos starten.',
+    title: 'Dataquard — Compliance für KMU & Webagenturen | KI-Bilder, Datenschutz & Sicherheit',
+    description: 'Schweizer Compliance-Plattform für KMU und Webagenturen. Datenschutzerklärung, Impressum, Cookie-Banner und EU AI Act-konforme KI-Bilder-Erkennung — automatisch generiert.',
     url: 'https://www.dataquard.ch',
     siteName: 'Dataquard',
     locale: 'de_CH',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Dataquard — Der Schweizer Website-Check für KMU | KI-Bilder, Compliance & Sicherheit',
-    description: 'Scannen Sie Ihre Website in 60 Sekunden: KI-Bilder erkennen, Datenschutz prüfen, Sicherheit checken. Schweizer Produkt, Daten in Zürich.',
+    title: 'Dataquard — Compliance für KMU & Webagenturen | KI-Bilder, Datenschutz & Sicherheit',
+    description: 'Schweizer Compliance-Plattform für KMU und Webagenturen. Datenschutzerklärung, Impressum, Cookie-Banner und EU AI Act-konforme KI-Bilder-Erkennung — automatisch generiert.',
     images: ['https://www.dataquard.ch/opengraph-image'],
   },
 };

@@ -124,6 +124,17 @@ export default function PreisePage() {
         <p style={{ textAlign: 'center', fontSize: 11, color: G.textMuted, marginTop: 16 }}>
           Alle Preise in CHF inkl. MwSt. · Jährliche Abrechnung · Jederzeit kündbar
         </p>
+
+        {/* Agentur-Hinweis */}
+        <div style={{ marginTop: 24, background: G.greenBg, border: `1px solid ${G.greenBorder}`, borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <img src="/diagramm.png" alt="" width={28} height={28} style={{ flexShrink: 0, opacity: 0.85 }} />
+          <span style={{ flex: 1, minWidth: 180, fontSize: 14, color: G.textSec }}>
+            <strong style={{ color: G.text, fontWeight: 700 }}>Webagentur?</strong>{' '}Spezielle Pläne ab CHF 79.–/Mt. für 15 bis 100+ Domains — White-Label, Bulk-Scan, KI-Bilderkennung.
+          </span>
+          <Link href="/fuer-agenturen" style={{ display: 'inline-block', padding: '9px 18px', background: G.green, color: '#fff', fontWeight: 700, borderRadius: 8, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Agentur-Pricing →
+          </Link>
+        </div>
       </section>
 
       {/* ═══ PREIS-FAQ ═══ */}
