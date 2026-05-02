@@ -248,7 +248,7 @@ export default function KiTransparenzPage() {
                 <img src="/suche.png" alt="" width={16} height={16} />
                 Kostenlos scannen
               </Link>
-              <Link href="/checkout?plan=ai-trust" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `2px solid ${G.green}`, color: G.green, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 10, textDecoration: 'none', background: 'transparent' }}>
+              <Link href="/checkout?plan=professional" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `2px solid ${G.green}`, color: G.green, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 10, textDecoration: 'none', background: 'transparent' }}>
                 Jetzt upgraden: ab CHF 19.–/Mt.
               </Link>
             </div>

@@ -1064,7 +1064,7 @@ export default function ScannerPage() {
               )}
 
               {/* CTA — immer anzeigen als Upsell */}
-              <Link href="/checkout?plan=ai-trust" style={{
+              <Link href="/checkout?plan=professional" style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,

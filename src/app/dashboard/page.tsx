@@ -1005,7 +1005,7 @@ export default function DashboardPage() {
                 </p>
                 <p style={{ fontSize: 12, color: '#888899', marginBottom: 18 }}>Jahres-Abo · Keine Einrichtungsgebühr · Kündbar</p>
                 <Link
-                  href="/checkout?plan=ai-trust"
+                  href="/checkout?plan=professional"
                   style={{ display: 'inline-block', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', padding: '12px 28px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
                 >
                   Jetzt für CHF 99/Jahr aktivieren →
