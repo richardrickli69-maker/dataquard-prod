@@ -115,6 +115,8 @@ interface ScanResult {
   jurisdiction: 'nDSG' | 'DSGVO' | 'BEIDES';
   insights: string[];
   recommendations: string[];
+  /** Score-Abzüge für UI-Anzeige "Was fehlt für 100%?" */
+  scoreReasons: string[];
   aiTrust: {
     /** null wenn Website blockiert war — nicht prüfbar */
     score: number | null;
@@ -375,6 +377,7 @@ export default function ScannerPage() {
         jurisdiction,
         insights: scan?.insights ?? [],
         recommendations: scan?.recommendations ?? [],
+        scoreReasons: scan?.compliance?.scoreReasons ?? [],
         aiTrust: {
           score: aiTrustScore,
           deepfakeRisk: aiAudit?.deepfakeRisk ?? 'none',
@@ -717,6 +720,20 @@ export default function ScannerPage() {
                         <div style={{ width: 12, height: 12, borderRadius: '50%', background: complianceColor, flexShrink: 0 }} />
                         <span style={{ fontSize: 16, fontWeight: 700, color: complianceColor }}>Compliance</span>
                       </div>
+                      {/* Score-Abzüge: nur anzeigen wenn Score < 100 und Gründe vorhanden */}
+                      {(result.scores.compliance ?? 0) < 100 && result.scoreReasons.length > 0 && (
+                        <div style={{ marginBottom: 12, padding: '8px 12px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.18)', borderRadius: 8 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: G.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Warum nicht 100%?</p>
+                          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {result.scoreReasons.map((reason, i) => (
+                              <li key={i} style={{ fontSize: 12, color: G.textSec, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                                <span style={{ color: G.yellow, fontWeight: 700, flexShrink: 0, lineHeight: '16px' }}>–</span>
+                                {reason}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       <div>
                         {result.findings.datenschutz === null
                           ? befundZeile(

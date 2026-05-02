@@ -296,6 +296,8 @@ export interface ExtendedScanResult {
     cookieBannerAssessment?: CookieBannerAssessment;
     /** JS-Rendering-Erkennung (SPA-Hinweis) */
     jsRendering?: JsRenderingResult;
+    /** Abzugs-Begründungen für Score < 100, z.B. "Impressum fehlt (−30 Punkte)" */
+    scoreReasons: string[];
   };
   optimization: {
     /** null wenn PageSpeed API nicht verfügbar und interner Score nicht aussagekräftig */
@@ -1875,15 +1877,36 @@ export async function performExtendedScan(
   // cookieBannerOk: vorhanden, nicht erforderlich (keine Tracker) oder nicht erkennbar (JS)
   // Nur 'fehlt_pflicht' zieht Punkte ab (Banner fehlt obwohl Tracker erkannt)
   const cookieBannerOk = complianceCheck.cookieBannerAssessment.status !== 'fehlt_pflicht';
-  let complianceScore =
-    hasPrivacyPolicy && cookieBannerOk ? 85 :
-    hasPrivacyPolicy ? 65 :
-    cookieBannerOk ? 50 : 40;
+
+  // Punkte-basierte Compliance-Formel (max 100)
+  // Cookie-Banner nur Pflicht wenn Tracker vorhanden — Static-Sites ohne Tracker kriegen volle Punkte
+  const trackerCount = thirdPartyCheck.totalScripts;
+  const needsCookieBanner = trackerCount > 0;
+  let complianceScore = 0;
+  if (hasPrivacyPolicy) complianceScore += 40;           // DSE: 40 Punkte
+  if (impressumCheck.hasImpressum) complianceScore += 30; // Impressum: 30 Punkte
+  if (needsCookieBanner ? cookieBannerOk : true) complianceScore += 30; // Cookie-Banner: 30 Punkte
+
+  // Score-Begründungen für UI-Anzeige "Was fehlt für 100%?"
+  const scoreReasons: string[] = [];
+  if (!hasPrivacyPolicy) scoreReasons.push('Datenschutzerklärung fehlt (−40 Punkte)');
+  if (!impressumCheck.hasImpressum) scoreReasons.push('Impressum fehlt (−30 Punkte)');
+  if (needsCookieBanner && !cookieBannerOk) scoreReasons.push('Cookie-Banner fehlt trotz Tracker (−30 Punkte)');
+
   // Bild-Sicherheit beeinflusst Compliance (EU AI Act / Datenschutz) — nur bei erfolgreichem Scan
   if (sightengineResult && sightengineResult.status === 'success') {
-    if (sightengineResult.deepfakeCount > 0) complianceScore = Math.max(0, complianceScore - 15);
-    if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) complianceScore = Math.max(0, complianceScore - 10);
-    if (sightengineResult.aiImagesFound > 0) complianceScore = Math.max(0, complianceScore - 5);
+    if (sightengineResult.deepfakeCount > 0) {
+      complianceScore = Math.max(0, complianceScore - 15);
+      scoreReasons.push('Deepfakes erkannt (−15 Punkte)');
+    }
+    if (sightengineResult.nudityCount > 0 || sightengineResult.weaponCount > 0) {
+      complianceScore = Math.max(0, complianceScore - 10);
+      scoreReasons.push('Problematische Bilder erkannt (−10 Punkte)');
+    }
+    if (sightengineResult.aiImagesFound > 0) {
+      complianceScore = Math.max(0, complianceScore - 5);
+      scoreReasons.push('KI-Bilder ohne Kennzeichnung (−5 Punkte)');
+    }
   }
   // PageSpeed Insights: kombinierter Score wenn verfügbar (mobile×0.6 + desktop×0.4)
   const pageSpeedData = (pageSpeedMobile || pageSpeedDesktop) ? {
@@ -1930,6 +1953,16 @@ export async function performExtendedScan(
     mixedContent.hasMixedContent
   );
 
+  // Fix 1: Dataquard Self-Scan — Eigenwerbungs-Empfehlung weglassen (wirkt zirkulär)
+  const scannedHost = (() => {
+    try { return new URL(siteUrl).hostname.replace(/^www\./, ''); }
+    catch { return ''; }
+  })();
+  if (scannedHost === 'dataquard.ch') {
+    const idx = recommendations.findIndex(r => r.includes('Verwenden Sie Dataquard'));
+    if (idx !== -1) recommendations.splice(idx, 1);
+  }
+
   const scanResult: ExtendedScanResult = {
     fetchStatus,
     fetchError: complianceCheck.fetchError,
@@ -1944,6 +1977,7 @@ export async function performExtendedScan(
       cookieBannerProvider: fetchFailed ? undefined : (complianceCheck.cookieBannerProvider ?? undefined),
       cookieBannerAssessment: fetchFailed ? undefined : complianceCheck.cookieBannerAssessment,
       jsRendering: fetchFailed ? undefined : complianceCheck.jsRendering,
+      scoreReasons: fetchFailed ? [] : scoreReasons,
     },
     optimization: {
       // SSL und PageSpeed brauchen kein HTML — immer verfügbar
