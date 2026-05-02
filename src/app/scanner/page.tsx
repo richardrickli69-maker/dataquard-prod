@@ -1026,7 +1026,7 @@ export default function ScannerPage() {
                   <>
                     Wir haben <strong style={{ color: G.text }}>{result.aiTrust.signals.length} KI-Signal(e)</strong> auf Ihrer Website erkannt.
                     Ab August 2026 verlangt der EU AI Act (Art. 50) eine Kennzeichnung von KI-Inhalten.
-                    Mit dem AI-Trust Abo überwachen wir Ihre Website automatisch und halten Sie konform.
+                    Mit dem Professional-Plan überwachen wir Ihre Website automatisch und halten Sie konform.
                   </>
                 ) : (
                   <>Keine KI-Signale erkannt. Ihre Website ist in Bezug auf EU AI Act Art. 50 unauffällig.</>
@@ -1163,6 +1163,17 @@ export default function ScannerPage() {
 
             {/* ─── Upsell-CTA (kontextabhängig nach Score) ─── */}
             {(() => {
+              // Bei eingeschränktem Scan keinen Upsell — Blockierung ist Eigenschaft der gescannten Site
+              if (result.fetchStatus && result.fetchStatus !== 'success') {
+                return (
+                  <div style={{ borderRadius: 12, padding: 16, marginBottom: 8, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.04)' }}>
+                    <p style={{ fontSize: 14, color: G.textSec, marginBottom: 0 }}>
+                      Diese Website blockiert automatische Scanner. Eine vollständige Compliance-Analyse ist nur manuell möglich. Bei Interesse:{' '}
+                      <a href="mailto:kontakt@dataquard.ch" style={{ color: G.green, textDecoration: 'none' }}>kontakt@dataquard.ch</a>
+                    </p>
+                  </div>
+                );
+              }
               // Nur vorhandene Scores berücksichtigen — null (nicht verfügbar) nicht als 0 werten
               const availableScores = [
                 result.scores.compliance,

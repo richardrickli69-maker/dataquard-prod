@@ -915,7 +915,11 @@ export async function checkMixedContent(domain: string, html?: string): Promise<
     }
   }
 
-  const externalHttp = (pageHtml.match(/(?:src|href)=["']http:\/\/(?!localhost)[^"']+["']/gi) ?? [])
+  // src-Attribute: <img>, <script>, <iframe>, <source>, <video>, <audio>
+  const srcMatches = pageHtml.match(/src=["']http:\/\/(?!localhost)[^"']+["']/gi) ?? [];
+  // <link href>: Stylesheets, Preload, Favicon (echter Mixed Content)
+  const linkMatches = pageHtml.match(/<link[^>]+href=["']http:\/\/(?!localhost)[^"']+["']/gi) ?? [];
+  const externalHttp = [...srcMatches, ...linkMatches]
     .filter(r =>
       !r.includes('//schemas.') &&
       !r.includes('//www.w3.org') &&
